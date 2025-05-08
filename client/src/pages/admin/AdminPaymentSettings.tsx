@@ -262,11 +262,13 @@ export default function AdminPaymentSettings() {
     }
   };
 
-  const getPaymentIcon = (method: string) => {
-    method = method.toLowerCase();
-    if (method.includes('paypal')) return <CreditCard />;
-    if (method.includes('crypto') || method.includes('usdt') || method.includes('trc20')) return <Bitcoin />;
-    if (method.includes('bank')) return <Wallet />;
+  const getPaymentIcon = (method: string | undefined) => {
+    if (!method) return <CreditCard />;
+    
+    const methodLower = method.toLowerCase();
+    if (methodLower.includes('paypal')) return <CreditCard />;
+    if (methodLower.includes('crypto') || methodLower.includes('usdt') || methodLower.includes('trc20')) return <Bitcoin />;
+    if (methodLower.includes('bank')) return <Wallet />;
     return <CreditCard />;
   };
 

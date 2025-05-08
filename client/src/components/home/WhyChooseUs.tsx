@@ -59,6 +59,21 @@ const gifts = [
     icon: <Laptop className="h-12 w-12 text-teal-500" />,
     name: 'MacBook Pro',
     qualification: 'Qualify with Premium plan and 20+ active referrals'
+  },
+  {
+    icon: <Gift className="h-12 w-12 text-red-500" />,
+    name: 'Health Products',
+    qualification: 'Qualify with Basic plan and 5+ active referrals'
+  },
+  {
+    icon: <Globe className="h-12 w-12 text-sky-500" />,
+    name: 'Holiday Vacation',
+    qualification: 'Qualify with Premium plan and 25+ active referrals'
+  },
+  {
+    icon: <Gift className="h-12 w-12 text-emerald-500" />,
+    name: 'Medical Treatment',
+    qualification: 'Qualify with Premium plan and 30+ active referrals'
   }
 ];
 
@@ -101,11 +116,11 @@ export default function WhyChooseUs() {
             </span>
           </h3>
           
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {gifts.map((gift, index) => (
               <div 
                 key={index} 
-                className="bg-gradient-to-br from-gray-50 to-gray-100 p-8 rounded-xl shadow-md text-center border border-gray-200"
+                className="bg-gradient-to-br from-gray-50 to-gray-100 p-8 rounded-xl shadow-md text-center border border-gray-200 hover:shadow-lg transition-shadow duration-300"
               >
                 <div className="inline-flex items-center justify-center p-4 bg-white rounded-full mb-4 shadow-sm">
                   {gift.icon}
