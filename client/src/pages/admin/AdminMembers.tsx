@@ -591,6 +591,84 @@ export default function AdminMembers() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* User Profile Dialog */}
+      <Dialog open={profileDialogOpen} onOpenChange={setProfileDialogOpen}>
+        <DialogContent className="sm:max-w-[550px]">
+          <DialogHeader>
+            <DialogTitle>User Profile</DialogTitle>
+            <DialogDescription>
+              Detailed information about the user.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedUser && (
+            <div className="space-y-6">
+              <div className="flex items-center space-x-4">
+                <Avatar className="h-16 w-16">
+                  <AvatarImage src={selectedUser.profileImage || ''} alt={`${selectedUser.firstName} ${selectedUser.lastName}`} />
+                  <AvatarFallback className="text-lg font-semibold bg-primary-100 text-primary-800">
+                    {selectedUser.firstName[0]}{selectedUser.lastName[0]}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <h3 className="text-xl font-semibold">{selectedUser.firstName} {selectedUser.lastName}</h3>
+                  <p className="text-sm text-muted-foreground">{selectedUser.username}</p>
+                </div>
+              </div>
+              
+              <Separator />
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-xs text-muted-foreground">Email</Label>
+                  <p className="font-medium">{selectedUser.email}</p>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Role</Label>
+                  <p className="font-medium capitalize">{selectedUser.role}</p>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Status</Label>
+                  <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                    selectedUser.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  }`}>
+                    {selectedUser.active ? 'Active' : 'Inactive'}
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Wallet Balance</Label>
+                  <p className="font-medium">{formatCurrency(selectedUser.walletBalance, 'USDT')}</p>
+                </div>
+              </div>
+              
+              <Separator />
+              
+              <div>
+                <h4 className="font-medium mb-2">Referral Information</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Referral Code</Label>
+                    <p className="font-mono text-sm bg-gray-100 rounded px-2 py-1">{selectedUser.referralCode}</p>
+                  </div>
+                  {selectedUser.referredBy && (
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Referred By</Label>
+                      <p className="text-sm">ID: {selectedUser.referredBy}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setProfileDialogOpen(false)}>
+                  Close
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
