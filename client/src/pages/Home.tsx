@@ -360,7 +360,7 @@ const Home: React.FC = () => {
       </section>
       
       {/* Live Chat Component */}
-      <LiveChat />
+      <LiveChat userId={0} userName="Guest" />
     </div>
   );
 };

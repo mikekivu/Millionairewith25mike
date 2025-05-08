@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { Send, Search, MoreVertical, Check, CheckCheck } from 'lucide-react';
+import { Send, Search, MoreVertical, Check, CheckCheck, MessageCircle } from 'lucide-react';
 
 interface User {
   id: number;
