@@ -1,6 +1,7 @@
 import { jsPDF } from 'jspdf';
 import { saveAs } from 'file-saver';
 import QRCode from 'qrcode';
+import logoUrl from '../assets/logo.png';
 
 interface ReceiptData {
   transactionId: number;
@@ -15,6 +16,12 @@ interface ReceiptData {
   externalTransactionId?: string;
   processingFee?: string;
   paymentDetails?: string;
+  investmentId?: number;
+  planName?: string;
+  adminProcessor?: string;
+  digitalSignature?: string;
+  ipAddress?: string;
+  country?: string;
 }
 
 /**
@@ -68,6 +75,10 @@ export const generateReceipt = async (receiptData: ReceiptData): Promise<string>
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   let y = 30; // Starting y position
+  
+  // Add logo
+  const logoSize = 15;
+  doc.addImage(logoUrl, 'PNG', 20, 10, logoSize, logoSize);
   
   // Add branding
   doc.setFontSize(24);
@@ -219,6 +230,10 @@ export const generateReceiptAsBase64 = async (receiptData: ReceiptData): Promise
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   let y = 30; // Starting y position
+  
+  // Add logo
+  const logoSize = 15;
+  doc.addImage(logoUrl, 'PNG', 20, 10, logoSize, logoSize);
   
   // Add branding
   doc.setFontSize(24);
