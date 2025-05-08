@@ -136,10 +136,21 @@ export default function AdminPaymentSettings() {
   // Create payment setting mutation
   const createSettingMutation = useMutation({
     mutationFn: async (data: PaymentSettingFormValues) => {
-      const response = await apiRequest('POST', '/api/admin/payment-settings', data);
+      // Convert string values for min/max amounts to ensure they're valid
+      const formattedData = {
+        ...data,
+        // Ensure these are non-empty strings
+        minAmount: data.minAmount || "10",
+        maxAmount: data.maxAmount || "10000",
+        instructions: data.instructions || "",
+        credentials: data.credentials || ""
+      };
+      
+      console.log("Creating payment setting with data:", formattedData);
+      const response = await apiRequest('POST', '/api/admin/payment-settings', formattedData);
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast({
         title: "Payment Method Added",
         description: "Payment method created successfully",
@@ -149,9 +160,10 @@ export default function AdminPaymentSettings() {
       form.reset();
     },
     onError: (error) => {
+      console.error("Payment method creation error:", error);
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to add payment method",
+        title: "Error Adding Payment Method",
+        description: error instanceof Error ? error.message : "Failed to add payment method. Please try again.",
         variant: "destructive",
       });
     },
@@ -160,10 +172,21 @@ export default function AdminPaymentSettings() {
   // Update payment setting mutation
   const updateSettingMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: PaymentSettingFormValues }) => {
-      const response = await apiRequest('PUT', `/api/admin/payment-settings/${id}`, data);
+      // Ensure the data is properly formatted
+      const formattedData = {
+        ...data,
+        // Ensure these are non-empty strings
+        minAmount: data.minAmount || "10",
+        maxAmount: data.maxAmount || "10000",
+        instructions: data.instructions || "",
+        credentials: data.credentials || ""
+      };
+      
+      console.log("Updating payment setting with data:", formattedData);
+      const response = await apiRequest('PUT', `/api/admin/payment-settings/${id}`, formattedData);
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast({
         title: "Payment Method Updated",
         description: "Payment method updated successfully",
@@ -174,9 +197,10 @@ export default function AdminPaymentSettings() {
       form.reset();
     },
     onError: (error) => {
+      console.error("Payment method update error:", error);
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update payment method",
+        title: "Error Updating Payment Method",
+        description: error instanceof Error ? error.message : "Failed to update payment method. Please try again.",
         variant: "destructive",
       });
     },
