@@ -119,7 +119,8 @@ export default function UserNetworkHeatmap() {
           <h1 className="text-3xl font-bold tracking-tight">Network Performance Heatmap</h1>
           <p className="text-muted-foreground mt-2">
             Visualize your referral network's performance as a heat map. The colors indicate performance
-            levels with red representing lower performance and green representing higher performance.
+            levels based on member activity, investments, and referrals. Use the controls below to customize 
+            the visualization to your preferences.
           </p>
         </div>
 
@@ -136,6 +137,61 @@ export default function UserNetworkHeatmap() {
             <CardContent>
               {renderContent()}
             </CardContent>
+            <CardFooter className="flex flex-wrap gap-4 justify-between border-t pt-4">
+              <div className="flex flex-wrap gap-4">
+                <div className="flex items-center space-x-2">
+                  <Label htmlFor="colorScale">Color Theme:</Label>
+                  <Select 
+                    value={colorScale} 
+                    onValueChange={(value) => setColorScale(value as "brand" | "traditional")}
+                  >
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Select color theme" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="brand">Brand Colors (Orange/Red)</SelectItem>
+                      <SelectItem value="traditional">Traditional (Green to Red)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <Label htmlFor="showInactive">Show Inactive Users:</Label>
+                  <Switch 
+                    id="showInactive" 
+                    checked={showInactive} 
+                    onCheckedChange={setShowInactive}
+                  />
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Button 
+                  onClick={() => refetch()} 
+                  variant="outline" 
+                  size="icon"
+                  title="Refresh Data"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                </Button>
+                <Button 
+                  onClick={handleZoomOut} 
+                  variant="outline" 
+                  size="icon"
+                  title="Zoom Out"
+                >
+                  <ZoomOut className="h-4 w-4" />
+                </Button>
+                <Button 
+                  onClick={handleZoomIn} 
+                  variant="outline" 
+                  size="icon"
+                  title="Zoom In"
+                >
+                  <ZoomIn className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardFooter>
           </Card>
 
           <Card>
@@ -152,12 +208,21 @@ export default function UserNetworkHeatmap() {
                   <p className="text-muted-foreground">
                     Each member in your network is represented by a box with a color indicating their performance:
                   </p>
-                  <ul className="list-disc ml-6 mt-2 space-y-1">
-                    <li><span className="font-medium text-green-500">Green (75-100%)</span>: Excellent performance</li>
-                    <li><span className="font-medium text-yellow-500">Yellow (50-74%)</span>: Good performance</li>
-                    <li><span className="font-medium text-orange-500">Orange (25-49%)</span>: Fair performance</li>
-                    <li><span className="font-medium text-red-500">Red (0-24%)</span>: Poor performance</li>
-                  </ul>
+                  {colorScale === "brand" ? (
+                    <ul className="list-disc ml-6 mt-2 space-y-1">
+                      <li><span className="font-medium text-orange-500">Orange (75-100%)</span>: Excellent performance</li>
+                      <li><span className="font-medium text-red-400">Light Red (50-74%)</span>: Good performance</li>
+                      <li><span className="font-medium text-red-600">Red (25-49%)</span>: Fair performance</li>
+                      <li><span className="font-medium text-red-800">Deep Red (0-24%)</span>: Poor performance</li>
+                    </ul>
+                  ) : (
+                    <ul className="list-disc ml-6 mt-2 space-y-1">
+                      <li><span className="font-medium text-green-500">Green (75-100%)</span>: Excellent performance</li>
+                      <li><span className="font-medium text-yellow-500">Yellow (50-74%)</span>: Good performance</li>
+                      <li><span className="font-medium text-orange-500">Orange (25-49%)</span>: Fair performance</li>
+                      <li><span className="font-medium text-red-500">Red (0-24%)</span>: Poor performance</li>
+                    </ul>
+                  )}
                 </div>
                 
                 <div>
@@ -182,7 +247,20 @@ export default function UserNetworkHeatmap() {
                     <li>Focus on branches with lower performance (red/orange)</li>
                     <li>Reach out to inactive members to re-engage them</li>
                     <li>Provide additional guidance to members who haven't referred others</li>
-                    <li>Recognize and reward high performers (green)</li>
+                    <li>Recognize and reward high performers ({colorScale === "brand" ? "orange" : "green"})</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <h3 className="font-medium text-lg">Visualization Controls</h3>
+                  <p className="text-muted-foreground">
+                    Customize your view with these controls:
+                  </p>
+                  <ul className="list-disc ml-6 mt-2 space-y-1">
+                    <li><span className="font-medium">Color Theme</span>: Switch between brand colors (orange/red) or traditional performance colors (green/yellow/orange/red)</li>
+                    <li><span className="font-medium">Show Inactive Users</span>: Toggle to show or hide inactive members in your network</li>
+                    <li><span className="font-medium">Zoom Controls</span>: Adjust the size of the visualization to better fit your screen or see more detail</li>
+                    <li><span className="font-medium">Refresh Data</span>: Update the visualization with the latest performance data</li>
                   </ul>
                 </div>
               </div>
