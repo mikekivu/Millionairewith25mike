@@ -1,4 +1,5 @@
 import { pgTable, text, serial, integer, boolean, timestamp, numeric, foreignKey } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -91,6 +92,66 @@ export const contactMessages = pgTable("contact_messages", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
   responded: boolean("responded").notNull().default(false),
 });
+
+// Relations
+export const usersRelations = relations(users, ({ one, many }) => ({
+  referer: one(users, {
+    fields: [users.referredBy],
+    references: [users.id],
+  }),
+  referrals: many(users, {
+    relationName: "user_referrals"
+  }),
+  investments: many(investments),
+  transactions: many(transactions),
+  referralsAsReferrer: many(referrals, { relationName: "referrer" }),
+  referralsAsReferred: many(referrals, { relationName: "referred" }),
+}));
+
+export const plansRelations = relations(plans, ({ many }) => ({
+  investments: many(investments),
+}));
+
+export const investmentsRelations = relations(investments, ({ one, many }) => ({
+  user: one(users, {
+    fields: [investments.userId],
+    references: [users.id],
+  }),
+  plan: one(plans, {
+    fields: [investments.planId],
+    references: [plans.id],
+  }),
+  transactions: many(transactions),
+}));
+
+export const transactionsRelations = relations(transactions, ({ one }) => ({
+  user: one(users, {
+    fields: [transactions.userId],
+    references: [users.id],
+  }),
+  investment: one(investments, {
+    fields: [transactions.investmentId],
+    references: [investments.id],
+  }),
+  referral: one(referrals, {
+    fields: [transactions.referralId],
+    references: [referrals.id],
+  }),
+}));
+
+export const referralsRelations = relations(referrals, ({ one, many }) => ({
+  referrer: one(users, {
+    fields: [referrals.referrerId],
+    references: [users.id],
+    relationName: "referrer",
+  }),
+  referred: one(users, {
+    fields: [referrals.referredId],
+    references: [users.id],
+    relationName: "referred",
+  }),
+  transactions: many(transactions),
+}));
 
 // Insert Schemas
 export const insertUserSchema = createInsertSchema(users).omit({ id: true });
