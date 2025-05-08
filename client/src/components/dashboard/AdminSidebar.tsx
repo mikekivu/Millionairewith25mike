@@ -126,26 +126,28 @@ export default function AdminSidebar() {
           {/* Navigation */}
           <nav className="space-y-2">
             {navItems.map((item) => (
-              <Link key={item.href} href={item.href}>
-                <a
-                  className={cn(
-                    "flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all w-full",
-                    location === item.href
-                      ? "bg-gradient-to-r from-gray-700 to-gray-600 text-white shadow-md"
-                      : "text-gray-300 hover:bg-gray-800 hover:text-white"
-                  )}
-                >
-                  <span className={cn(
-                    "mr-3 p-2 rounded-md",
-                    location === item.href
-                      ? "bg-gray-600/50"
-                      : "bg-gray-800/50"
-                  )}>
-                    {item.icon}
-                  </span>
-                  {item.title}
-                </a>
-              </Link>
+              <div key={item.href} className="w-full">
+                <Link href={item.href}>
+                  <div
+                    className={cn(
+                      "flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all w-full cursor-pointer",
+                      location === item.href
+                        ? "bg-gradient-to-r from-gray-700 to-gray-600 text-white shadow-md"
+                        : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                    )}
+                  >
+                    <span className={cn(
+                      "mr-3 p-2 rounded-md",
+                      location === item.href
+                        ? "bg-gray-600/50"
+                        : "bg-gray-800/50"
+                    )}>
+                      {item.icon}
+                    </span>
+                    {item.title}
+                  </div>
+                </Link>
+              </div>
             ))}
           </nav>
         </div>
