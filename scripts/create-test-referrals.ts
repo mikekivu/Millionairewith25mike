@@ -31,13 +31,13 @@ async function main() {
     // Create Level 1 referrals (admin refers first user)
     const level1User = allUsers[0];
     await db.insert(referrals).values({
-      referrer_id: adminUser.id,
-      referred_id: level1User.id,
+      referrerId: adminUser.id,
+      referredId: level1User.id,
       level: 1,
-      commission_rate: "10",
-      commission_amount: "50",
+      commissionRate: "10",
+      commissionAmount: "50",
       status: "active",
-      created_at: new Date()
+      createdAt: new Date()
     });
     console.log(`Created level 1 referral: admin -> ${level1User.username}`);
     
@@ -50,13 +50,13 @@ async function main() {
     if (allUsers.length >= 2) {
       const level2User = allUsers[1];
       await db.insert(referrals).values({
-        referrer_id: level1User.id,
-        referred_id: level2User.id,
+        referrerId: level1User.id,
+        referredId: level2User.id,
         level: 1,
-        commission_rate: "10",
-        commission_amount: "25",
+        commissionRate: "10",
+        commissionAmount: "25",
         status: "active",
-        created_at: new Date()
+        createdAt: new Date()
       });
       console.log(`Created level 1 referral: ${level1User.username} -> ${level2User.username}`);
       
