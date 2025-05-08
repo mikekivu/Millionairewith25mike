@@ -473,21 +473,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.session.userId;
       const referrals = await storage.getAllUserReferrals(userId);
       
-      // Enrich with referred user details
-      const enrichedReferrals = await Promise.all(
-        referrals.map(async (referral) => {
-          const user = await storage.getUser(referral.referredId);
-          if (user) {
-            const { password, ...userWithoutPassword } = user;
-            return { ...referral, referredUser: userWithoutPassword };
-          }
-          return referral;
-        })
-      );
-      
-      // Group by level
+      // Group by level - referrals now already include referred user details
       const referralsByLevel = {};
-      for (const referral of enrichedReferrals) {
+      for (const referral of referrals) {
         if (!referralsByLevel[referral.level]) {
           referralsByLevel[referral.level] = [];
         }

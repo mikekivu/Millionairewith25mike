@@ -79,86 +79,48 @@ export default function UserGenealogyTree() {
         return null;
       };
 
-      // Process level 1 referrals (direct)
-      const level1Referrals = referrals['1'] || [];
-      
-      for (const ref of level1Referrals) {
-        const childNode: TreeNode = {
-          id: ref.referredUser.id,
-          name: `${ref.referredUser.firstName} ${ref.referredUser.lastName}`,
-          level: 1,
-          isActive: ref.referredUser.active,
-          children: []
-        };
-        
-        root.children!.push(childNode);
-      }
+      // No need to process level 1 referrals separately anymore
+      // We'll process all levels in the unified approach below
 
-      // Process higher level referrals
-      for (let level = 2; level <= 5; level++) {
-        const levelReferrals = referrals[level.toString()] || [];
+      // First, create a map of all users by ID for quick access
+      const userNodeMap = new Map<number, TreeNode>();
+      userNodeMap.set(root.id, root);
+      
+      // Process all referrals and map users to their referring parent
+      // This will build a proper genealogy tree based on actual referral relationships
+      const allLevels = Object.keys(referrals).sort((a, b) => parseInt(a) - parseInt(b));
+      
+      for (const levelKey of allLevels) {
+        const level = parseInt(levelKey);
+        const levelReferrals = referrals[levelKey] || [];
         
         for (const ref of levelReferrals) {
-          // Find the parent node in the tree
-          // This is simplified - in a real system, you'd need to know the actual parent ID
-          // Here we're just attaching level 2 to the first level 1 node, level 3 to first level 2, etc.
-          // A real implementation would need proper parent-child relationships
+          // Create the node for this referred user
+          const userNode: TreeNode = {
+            id: ref.referredUser.id,
+            name: `${ref.referredUser.firstName} ${ref.referredUser.lastName}`,
+            level: level,
+            isActive: ref.referredUser.active,
+            children: []
+          };
           
-          // For demo purposes, we'll randomly assign parents
-          if (level === 2 && root.children && root.children.length > 0) {
-            // For level 2, pick a random level 1 parent
-            const randomIndex = Math.floor(Math.random() * root.children.length);
-            const parentNode = root.children[randomIndex];
-            
-            if (parentNode) {
-              if (!parentNode.children) parentNode.children = [];
-              
-              parentNode.children.push({
-                id: ref.referredUser.id,
-                name: `${ref.referredUser.firstName} ${ref.referredUser.lastName}`,
-                level: level,
-                isActive: ref.referredUser.active,
-                children: []
-              });
-            }
-          } else if (level > 2) {
-            // For higher levels, just append to the first available parent
-            // This is just for visualization purposes
-            // A real implementation would need the actual parent-child relationships
-            const potentialParents: TreeNode[] = [];
-            
-            const findPotentialParents = (node: TreeNode, targetLevel: number) => {
-              if (node.level === targetLevel - 1) {
-                potentialParents.push(node);
-                return;
-              }
-              
-              if (node.children) {
-                for (const child of node.children) {
-                  findPotentialParents(child, targetLevel);
-                }
-              }
-            };
-            
-            findPotentialParents(root, level);
-            
-            if (potentialParents.length > 0) {
-              const randomIndex = Math.floor(Math.random() * potentialParents.length);
-              const parentNode = potentialParents[randomIndex];
-              
-              if (parentNode) {
-                if (!parentNode.children) parentNode.children = [];
-                
-                parentNode.children.push({
-                  id: ref.referredUser.id,
-                  name: `${ref.referredUser.firstName} ${ref.referredUser.lastName}`,
-                  level: level,
-                  isActive: ref.referredUser.active,
-                  children: []
-                });
-              }
-            }
+          // Add it to our map
+          userNodeMap.set(ref.referredUser.id, userNode);
+          
+          // Find this user's referrer (parent node) and add this user as their child
+          const referrerId = ref.referrerId;
+          const parentNode = userNodeMap.get(referrerId);
+          
+          if (parentNode) {
+            if (!parentNode.children) parentNode.children = [];
+            parentNode.children.push(userNode);
+          } else if (referrerId === root.id) {
+            // This is a direct referral of the current user
+            if (!root.children) root.children = [];
+            root.children.push(userNode);
           }
+          // If parent node not found, this means data inconsistency
+          // In a production system, you'd want to handle this case
         }
       }
 
