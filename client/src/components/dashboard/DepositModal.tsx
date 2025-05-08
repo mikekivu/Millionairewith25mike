@@ -117,9 +117,9 @@ export default function DepositModal({ open, onOpenChange }: DepositModalProps) 
     }, 300); // Reset after close animation
   };
 
-  const selectedMethod = paymentMethods?.find((method: any) => 
-    method.method === form.getValues().paymentMethod
-  );
+  const selectedMethod = Array.isArray(paymentMethods) 
+    ? paymentMethods.find((method: any) => method.method === form.getValues().paymentMethod)
+    : undefined;
 
   const renderPaymentInstructions = () => {
     switch (paymentTab) {
@@ -259,7 +259,7 @@ Reference: DEP-${Date.now().toString().substring(8)}`}
                           <SelectContent>
                             {loadingPaymentMethods ? (
                               <SelectItem value="loading" disabled>Loading payment methods...</SelectItem>
-                            ) : paymentMethods && paymentMethods.length > 0 ? (
+                            ) : paymentMethods && Array.isArray(paymentMethods) && paymentMethods.length > 0 ? (
                               paymentMethods.map((method: any) => (
                                 <SelectItem key={method.id} value={method.method}>
                                   {method.name}
