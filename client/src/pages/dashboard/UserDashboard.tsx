@@ -64,8 +64,8 @@ export default function UserDashboard() {
   return (
     <>
       <Helmet>
-        <title>Dashboard - RichLance</title>
-        <meta name="description" content="Manage your investments, track your earnings, and monitor your referrals from your RichLance dashboard." />
+        <title>Dashboard - MillionaireWith$25</title>
+        <meta name="description" content="Manage your investments, track your earnings, and monitor your referrals from your MillionaireWith$25 dashboard." />
       </Helmet>
 
       <div className="min-h-screen flex flex-col md:flex-row">

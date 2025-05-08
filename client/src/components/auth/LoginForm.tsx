@@ -54,7 +54,7 @@ export default function LoginForm() {
       
       toast({
         title: "Login Successful",
-        description: "Welcome back to RichLance!",
+        description: "Welcome back to MillionaireWith$25!",
       });
       
       // Redirect to dashboard based on role

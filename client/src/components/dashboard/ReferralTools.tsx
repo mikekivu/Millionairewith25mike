@@ -60,8 +60,8 @@ export default function ReferralTools({ referralCode, referralLink }: ReferralTo
     try {
       if (navigator.share) {
         await navigator.share({
-          title: 'Join RichLance Investment Platform',
-          text: 'Join me on RichLance and start earning passive income through smart investments!',
+          title: 'Join MillionaireWith$25 Investment Platform',
+          text: 'Join me on MillionaireWith$25 and start earning passive income through smart investments!',
           url: referralLink,
         });
         

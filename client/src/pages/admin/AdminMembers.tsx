@@ -290,8 +290,8 @@ export default function AdminMembers() {
   return (
     <>
       <Helmet>
-        <title>Manage Members - RichLance Admin</title>
-        <meta name="description" content="Manage RichLance platform members. View, activate, deactivate, or delete user accounts." />
+        <title>Manage Members - MillionaireWith$25 Admin</title>
+        <meta name="description" content="Manage MillionaireWith$25 platform members. View, activate, deactivate, or delete user accounts." />
       </Helmet>
 
       <div className="min-h-screen flex flex-col md:flex-row">

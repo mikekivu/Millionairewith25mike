@@ -18,7 +18,7 @@ export default function Testimonials() {
       role: "Financial Analyst",
       image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150",
       rating: 5,
-      content: "I've been with RichLance for 8 months now and have already built a network of 47 people. The passive income has allowed me to quit my 9-5 job."
+      content: "I've been with MillionaireWith$25 for 8 months now and have already built a network of 47 people. The passive income has allowed me to quit my 9-5 job."
     },
     {
       id: 2,

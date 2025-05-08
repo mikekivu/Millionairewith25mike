@@ -273,8 +273,8 @@ export default function AdminPaymentSettings() {
   return (
     <>
       <Helmet>
-        <title>Payment Settings - RichLance Admin</title>
-        <meta name="description" content="Manage RichLance platform payment methods. Configure deposit and withdrawal options for users." />
+        <title>Payment Settings - MillionaireWith$25 Admin</title>
+        <meta name="description" content="Manage MillionaireWith$25 platform payment methods. Configure deposit and withdrawal options for users." />
       </Helmet>
 
       <div className="min-h-screen flex flex-col md:flex-row">

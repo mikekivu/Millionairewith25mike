@@ -169,8 +169,8 @@ export default function UserInvestments() {
   return (
     <>
       <Helmet>
-        <title>Investments - RichLance</title>
-        <meta name="description" content="Manage your RichLance investments and track your returns." />
+        <title>Investments - MillionaireWith$25</title>
+        <meta name="description" content="Manage your MillionaireWith$25 investments and track your returns." />
       </Helmet>
 
       <div className="min-h-screen flex flex-col md:flex-row">

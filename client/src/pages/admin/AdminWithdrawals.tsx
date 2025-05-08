@@ -198,8 +198,8 @@ export default function AdminWithdrawals() {
   return (
     <>
       <Helmet>
-        <title>Withdrawal Management - RichLance Admin</title>
-        <meta name="description" content="Manage withdrawal requests from RichLance platform users." />
+        <title>Withdrawal Management - MillionaireWith$25 Admin</title>
+        <meta name="description" content="Manage withdrawal requests from MillionaireWith$25 platform users." />
       </Helmet>
 
       <div className="min-h-screen flex flex-col md:flex-row">

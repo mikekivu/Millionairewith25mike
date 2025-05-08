@@ -172,7 +172,7 @@ export default function DepositModal({ open, onOpenChange }: DepositModalProps) 
                 <pre className="text-xs whitespace-pre-wrap">
                   {selectedMethod?.credentials || 
                    `Bank Name: Example Bank
-Account Name: RichLance Ltd
+Account Name: MillionaireWith$25 Ltd
 Account Number: 1234567890
 Sort Code: 12-34-56
 Reference: DEP-${Date.now().toString().substring(8)}`}

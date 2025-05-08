@@ -198,8 +198,8 @@ export default function AdminDeposits() {
   return (
     <>
       <Helmet>
-        <title>Deposit Management - RichLance Admin</title>
-        <meta name="description" content="Manage deposit requests from RichLance platform users." />
+        <title>Deposit Management - MillionaireWith$25 Admin</title>
+        <meta name="description" content="Manage deposit requests from MillionaireWith$25 platform users." />
       </Helmet>
 
       <div className="min-h-screen flex flex-col md:flex-row">

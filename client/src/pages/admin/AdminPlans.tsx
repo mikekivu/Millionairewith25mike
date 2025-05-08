@@ -396,8 +396,8 @@ export default function AdminPlans() {
   return (
     <>
       <Helmet>
-        <title>Investment Plans - RichLance Admin</title>
-        <meta name="description" content="Manage RichLance platform investment plans. Create, edit, activate, or deactivate investment packages." />
+        <title>Investment Plans - MillionaireWith$25 Admin</title>
+        <meta name="description" content="Manage MillionaireWith$25 platform investment plans. Create, edit, activate, or deactivate investment packages." />
       </Helmet>
 
       <div className="min-h-screen flex flex-col md:flex-row">

@@ -162,8 +162,8 @@ export default function UserSettings() {
   return (
     <>
       <Helmet>
-        <title>Settings - RichLance</title>
-        <meta name="description" content="Manage your RichLance account settings and preferences." />
+        <title>Settings - MillionaireWith$25</title>
+        <meta name="description" content="Manage your MillionaireWith$25 account settings and preferences." />
       </Helmet>
 
       <div className="min-h-screen flex flex-col md:flex-row">

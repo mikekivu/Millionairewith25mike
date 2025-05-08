@@ -175,8 +175,8 @@ export default function AdminDashboard() {
   return (
     <>
       <Helmet>
-        <title>Admin Dashboard - RichLance</title>
-        <meta name="description" content="Manage the RichLance platform and view system statistics." />
+        <title>Admin Dashboard - MillionaireWith$25</title>
+        <meta name="description" content="Manage the MillionaireWith$25 platform and view system statistics." />
       </Helmet>
 
       <div className="min-h-screen flex flex-col md:flex-row">

@@ -7,10 +7,10 @@ export default function Terms() {
   return (
     <>
       <Helmet>
-        <title>Terms and Conditions - RichLance</title>
-        <meta name="description" content="Read and understand the terms and conditions that govern the use of the RichLance investment platform." />
-        <meta property="og:title" content="Terms and Conditions - RichLance" />
-        <meta property="og:description" content="Read and understand the terms and conditions that govern the use of the RichLance investment platform." />
+        <title>Terms and Conditions - MillionaireWith$25</title>
+        <meta name="description" content="Read and understand the terms and conditions that govern the use of the MillionaireWith$25 investment platform." />
+        <meta property="og:title" content="Terms and Conditions - MillionaireWith$25" />
+        <meta property="og:description" content="Read and understand the terms and conditions that govern the use of the MillionaireWith$25 investment platform." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://richlance.com/terms" />
       </Helmet>
@@ -35,7 +35,7 @@ export default function Terms() {
               <div className="prose prose-blue max-w-none">
                 <h2>1. Acceptance of Terms</h2>
                 <p>
-                  By accessing or using the RichLance platform ("Platform"), you agree to be bound by these Terms and Conditions ("Terms"). If you do not agree to these Terms, please do not use the Platform.
+                  By accessing or using the MillionaireWith$25 platform ("Platform"), you agree to be bound by these Terms and Conditions ("Terms"). If you do not agree to these Terms, please do not use the Platform.
                 </p>
                 
                 <h2>2. Eligibility</h2>
@@ -70,7 +70,7 @@ export default function Terms() {
                 
                 <h2>8. Limitation of Liability</h2>
                 <p>
-                  To the maximum extent permitted by law, RichLance shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits or revenues, whether incurred directly or indirectly.
+                  To the maximum extent permitted by law, MillionaireWith$25 shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits or revenues, whether incurred directly or indirectly.
                 </p>
                 
                 <h2>9. Termination</h2>
