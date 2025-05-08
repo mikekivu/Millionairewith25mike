@@ -538,8 +538,29 @@ Reference: Your Transaction ID`,
   }
 
   async getAllUserReferrals(userId: number): Promise<Referral[]> {
-    return Array.from(this.referrals.values())
+    // Get all referrals where this user is the referrer
+    const referrals = Array.from(this.referrals.values())
       .filter(ref => ref.referrerId === userId);
+    
+    // Enrich with referred user data for easier display
+    const enrichedReferrals = await Promise.all(
+      referrals.map(async (referral) => {
+        const referredUser = await this.getUser(referral.referredId);
+        return {
+          ...referral,
+          referredUser: referredUser ? {
+            id: referredUser.id,
+            username: referredUser.username,
+            email: referredUser.email,
+            firstName: referredUser.firstName,
+            lastName: referredUser.lastName,
+            active: referredUser.active
+          } : null
+        };
+      })
+    );
+    
+    return enrichedReferrals;
   }
 
   async updateReferral(id: number, referral: Partial<Referral>): Promise<Referral | undefined> {

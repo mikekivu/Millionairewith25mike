@@ -173,6 +173,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
         active: true
       });
       
+      // Create referral entries if user was referred
+      if (referredBy) {
+        try {
+          console.log(`Creating referral record for new user ${newUser.id} referred by ${referredBy}`);
+          
+          // Create direct (level 1) referral
+          await storage.createReferral({
+            referrerId: referredBy,
+            referredId: newUser.id,
+            level: 1,
+            commissionRate: "10"
+          });
+          
+          // Check if the referrer has their own referrer (for level 2)
+          const referrer = await storage.getUser(referredBy);
+          if (referrer && referrer.referredBy) {
+            console.log(`Creating level 2 referral: ${referrer.referredBy} -> ${newUser.id}`);
+            await storage.createReferral({
+              referrerId: referrer.referredBy,
+              referredId: newUser.id,
+              level: 2,
+              commissionRate: "5"
+            });
+            
+            // Check for level 3 referrer
+            const level2Referrer = await storage.getUser(referrer.referredBy);
+            if (level2Referrer && level2Referrer.referredBy) {
+              console.log(`Creating level 3 referral: ${level2Referrer.referredBy} -> ${newUser.id}`);
+              await storage.createReferral({
+                referrerId: level2Referrer.referredBy,
+                referredId: newUser.id,
+                level: 3,
+                commissionRate: "3"
+              });
+              
+              // Check for level 4 referrer
+              const level3Referrer = await storage.getUser(level2Referrer.referredBy);
+              if (level3Referrer && level3Referrer.referredBy) {
+                console.log(`Creating level 4 referral: ${level3Referrer.referredBy} -> ${newUser.id}`);
+                await storage.createReferral({
+                  referrerId: level3Referrer.referredBy,
+                  referredId: newUser.id,
+                  level: 4,
+                  commissionRate: "2"
+                });
+                
+                // Check for level 5 referrer
+                const level4Referrer = await storage.getUser(level3Referrer.referredBy);
+                if (level4Referrer && level4Referrer.referredBy) {
+                  console.log(`Creating level 5 referral: ${level4Referrer.referredBy} -> ${newUser.id}`);
+                  await storage.createReferral({
+                    referrerId: level4Referrer.referredBy,
+                    referredId: newUser.id,
+                    level: 5,
+                    commissionRate: "1"
+                  });
+                }
+              }
+            }
+          }
+        } catch (err) {
+          console.error("Error creating referral entries:", err);
+          // Continue registration process even if referral creation fails
+        }
+      }
+      
       // Generate JWT token
       const token = jwt.sign({ userId: newUser.id }, JWT_SECRET, { expiresIn: "1d" });
       
