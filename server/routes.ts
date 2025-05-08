@@ -536,12 +536,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/user/profile", authMiddleware, async (req, res) => {
     try {
       const userId = req.session.userId;
-      const { firstName, lastName, profileImage } = req.body;
+      const { firstName, lastName, profileImage, country, phoneNumber } = req.body;
       
       const updatedUser = await storage.updateUser(userId, {
         firstName,
         lastName,
-        profileImage
+        profileImage,
+        country,
+        phoneNumber
       });
       
       if (!updatedUser) {

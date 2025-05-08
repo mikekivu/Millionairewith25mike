@@ -29,6 +29,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 const profileFormSchema = z.object({
   firstName: z.string().min(2, { message: "First name must be at least 2 characters" }),
   lastName: z.string().min(2, { message: "Last name must be at least 2 characters" }),
+  country: z.string().optional(),
+  phoneNumber: z.string().optional(),
   profileImage: z.string().optional(),
 });
 
@@ -59,6 +61,8 @@ export default function UserSettings() {
     defaultValues: {
       firstName: user?.firstName || '',
       lastName: user?.lastName || '',
+      country: user?.country || '',
+      phoneNumber: user?.phoneNumber || '',
       profileImage: user?.profileImage || '',
     },
   });
@@ -236,6 +240,36 @@ export default function UserSettings() {
                                 <FormLabel>Last Name</FormLabel>
                                 <FormControl>
                                   <Input {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <FormField
+                            control={profileForm.control}
+                            name="country"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Country</FormLabel>
+                                <FormControl>
+                                  <Input {...field} placeholder="Enter your country" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={profileForm.control}
+                            name="phoneNumber"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Phone Number</FormLabel>
+                                <FormControl>
+                                  <Input {...field} placeholder="+1234567890" />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
