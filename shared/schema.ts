@@ -11,6 +11,8 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   firstName: text("first_name").notNull(),
   lastName: text("last_name").notNull(),
+  country: text("country"),
+  phoneNumber: text("phone_number"),
   walletBalance: numeric("wallet_balance", { precision: 18, scale: 8 }).notNull().default("0"),
   active: boolean("active").notNull().default(true),
   role: text("role").notNull().default("user"),
