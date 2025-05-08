@@ -27,7 +27,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import {
   DropdownMenu,
@@ -232,18 +231,6 @@ export default function AdminPaymentSettings() {
   });
 
   // Setup form
-
-  // Select predefined payment method
-  const selectPredefinedMethod = (methodId: string) => {
-    const method = predefinedMethods.find(m => m.id === methodId);
-    if (method) {
-      setSelectedPredefinedMethod(methodId);
-      form.setValue("method", method.id);
-      form.setValue("name", method.name);
-      form.setValue("instructions", method.instructions);
-    }
-  };
-  
   const form = useForm<PaymentSettingFormValues>({
     resolver: zodResolver(paymentSettingFormSchema),
     defaultValues: {
@@ -256,6 +243,20 @@ export default function AdminPaymentSettings() {
       active: true
     }
   });
+
+  // Select predefined payment method
+  const selectPredefinedMethod = (methodId: string) => {
+    const method = predefinedMethods.find(m => m.id === methodId);
+    if (method) {
+      setSelectedPredefinedMethod(methodId);
+      form.setValue("method", method.id);
+      form.setValue("name", method.name);
+      form.setValue("instructions", method.defaultInstructions);
+      form.setValue("credentials", method.defaultCredentials);
+      form.setValue("minAmount", method.minAmount);
+      form.setValue("maxAmount", method.maxAmount);
+    }
+  };
 
   const onSubmit = (values: PaymentSettingFormValues) => {
     if (editingSetting) {
