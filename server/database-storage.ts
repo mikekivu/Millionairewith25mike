@@ -337,10 +337,35 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllUserReferrals(userId: number): Promise<Referral[]> {
-    return db
-      .select()
+    // Fetch all referrals for this user and join with referred users' data
+    const referralData = await db
+      .select({
+        referral: referrals,
+        referredUser: users
+      })
       .from(referrals)
-      .where(eq(referrals.referrerId, userId));
+      .where(eq(referrals.referrerId, userId))
+      .leftJoin(users, eq(referrals.referredId, users.id))
+      .orderBy(referrals.level, referrals.createdAt);
+    
+    // Map the results to include the actual referral and the user it belongs to
+    return referralData.map(r => ({
+      ...r.referral,
+      // Include joined user data for the frontend to display
+      referredUser: r.referredUser ? {
+        id: r.referredUser.id,
+        username: r.referredUser.username,
+        email: r.referredUser.email,
+        firstName: r.referredUser.firstName,
+        lastName: r.referredUser.lastName,
+        referralCode: r.referredUser.referralCode,
+        walletBalance: r.referredUser.walletBalance,
+        active: r.referredUser.active,
+        role: r.referredUser.role,
+        referredBy: r.referredUser.referredBy,
+        profileImage: r.referredUser.profileImage
+      } : null
+    }));
   }
 
   async updateReferral(id: number, referralData: Partial<Referral>): Promise<Referral | undefined> {
