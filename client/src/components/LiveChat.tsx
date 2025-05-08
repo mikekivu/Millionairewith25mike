@@ -27,12 +27,9 @@ export default function LiveChat() {
       window.Tawk_LoadStart = new Date();
     })();
     
-    // Cleanup on unmount
+    // No cleanup needed as Tawk.to handles its own cleanup
     return () => {
-      if (window.Tawk_API) {
-        // End the chat session when component unmounts
-        window.Tawk_API.hideWidget();
-      }
+      // Tawk.to handles this automatically
     };
   }, []);
   
