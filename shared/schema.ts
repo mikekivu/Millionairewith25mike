@@ -176,7 +176,12 @@ export const insertPlanSchema = createInsertSchema(plans).omit({ id: true });
 export const insertInvestmentSchema = createInsertSchema(investments).omit({ id: true, createdAt: true, profit: true });
 export const insertTransactionSchema = createInsertSchema(transactions).omit({ id: true, createdAt: true });
 export const insertReferralSchema = createInsertSchema(referrals).omit({ id: true, createdAt: true, commissionAmount: true });
-export const insertPaymentSettingSchema = createInsertSchema(paymentSettings).omit({ id: true });
+// Create a custom PaymentSetting schema that includes payment_method
+export const insertPaymentSettingSchema = createInsertSchema(paymentSettings)
+  .omit({ id: true })
+  .extend({
+    payment_method: z.string().optional(),
+  });
 export const insertContactMessageSchema = createInsertSchema(contactMessages).omit({ id: true, createdAt: true, responded: true });
 
 // Types

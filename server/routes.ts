@@ -914,7 +914,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         credentials,
         minAmount: minAmount || "10",
         maxAmount: maxAmount || "10000",
-        active: active !== undefined ? active : true
+        active: active !== undefined ? active : true,
+        // Also set the payment_method field to the same value as method to satisfy the NOT NULL constraint
+        payment_method: method
       });
       
       res.status(201).json({
@@ -930,7 +932,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/admin/payment-settings/:id", authMiddleware, adminMiddleware, async (req, res) => {
     try {
       const settingId = parseInt(req.params.id);
-      const updatedSetting = await storage.updatePaymentSetting(settingId, req.body);
+      // If the method is being updated, make sure payment_method is also updated
+      const updatedData = { ...req.body };
+      if (updatedData.method) {
+        updatedData.payment_method = updatedData.method;
+      }
+      
+      const updatedSetting = await storage.updatePaymentSetting(settingId, updatedData);
       
       if (!updatedSetting) {
         return res.status(404).json({ message: "Payment setting not found" });
