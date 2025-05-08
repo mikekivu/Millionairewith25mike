@@ -159,8 +159,8 @@ export default function UserGenealogyTree() {
   return (
     <>
       <Helmet>
-        <title>Genealogy Tree - RichLance</title>
-        <meta name="description" content="Visualize your RichLance referral network with our interactive genealogy tree." />
+        <title>Genealogy Tree - MillionaireWith$25</title>
+        <meta name="description" content="Visualize your MillionaireWith$25 referral network with our interactive vertical genealogy tree." />
       </Helmet>
 
       <div className="min-h-screen flex flex-col md:flex-row">
@@ -234,9 +234,9 @@ export default function UserGenealogyTree() {
               <div className="lg:col-span-2">
                 <Card>
                   <CardHeader>
-                    <CardTitle>My Network Visualization</CardTitle>
+                    <CardTitle>My Network Tree</CardTitle>
                     <CardDescription>
-                      Interactive view of your referral network across all levels
+                      Interactive vertical view of your referral network across all levels
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -246,7 +246,7 @@ export default function UserGenealogyTree() {
                       </div>
                     ) : treeData ? (
                       <div className="overflow-auto">
-                        <GenealogyTree data={treeData} width={800} height={600} />
+                        <GenealogyTree data={treeData} width={800} height={800} />
                       </div>
                     ) : (
                       <div className="flex flex-col justify-center items-center h-[400px]">
