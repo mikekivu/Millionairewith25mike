@@ -79,6 +79,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Forbidden: Admin access required" });
       }
 
+      // Add superAdmin flag to the request for routes that need super admin permissions
+      if (user.email === "mikepaul620@gmail.com") {
+        (req as any).isSuperAdmin = true;
+      } else {
+        (req as any).isSuperAdmin = false;
+      }
+
       next();
     } catch (error) {
       return res.status(500).json({ message: "Server error" });
