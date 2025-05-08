@@ -236,7 +236,7 @@ export default function UserGenealogyTree() {
                   <CardHeader>
                     <CardTitle>My Network Tree</CardTitle>
                     <CardDescription>
-                      Interactive vertical view of your referral network across all levels
+                      Interactive horizontal view of your referral network across all levels
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -246,7 +246,7 @@ export default function UserGenealogyTree() {
                       </div>
                     ) : treeData ? (
                       <div className="overflow-auto">
-                        <GenealogyTree data={treeData} width={800} height={800} />
+                        <GenealogyTree data={treeData} width={1200} height={600} />
                       </div>
                     ) : (
                       <div className="flex flex-col justify-center items-center h-[400px]">
