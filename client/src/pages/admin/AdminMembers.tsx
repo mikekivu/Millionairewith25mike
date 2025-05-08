@@ -37,6 +37,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Separator } from '@/components/ui/separator';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Label } from '@/components/ui/label';
 
 interface User {
   id: number;
@@ -60,6 +71,8 @@ export default function AdminMembers() {
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
   const [newStatus, setNewStatus] = useState<boolean>(false);
   const [isSuperAdmin, setIsSuperAdmin] = useState<boolean>(false);
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   // Check if current user is super admin
   const { data: currentUser } = useQuery({
@@ -145,6 +158,11 @@ export default function AdminMembers() {
     }
     setIsDeleteDialogOpen(false);
   };
+  
+  const handleViewProfile = (user: User) => {
+    setSelectedUser(user);
+    setProfileDialogOpen(true);
+  };
 
   const columns: ColumnDef<User>[] = [
     {
@@ -218,10 +236,7 @@ export default function AdminMembers() {
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               
               <DropdownMenuItem
-                onClick={() => toast({
-                  title: "View Profile",
-                  description: `Viewing profile for ${user.firstName} ${user.lastName}`,
-                })}
+                onClick={() => handleViewProfile(user)}
               >
                 <Eye className="h-4 w-4 mr-2" />
                 View Profile
