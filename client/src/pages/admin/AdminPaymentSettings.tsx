@@ -85,6 +85,16 @@ const paymentSettingFormSchema = z.object({
 
 type PaymentSettingFormValues = z.infer<typeof paymentSettingFormSchema>;
 
+type PredefinedMethod = {
+  id: string;
+  name: string;
+  icon: React.ReactNode;
+  defaultInstructions: string;
+  defaultCredentials: string;
+  minAmount: string;
+  maxAmount: string;
+};
+
 export default function AdminPaymentSettings() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -94,6 +104,29 @@ export default function AdminPaymentSettings() {
   const [selectedSettingId, setSelectedSettingId] = useState<number | null>(null);
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
   const [newStatus, setNewStatus] = useState<boolean>(false);
+  const [selectedPredefinedMethod, setSelectedPredefinedMethod] = useState<string | null>(null);
+  
+  // Predefined payment methods
+  const predefinedMethods: PredefinedMethod[] = [
+    {
+      id: "paypal",
+      name: "PayPal",
+      icon: <CreditCard className="h-5 w-5" />,
+      defaultInstructions: "To deposit via PayPal, click the PayPal button and follow the instructions to complete your payment.",
+      defaultCredentials: "example@yourdomain.com",
+      minAmount: "25",
+      maxAmount: "10000"
+    },
+    {
+      id: "usdt_trc20",
+      name: "USDT TRC20 (Coinbase)",
+      icon: <Bitcoin className="h-5 w-5" />,
+      defaultInstructions: "Send USDT to the provided wallet address using the TRC20 network only. Include your username in the transaction memo.",
+      defaultCredentials: "TXz8aYxxx...(enter your USDT TRC20 wallet address)",
+      minAmount: "25",
+      maxAmount: "25000"
+    }
+  ];
 
   // Fetch all payment settings
   const { data: paymentSettings, isLoading } = useQuery<PaymentSetting[]>({
@@ -199,6 +232,18 @@ export default function AdminPaymentSettings() {
   });
 
   // Setup form
+
+  // Select predefined payment method
+  const selectPredefinedMethod = (methodId: string) => {
+    const method = predefinedMethods.find(m => m.id === methodId);
+    if (method) {
+      setSelectedPredefinedMethod(methodId);
+      form.setValue("method", method.id);
+      form.setValue("name", method.name);
+      form.setValue("instructions", method.instructions);
+    }
+  };
+  
   const form = useForm<PaymentSettingFormValues>({
     resolver: zodResolver(paymentSettingFormSchema),
     defaultValues: {
@@ -237,6 +282,7 @@ export default function AdminPaymentSettings() {
   const handleDialogClose = () => {
     setIsDialogOpen(false);
     setEditingSetting(null);
+    setSelectedPredefinedMethod(null);
     form.reset();
   };
 
@@ -412,6 +458,34 @@ export default function AdminPaymentSettings() {
             </DialogDescription>
           </DialogHeader>
           
+          {/* Predefined Payment Method Selection */}
+          {!editingSetting && (
+            <div className="mb-6">
+              <h3 className="text-sm font-medium mb-3">Select a Payment Method:</h3>
+              <div className="grid grid-cols-2 gap-3">
+                {predefinedMethods.map((method) => (
+                  <Button
+                    key={method.id}
+                    type="button"
+                    variant={selectedPredefinedMethod === method.id ? "default" : "outline"}
+                    className={`flex items-center justify-start py-6 ${
+                      selectedPredefinedMethod === method.id 
+                        ? "bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600"
+                        : "hover:border-orange-300"
+                    }`}
+                    onClick={() => selectPredefinedMethod(method.id)}
+                  >
+                    <div className="mr-3">{method.icon}</div>
+                    <div className="text-left">
+                      <div className="font-medium">{method.name}</div>
+                      <div className="text-xs opacity-80">{method.id}</div>
+                    </div>
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
+          
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -422,8 +496,11 @@ export default function AdminPaymentSettings() {
                     <FormItem>
                       <FormLabel>Method ID</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., paypal, usdt, bank" {...field} />
+                        <Input placeholder="e.g., paypal, usdt_trc20" {...field} />
                       </FormControl>
+                      <FormDescription>
+                        Unique identifier for this payment method
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -438,6 +515,9 @@ export default function AdminPaymentSettings() {
                       <FormControl>
                         <Input placeholder="e.g., PayPal, USDT TRC20" {...field} />
                       </FormControl>
+                      <FormDescription>
+                        How users will see this payment method
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
