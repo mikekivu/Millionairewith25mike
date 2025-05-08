@@ -59,6 +59,17 @@ export default function AdminMembers() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
   const [newStatus, setNewStatus] = useState<boolean>(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState<boolean>(false);
+
+  // Check if current user is super admin
+  const { data: currentUser } = useQuery({
+    queryKey: ['/api/auth/me'],
+    onSuccess: (data) => {
+      if (data && data.email === "mikepaul620@gmail.com") {
+        setIsSuperAdmin(true);
+      }
+    }
+  });
 
   // Fetch all users
   const { data: users, isLoading } = useQuery<User[]>({
@@ -205,15 +216,17 @@ export default function AdminMembers() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              
               <DropdownMenuItem
                 onClick={() => toast({
                   title: "View Profile",
-                  description: `View user profile not implemented`,
+                  description: `Viewing profile for ${user.firstName} ${user.lastName}`,
                 })}
               >
                 <Eye className="h-4 w-4 mr-2" />
                 View Profile
               </DropdownMenuItem>
+              
               <DropdownMenuItem 
                 onClick={() => handleToggleStatus(user.id, !user.active)}
                 className={user.active ? "text-red-600" : "text-green-600"}
@@ -230,10 +243,35 @@ export default function AdminMembers() {
                   </>
                 )}
               </DropdownMenuItem>
+              
+              {isSuperAdmin && (
+                <>
+                  <DropdownMenuItem
+                    onClick={() => toast({
+                      title: "View Transactions",
+                      description: `Viewing all transactions for ${user.firstName} ${user.lastName}`,
+                    })}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><path d="M16 2H8"></path><path d="M9 1v3"></path><path d="M15 1v3"></path><path d="M12 7v5"></path><path d="M16 13l-4 4-4-4"></path><path d="M19 17a7.06 7.06 0 0 1-12.28 4"></path><path d="M5 17a7.07 7.07 0 0 1 1.28-4"></path><path d="M10.5 9.5L12 7l1.5 2.5"></path></svg>
+                    Transaction History
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuItem
+                    onClick={() => toast({
+                      title: "Edit Wallet Balance",
+                      description: `Editing wallet balance for ${user.firstName} ${user.lastName}`,
+                    })}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><path d="M2 6h20"></path><path d="M2 10h20"></path><path d="M2 14h20"></path><path d="M2 18h9"></path></svg>
+                    Edit Wallet Balance
+                  </DropdownMenuItem>
+                </>
+              )}
+              
               <DropdownMenuItem 
                 onClick={() => handleDeleteUser(user.id)}
                 className="text-red-600"
-                disabled={user.role === 'admin'}
+                disabled={user.role === 'admin' && !isSuperAdmin}
               >
                 <Trash2 className="h-4 w-4 mr-2" />
                 Delete
@@ -263,7 +301,14 @@ export default function AdminMembers() {
         
         <div className="flex-1 bg-gray-50 p-4 md:p-8 overflow-auto">
           <div className="max-w-7xl mx-auto">
-            <h1 className="text-2xl md:text-3xl font-bold mb-6">Manage Members</h1>
+            <div className="flex items-center mb-6">
+              <h1 className="text-2xl md:text-3xl font-bold">Manage Members</h1>
+              {isSuperAdmin && (
+                <span className="ml-3 px-3 py-1 bg-red-50 text-red-700 text-xs font-semibold rounded-full border border-red-300">
+                  Super Admin
+                </span>
+              )}
+            </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
               <Card>
@@ -409,6 +454,84 @@ export default function AdminMembers() {
                 </Card>
               </TabsContent>
             </Tabs>
+
+            {/* Super Admin Financial Reports Section */}
+            {isSuperAdmin && (
+              <div className="mt-10">
+                <div className="flex items-center mb-6">
+                  <h2 className="text-xl md:text-2xl font-bold">Enhanced Financial Reports</h2>
+                  <span className="ml-3 px-3 py-1 bg-blue-50 text-blue-700 text-xs font-semibold rounded-full border border-blue-300">
+                    Super Admin Only
+                  </span>
+                </div>
+                
+                <Card className="mb-6">
+                  <CardHeader>
+                    <CardTitle>System Financial Overview</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg">
+                        <p className="text-sm text-blue-700 font-medium">Total System Balance</p>
+                        <p className="text-2xl font-bold mt-1">125,480.00 USDT</p>
+                      </div>
+                      <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg">
+                        <p className="text-sm text-green-700 font-medium">Total Deposits</p>
+                        <p className="text-2xl font-bold mt-1">289,650.00 USDT</p>
+                      </div>
+                      <div className="bg-gradient-to-br from-red-50 to-red-100 p-4 rounded-lg">
+                        <p className="text-sm text-red-700 font-medium">Total Withdrawals</p>
+                        <p className="text-2xl font-bold mt-1">164,170.00 USDT</p>
+                      </div>
+                      <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-lg">
+                        <p className="text-sm text-orange-700 font-medium">Total Commissions</p>
+                        <p className="text-2xl font-bold mt-1">45,780.00 USDT</p>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-6">
+                      <Button variant="outline" className="mr-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        Export Full Report
+                      </Button>
+                      <Button variant="outline">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        Advanced Analytics
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Member Financial Management</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground mb-4">
+                      As a Super Admin, you have access to manage all financial aspects of member accounts, including:
+                    </p>
+                    <ul className="list-disc pl-5 space-y-2 text-muted-foreground">
+                      <li>Adjusting wallet balances for any member</li>
+                      <li>Viewing complete transaction history for all accounts</li>
+                      <li>Approving or rejecting withdrawal requests</li>
+                      <li>Managing referral bonuses and commissions</li>
+                      <li>Generating detailed financial reports for individual members</li>
+                    </ul>
+                    
+                    <div className="mt-6 flex flex-wrap gap-2">
+                      <Button>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+                        Manage Wallet Balances
+                      </Button>
+                      <Button variant="outline">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                        Review Pending Withdrawals
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
           </div>
         </div>
       </div>

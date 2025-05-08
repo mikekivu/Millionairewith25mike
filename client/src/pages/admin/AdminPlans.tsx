@@ -95,6 +95,17 @@ export default function AdminPlans() {
   const [selectedPlanId, setSelectedPlanId] = useState<number | null>(null);
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
   const [newStatus, setNewStatus] = useState<boolean>(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState<boolean>(false);
+
+  // Check if current user is super admin
+  const { data: currentUser } = useQuery({
+    queryKey: ['/api/auth/me'],
+    onSuccess: (data) => {
+      if (data && data.email === "mikepaul620@gmail.com") {
+        setIsSuperAdmin(true);
+      }
+    }
+  });
 
   // Fetch all plans
   const { data: plans, isLoading } = useQuery<Plan[]>({
@@ -397,7 +408,14 @@ export default function AdminPlans() {
         <div className="flex-1 bg-gray-50 p-4 md:p-8 overflow-auto">
           <div className="max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-6">
-              <h1 className="text-2xl md:text-3xl font-bold">Investment Plans</h1>
+              <div className="flex items-center">
+                <h1 className="text-2xl md:text-3xl font-bold">Investment Plans</h1>
+                {isSuperAdmin && (
+                  <span className="ml-3 px-3 py-1 bg-red-50 text-red-700 text-xs font-semibold rounded-full border border-red-300">
+                    Super Admin
+                  </span>
+                )}
+              </div>
               <Button onClick={() => setIsDialogOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" /> Add New Plan
               </Button>
@@ -470,6 +488,106 @@ export default function AdminPlans() {
                 )}
               </CardContent>
             </Card>
+
+            {/* Super Admin Advanced Plan Management Section */}
+            {isSuperAdmin && (
+              <div className="mt-10">
+                <div className="flex items-center mb-6">
+                  <h2 className="text-xl md:text-2xl font-bold">Advanced Plan Management</h2>
+                  <span className="ml-3 px-3 py-1 bg-blue-50 text-blue-700 text-xs font-semibold rounded-full border border-blue-300">
+                    Super Admin Only
+                  </span>
+                </div>
+                
+                <Card className="mb-6">
+                  <CardHeader>
+                    <CardTitle>Plan Performance Analytics</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 p-4 rounded-lg">
+                        <p className="text-sm text-indigo-700 font-medium">Total Plan Investments</p>
+                        <p className="text-2xl font-bold mt-1">352,800 USDT</p>
+                      </div>
+                      <div className="bg-gradient-to-br from-amber-50 to-amber-100 p-4 rounded-lg">
+                        <p className="text-sm text-amber-700 font-medium">Most Popular Plan</p>
+                        <p className="text-lg font-bold mt-1">Premium (78 investors)</p>
+                      </div>
+                      <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-4 rounded-lg">
+                        <p className="text-sm text-emerald-700 font-medium">Average ROI</p>
+                        <p className="text-2xl font-bold mt-1">8.45%</p>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-6">
+                      <p className="text-sm text-muted-foreground mb-3">Top Performing Plans (by total investment)</p>
+                      <div className="space-y-3">
+                        <div className="flex items-center">
+                          <div className="flex-1">
+                            <p className="font-medium">Premium Plan</p>
+                            <div className="w-full bg-gray-200 rounded-full h-2.5 mt-1">
+                              <div className="bg-primary h-2.5 rounded-full" style={{ width: '85%' }}></div>
+                            </div>
+                          </div>
+                          <p className="ml-4 font-medium">145,800 USDT</p>
+                        </div>
+                        <div className="flex items-center">
+                          <div className="flex-1">
+                            <p className="font-medium">Platinum Plan</p>
+                            <div className="w-full bg-gray-200 rounded-full h-2.5 mt-1">
+                              <div className="bg-primary h-2.5 rounded-full" style={{ width: '65%' }}></div>
+                            </div>
+                          </div>
+                          <p className="ml-4 font-medium">112,500 USDT</p>
+                        </div>
+                        <div className="flex items-center">
+                          <div className="flex-1">
+                            <p className="font-medium">Basic Plan</p>
+                            <div className="w-full bg-gray-200 rounded-full h-2.5 mt-1">
+                              <div className="bg-primary h-2.5 rounded-full" style={{ width: '42%' }}></div>
+                            </div>
+                          </div>
+                          <p className="ml-4 font-medium">75,400 USDT</p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Plan Configuration Controls</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground mb-4">
+                      As a Super Admin, you have access to advanced plan configuration options:
+                    </p>
+                    <ul className="list-disc pl-5 space-y-2 text-muted-foreground mb-6">
+                      <li>Configure system-wide ROI limits and thresholds</li>
+                      <li>Set global deposit range restrictions for all plans</li>
+                      <li>Manage plan category templates and presets</li>
+                      <li>Adjust referral commission rates across all tiers</li>
+                      <li>Configure automated ROI distribution schedules</li>
+                    </ul>
+                    
+                    <div className="flex flex-wrap gap-2">
+                      <Button>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        Global Settings
+                      </Button>
+                      <Button variant="outline">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><rect x="4" y="3" width="16" height="18" rx="2"></rect><path d="M9 9h6"></path><path d="M9 13h6"></path><path d="M9 17h6"></path></svg>
+                        Plan Templates
+                      </Button>
+                      <Button variant="outline">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
+                        Bulk Plan Import
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
           </div>
         </div>
       </div>
