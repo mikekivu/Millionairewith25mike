@@ -59,6 +59,31 @@ export default function UserGenealogyTree() {
     if (referrals && user) {
       console.log("Building tree data with referrals:", referrals);
       
+      // We need to transform the data based on the referredBy relationship
+      // First, let's get all unique users from all referral levels
+      let allUsers = new Map<number, any>();
+      
+      // Add the root user (current logged in user)
+      allUsers.set(user.id, {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        active: true,
+        referredBy: null
+      });
+      
+      // Add all referred users
+      for (const levelKey in referrals) {
+        const levelReferrals = referrals[levelKey];
+        for (const ref of levelReferrals) {
+          if (ref.referredUser) {
+            allUsers.set(ref.referredUser.id, ref.referredUser);
+          }
+        }
+      }
+      
+      // Now build the tree based on referredBy relationships
+      
       // Create root node (current user)
       const root: TreeNode = {
         id: user.id,
@@ -67,75 +92,106 @@ export default function UserGenealogyTree() {
         isActive: true,
         children: []
       };
-
-      // Helper function to find a node in the tree by ID (recursive)
-      const findNodeById = (node: TreeNode, id: number): TreeNode | null => {
-        if (node.id === id) return node;
-        if (!node.children) return null;
-        
-        for (const child of node.children) {
-          const found = findNodeById(child, id);
-          if (found) return found;
-        }
-        
-        return null;
-      };
-
-      // First, create a map of all users by ID for quick access
-      const userNodeMap = new Map<number, TreeNode>();
-      userNodeMap.set(root.id, root);
       
-      // Process all referrals and map users to their referring parent
-      // This will build a proper genealogy tree based on actual referral relationships
-      const allLevels = Object.keys(referrals).sort((a, b) => parseInt(a) - parseInt(b));
-      console.log("Processing level keys:", allLevels);
+      // Create a map to store user nodes by their ID
+      const userNodesMap = new Map<number, TreeNode>();
+      userNodesMap.set(root.id, root);
       
-      for (const levelKey of allLevels) {
-        const level = parseInt(levelKey);
-        const levelReferrals = referrals[levelKey] || [];
-        console.log(`Processing level ${level} with ${levelReferrals.length} referrals`);
+      // Find direct referrals (level 1)
+      const level1Referrals = Array.from(allUsers.values())
+        .filter(u => u.referredBy === root.id);
+      
+      console.log("Level 1 referrals:", level1Referrals);
+      
+      // Add level 1 referrals as children of root
+      for (const user1 of level1Referrals) {
+        const node1: TreeNode = {
+          id: user1.id,
+          name: `${user1.firstName || ''} ${user1.lastName || ''}`.trim(),
+          level: 1,
+          isActive: user1.active,
+          children: []
+        };
+        userNodesMap.set(node1.id, node1);
+        root.children.push(node1);
         
-        for (const ref of levelReferrals) {
-          console.log(`Processing referral:`, ref);
-          
-          if (!ref.referredUser) {
-            console.error(`Missing referredUser data for referral ID ${ref.id}`);
-            continue;
-          }
-          
-          // Create the node for this referred user
-          const userNode: TreeNode = {
-            id: ref.referredUser.id,
-            name: `${ref.referredUser.firstName || ''} ${ref.referredUser.lastName || ''}`.trim(),
-            level: level,
-            isActive: ref.referredUser.active,
+        // Find level 2 referrals (those who were referred by level 1 users)
+        const level2Referrals = Array.from(allUsers.values())
+          .filter(u => u.referredBy === user1.id);
+        
+        console.log(`Level 2 referrals for ${node1.name}:`, level2Referrals);
+        
+        // Add level 2 referrals as children of level 1 users
+        for (const user2 of level2Referrals) {
+          const node2: TreeNode = {
+            id: user2.id,
+            name: `${user2.firstName || ''} ${user2.lastName || ''}`.trim(),
+            level: 2,
+            isActive: user2.active,
             children: []
           };
+          userNodesMap.set(node2.id, node2);
+          node1.children.push(node2);
           
-          console.log(`Created node for user ${userNode.name} (ID: ${userNode.id})`);
+          // Find level 3 referrals
+          const level3Referrals = Array.from(allUsers.values())
+            .filter(u => u.referredBy === user2.id);
           
-          // Add it to our map
-          userNodeMap.set(ref.referredUser.id, userNode);
+          console.log(`Level 3 referrals for ${node2.name}:`, level3Referrals);
           
-          // Find this user's referrer (parent node) and add this user as their child
-          const referrerId = ref.referrerId;
-          const parentNode = userNodeMap.get(referrerId);
-          
-          if (parentNode) {
-            console.log(`Adding user ${userNode.name} to parent ${parentNode.name}`);
-            if (!parentNode.children) parentNode.children = [];
-            parentNode.children.push(userNode);
-          } else if (referrerId === root.id) {
-            // This is a direct referral of the current user
-            console.log(`Adding user ${userNode.name} directly to root node`);
-            if (!root.children) root.children = [];
-            root.children.push(userNode);
-          } else {
-            console.warn(`Parent node not found for referrer ID ${referrerId}`);
+          // Add level 3 referrals
+          for (const user3 of level3Referrals) {
+            const node3: TreeNode = {
+              id: user3.id,
+              name: `${user3.firstName || ''} ${user3.lastName || ''}`.trim(),
+              level: 3,
+              isActive: user3.active,
+              children: []
+            };
+            userNodesMap.set(node3.id, node3);
+            node2.children.push(node3);
+            
+            // Find level 4 referrals
+            const level4Referrals = Array.from(allUsers.values())
+              .filter(u => u.referredBy === user3.id);
+            
+            console.log(`Level 4 referrals for ${node3.name}:`, level4Referrals);
+            
+            // Add level 4 referrals
+            for (const user4 of level4Referrals) {
+              const node4: TreeNode = {
+                id: user4.id,
+                name: `${user4.firstName || ''} ${user4.lastName || ''}`.trim(),
+                level: 4,
+                isActive: user4.active,
+                children: []
+              };
+              userNodesMap.set(node4.id, node4);
+              node3.children.push(node4);
+              
+              // Find level 5 referrals
+              const level5Referrals = Array.from(allUsers.values())
+                .filter(u => u.referredBy === user4.id);
+              
+              console.log(`Level 5 referrals for ${node4.name}:`, level5Referrals);
+              
+              // Add level 5 referrals
+              for (const user5 of level5Referrals) {
+                const node5: TreeNode = {
+                  id: user5.id,
+                  name: `${user5.firstName || ''} ${user5.lastName || ''}`.trim(),
+                  level: 5,
+                  isActive: user5.active,
+                  children: []
+                };
+                userNodesMap.set(node5.id, node5);
+                node4.children.push(node5);
+              }
+            }
           }
         }
       }
-
+      
       console.log("Final tree data:", root);
       setTreeData(root);
     }
