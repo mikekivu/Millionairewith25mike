@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation, useRouter } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
-import { apiRequest } from './queryClient';
+import { apiRequest, queryClient } from './queryClient';
 
 export interface User {
   id: number;
@@ -80,14 +80,24 @@ export function useAuth() {
   const logout = async () => {
     try {
       await apiRequest('POST', '/api/auth/logout');
+      // Remove token from localStorage
       localStorage.removeItem('token');
-      // Clear cached user data
-      await refetch();
+      
+      // Force query cache clear and reset state
+      queryClient.clear();
+      queryClient.setQueryData(['/api/auth/me'], null);
+      
+      // Refresh the page to ensure clean state
+      window.location.href = '/';
     } catch (error) {
       console.error('Logout error:', error);
       // Still remove token and clear cache on error
       localStorage.removeItem('token');
-      await refetch();
+      queryClient.clear();
+      queryClient.setQueryData(['/api/auth/me'], null);
+      
+      // Refresh the page even on error
+      window.location.href = '/';
     }
   };
 

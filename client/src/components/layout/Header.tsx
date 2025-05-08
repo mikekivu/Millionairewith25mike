@@ -23,6 +23,8 @@ export default function Header() {
   const handleLogout = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
+      // Clear auth token from localStorage
+      localStorage.removeItem('token');
       // Clear all queries to reset the app state
       queryClient.clear();
       // Invalidate user auth state
@@ -33,7 +35,8 @@ export default function Header() {
         description: 'You have been logged out of your account',
       });
       
-      // Redirect to home page
+      // Navigate to the home page without a full page reload
+      // to ensure React components update correctly
       window.location.href = '/';
     } catch (error) {
       toast({
