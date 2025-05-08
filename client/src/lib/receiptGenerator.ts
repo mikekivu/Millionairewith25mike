@@ -40,17 +40,40 @@ const formatDate = (date: Date): string => {
 };
 
 /**
- * Generate a verification QR code with transaction details
+ * Generates a simple digital signature for transaction verification
+ */
+const generateDigitalSignature = (data: ReceiptData): string => {
+  // In production, this would use a proper cryptographic signature
+  // This is a simplified version for demonstration purposes
+  const signatureInput = `${data.transactionId}-${data.userId}-${data.amount}-${data.date.toISOString()}`;
+  return btoa(signatureInput); // Base64 encode the signature for demonstration
+};
+
+/**
+ * Generate a verification QR code with enhanced transaction details
  */
 const generateQRCode = async (data: ReceiptData): Promise<string> => {
+  // Generate a digital signature if not present
+  const signature = data.digitalSignature || generateDigitalSignature(data);
+  
   const verificationData = {
     transactionId: data.transactionId,
     amount: data.amount,
     currency: data.currency,
     date: data.date.toISOString(),
     userId: data.userId,
+    userName: data.userName,
     type: data.type,
-    status: data.status
+    status: data.status,
+    paymentMethod: data.paymentMethod,
+    externalTransactionId: data.externalTransactionId || '',
+    investmentId: data.investmentId || '',
+    planName: data.planName || '',
+    adminProcessor: data.adminProcessor || '',
+    digitalSignature: signature,
+    ipAddress: data.ipAddress || '',
+    country: data.country || '',
+    verificationUrl: `https://millionairewith25.com/verify/${data.transactionId}`
   };
   
   try {
@@ -65,6 +88,11 @@ const generateQRCode = async (data: ReceiptData): Promise<string> => {
  * Generate a PDF receipt for a transaction
  */
 export const generateReceipt = async (receiptData: ReceiptData): Promise<string> => {
+  // Generate digital signature if not provided
+  if (!receiptData.digitalSignature) {
+    receiptData.digitalSignature = generateDigitalSignature(receiptData);
+  }
+  
   // Initialize PDF document
   const doc = new jsPDF({
     orientation: 'portrait',
@@ -220,6 +248,11 @@ export const downloadReceipt = async (receiptData: ReceiptData): Promise<void> =
  * Generate receipt as base64 data URL
  */
 export const generateReceiptAsBase64 = async (receiptData: ReceiptData): Promise<string> => {
+  // Generate digital signature if not provided
+  if (!receiptData.digitalSignature) {
+    receiptData.digitalSignature = generateDigitalSignature(receiptData);
+  }
+  
   // Initialize PDF document
   const doc = new jsPDF({
     orientation: 'portrait',

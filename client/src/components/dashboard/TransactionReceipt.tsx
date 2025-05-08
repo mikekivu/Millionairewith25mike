@@ -54,7 +54,13 @@ const TransactionReceipt: React.FC<TransactionReceiptProps> = ({
         paymentMethod: transaction.paymentMethod || 'Unknown',
         externalTransactionId: transaction.externalTransactionId,
         processingFee: '0.00', // Set actual processing fee if available
-        paymentDetails: transaction.transactionDetails
+        paymentDetails: transaction.transactionDetails,
+        // Additional metadata
+        adminProcessor: transaction.adminProcessor || '', 
+        ipAddress: transaction.ipAddress || user.lastIpAddress || '',
+        country: transaction.country || user.country || '',
+        investmentId: transaction.investmentId,
+        planName: transaction.planName
       };
       
       // Generate receipt as base64 data URL
@@ -95,7 +101,13 @@ const TransactionReceipt: React.FC<TransactionReceiptProps> = ({
         paymentMethod: transaction.paymentMethod || 'Unknown',
         externalTransactionId: transaction.externalTransactionId,
         processingFee: '0.00', // Set actual processing fee if available
-        paymentDetails: transaction.transactionDetails
+        paymentDetails: transaction.transactionDetails,
+        // Additional metadata
+        adminProcessor: transaction.adminProcessor || '', 
+        ipAddress: transaction.ipAddress || user.lastIpAddress || '',
+        country: transaction.country || user.country || '',
+        investmentId: transaction.investmentId,
+        planName: transaction.planName
       };
       
       // Download receipt
@@ -255,6 +267,34 @@ const TransactionReceipt: React.FC<TransactionReceiptProps> = ({
                     <div>
                       <h3 className="text-sm font-semibold text-gray-500">External Transaction ID</h3>
                       <p className="text-sm font-mono">{transaction.externalTransactionId}</p>
+                    </div>
+                  )}
+                  
+                  {transaction?.adminProcessor && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-500">Processed By</h3>
+                      <p className="text-sm">{transaction.adminProcessor}</p>
+                    </div>
+                  )}
+                  
+                  {transaction?.ipAddress && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-500">IP Address</h3>
+                      <p className="text-sm font-mono">{transaction.ipAddress}</p>
+                    </div>
+                  )}
+                  
+                  {transaction?.country && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-500">Country</h3>
+                      <p className="text-sm">{transaction.country}</p>
+                    </div>
+                  )}
+                  
+                  {transaction?.digitalSignature && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-500">Digital Verification</h3>
+                      <p className="text-sm font-mono text-xs break-all opacity-60">{transaction.digitalSignature}</p>
                     </div>
                   )}
                 </div>
