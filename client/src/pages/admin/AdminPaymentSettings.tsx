@@ -369,7 +369,7 @@ export default function AdminPaymentSettings() {
               <div className="flex justify-center py-8">
                 <p>Loading payment methods...</p>
               </div>
-            ) : paymentSettings && paymentSettings.length > 0 ? (
+            ) : paymentSettings && Array.isArray(paymentSettings) && paymentSettings.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {paymentSettings.map((setting) => (
                   <Card key={setting.id} className={!setting.active ? "opacity-75" : ""}>
@@ -448,9 +448,9 @@ export default function AdminPaymentSettings() {
                         <div>${setting.maxAmount} USDT</div>
                       </div>
                       <p className="text-sm text-muted-foreground mt-2">
-                        Instructions: {setting.instructions.length > 80 
-                          ? `${setting.instructions.substring(0, 80)}...` 
-                          : setting.instructions}
+                        Instructions: {setting.instructions && setting.instructions.length > 80
+                          ? `${setting.instructions.substring(0, 80)}...`
+                          : setting.instructions || 'No instructions provided'}
                       </p>
                     </CardContent>
                   </Card>
