@@ -10,6 +10,7 @@ import {
   Users,
   Settings,
   LogOut,
+  BarChart4,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -61,6 +62,11 @@ export default function UserSidebar() {
       title: 'Referrals',
       href: '/dashboard/referrals',
       icon: <Users className="h-5 w-5" />,
+    },
+    {
+      title: 'Network Heatmap',
+      href: '/dashboard/network-heatmap',
+      icon: <BarChart4 className="h-5 w-5" />,
     },
     {
       title: 'Settings',
