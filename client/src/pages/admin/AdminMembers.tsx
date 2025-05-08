@@ -61,6 +61,8 @@ interface User {
   referralCode: string;
   referredBy?: number;
   profileImage?: string;
+  country?: string;
+  phoneNumber?: string;
 }
 
 export default function AdminMembers() {
@@ -640,6 +642,18 @@ export default function AdminMembers() {
                   <Label className="text-xs text-muted-foreground">Wallet Balance</Label>
                   <p className="font-medium">{formatCurrency(selectedUser.walletBalance, 'USDT')}</p>
                 </div>
+                {selectedUser.country && (
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Country</Label>
+                    <p className="font-medium">{selectedUser.country}</p>
+                  </div>
+                )}
+                {selectedUser.phoneNumber && (
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Phone</Label>
+                    <p className="font-medium">{selectedUser.phoneNumber}</p>
+                  </div>
+                )}
               </div>
               
               <Separator />

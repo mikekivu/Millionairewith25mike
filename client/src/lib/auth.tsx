@@ -15,6 +15,8 @@ export interface User {
   referralCode: string;
   referredBy?: number;
   profileImage?: string;
+  country?: string;
+  phoneNumber?: string;
 }
 
 export interface LoginData {
