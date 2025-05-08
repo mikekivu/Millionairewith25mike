@@ -331,7 +331,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(referrals)
       .where(and(
-        eq(referrals.referrerId, userId),
+        eq(referrals.referrer_id, userId),
         eq(referrals.level, level)
       ));
   }
@@ -344,9 +344,9 @@ export class DatabaseStorage implements IStorage {
         referredUser: users
       })
       .from(referrals)
-      .where(eq(referrals.referrerId, userId))
-      .leftJoin(users, eq(referrals.referredId, users.id))
-      .orderBy(referrals.level, referrals.createdAt);
+      .where(eq(referrals.referrer_id, userId))
+      .leftJoin(users, eq(referrals.referred_id, users.id))
+      .orderBy(referrals.level, referrals.created_at);
     
     console.log(`Found ${referralData.length} referrals for user ID ${userId}`);
     
