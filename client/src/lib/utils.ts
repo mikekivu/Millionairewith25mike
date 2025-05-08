@@ -5,8 +5,17 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatCurrency(amount: string | number, currency = 'USDT'): string {
+export function formatCurrency(amount: string | number | null | undefined, currency = 'USDT'): string {
+  if (amount === null || amount === undefined) {
+    return `0.00 ${currency}`;
+  }
+  
   const num = typeof amount === 'string' ? parseFloat(amount) : amount;
+  // Handle NaN values
+  if (isNaN(num)) {
+    return `0.00 ${currency}`;
+  }
+  
   return `${num.toFixed(2)} ${currency}`;
 }
 
