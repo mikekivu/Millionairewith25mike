@@ -14,6 +14,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import logo from '@/assets/logo.png';
 
 interface NavItem {
   title: string;
@@ -89,31 +90,53 @@ export default function UserSidebar() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-primary-800 text-white">
+    <div className="h-screen flex flex-col bg-gradient-to-b from-blue-900 to-blue-950 text-white shadow-xl">
       <div className="p-6">
-        <div className="flex items-center space-x-3 mb-6">
-          <Avatar>
+        {/* Logo and Brand */}
+        <div className="flex items-center justify-center mb-8">
+          <img src={logo} alt="MillionareWith$25" className="h-16 w-16" />
+          <div className="ml-2">
+            <h1 className="text-xl font-bold text-white">
+              <span className="text-orange-500">Millionare</span>
+              <span className="text-yellow-400">With$25</span>
+            </h1>
+          </div>
+        </div>
+        
+        {/* User Info */}
+        <div className="flex items-center space-x-3 mb-8 bg-blue-800/50 p-3 rounded-lg border border-blue-700">
+          <Avatar className="h-12 w-12 ring-2 ring-blue-500">
             <AvatarImage src={user.profileImage} alt={`${user.firstName} ${user.lastName}`} />
-            <AvatarFallback className="bg-primary-700">{getInitials(user)}</AvatarFallback>
+            <AvatarFallback className="bg-gradient-to-br from-blue-700 to-blue-800 text-lg">
+              {getInitials(user)}
+            </AvatarFallback>
           </Avatar>
           <div>
-            <p className="font-medium">{`${user.firstName} ${user.lastName}`}</p>
-            <p className="text-xs text-primary-200">Member</p>
+            <p className="font-medium text-white">{`${user.firstName} ${user.lastName}`}</p>
+            <p className="text-xs bg-green-500 text-green-950 px-2 py-0.5 rounded-full inline-block font-semibold">Member</p>
           </div>
         </div>
 
-        <nav className="space-y-1">
+        {/* Navigation */}
+        <nav className="space-y-2">
           {navItems.map((item) => (
             <Link key={item.href} href={item.href}>
               <a
                 className={cn(
-                  "flex items-center px-4 py-2.5 text-sm font-medium rounded-md transition-colors",
+                  "flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all",
                   location === item.href
-                    ? "bg-primary-700 text-white"
-                    : "text-primary-100 hover:bg-primary-700 hover:text-white"
+                    ? "bg-gradient-to-r from-blue-700 to-blue-600 text-white shadow-md"
+                    : "text-blue-100 hover:bg-blue-800 hover:text-white"
                 )}
               >
-                <span className="mr-3">{item.icon}</span>
+                <span className={cn(
+                  "mr-3 p-2 rounded-md",
+                  location === item.href
+                    ? "bg-blue-500/30"
+                    : "bg-blue-900/30"
+                )}>
+                  {item.icon}
+                </span>
                 {item.title}
               </a>
             </Link>
@@ -121,10 +144,10 @@ export default function UserSidebar() {
         </nav>
       </div>
 
-      <div className="mt-auto p-4 border-t border-primary-700">
+      <div className="mt-auto p-4 border-t border-blue-800">
         <Button 
           variant="ghost" 
-          className="w-full justify-start text-primary-100 hover:bg-primary-700 hover:text-white"
+          className="w-full justify-start text-blue-100 hover:bg-blue-800 hover:text-white"
           onClick={handleLogout}
         >
           <LogOut className="mr-2 h-5 w-5" />
