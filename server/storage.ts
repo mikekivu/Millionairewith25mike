@@ -71,6 +71,9 @@ export interface IStorage {
   // Dashboard statistics
   getDashboardStats(): Promise<DashboardStats>;
   getUserDashboardStats(userId: number): Promise<UserDashboardStats>;
+  
+  // Network visualization
+  getNetworkPerformance(userId: number): Promise<any>;
 }
 
 export interface DashboardStats {
@@ -690,6 +693,87 @@ export class MemStorage implements IStorage {
       activeInvestments,
       referralCount
     };
+  }
+  
+  async getNetworkPerformance(userId: number): Promise<any> {
+    const user = await this.getUser(userId);
+    if (!user) {
+      throw new Error(`User with id ${userId} not found`);
+    }
+    
+    // Get user's direct referrals (level 1)
+    const directReferrals = await this.getUserReferralsByLevel(userId, 1);
+    
+    // If no referrals, return just the user
+    if (directReferrals.length === 0) {
+      return {
+        id: userId,
+        name: `${user.firstName} ${user.lastName}`,
+        username: user.username,
+        level: 0,
+        performance: 100, // Root node is always 100%
+        isActive: user.active,
+        children: []
+      };
+    }
+    
+    // Build the referral tree recursively
+    const referralTree = await this.buildReferralPerformanceTree(userId, 0, 5); // Max 5 levels deep
+    
+    return referralTree;
+  }
+  
+  private async buildReferralPerformanceTree(userId: number, currentLevel: number, maxLevel: number): Promise<any> {
+    if (currentLevel > maxLevel) return null;
+    
+    // Get user info
+    const user = await this.getUser(userId);
+    if (!user) return null;
+    
+    // Get direct referrals
+    const directReferrals = await this.getUserReferralsByLevel(userId, 1);
+    
+    // Calculate performance score based on wallet balance, activity, etc.
+    const userInvestments = await this.getUserInvestments(userId);
+    const investmentAmount = userInvestments.reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
+    const userTransactions = await this.getUserTransactions(userId);
+    const recentActivity = userTransactions.filter(tx => 
+      new Date(tx.createdAt).getTime() > Date.now() - (30 * 24 * 60 * 60 * 1000) // Last 30 days
+    ).length;
+    
+    // Performance formula: active status (50%) + investment amount (30%) + recent activity (20%)
+    let performanceScore = 0;
+    performanceScore += user.active ? 50 : 0;
+    performanceScore += Math.min(investmentAmount / 500, 1) * 30; // Cap at $500 for max score
+    performanceScore += Math.min(recentActivity / 5, 1) * 20; // Cap at 5 activities for max score
+    
+    // Build tree node
+    const treeNode = {
+      id: userId,
+      name: `${user.firstName} ${user.lastName}`,
+      username: user.username,
+      level: currentLevel,
+      performance: performanceScore,
+      isActive: user.active,
+      children: []
+    };
+    
+    // Process child nodes recursively
+    if (currentLevel < maxLevel && directReferrals.length > 0) {
+      for (const referral of directReferrals) {
+        const childNode = await this.buildReferralPerformanceTree(
+          referral.referredId, 
+          currentLevel + 1, 
+          maxLevel
+        );
+        
+        if (childNode) {
+          treeNode.children.push(childNode);
+        }
+      }
+    }
+    
+    return treeNode;
   }
 }
 
