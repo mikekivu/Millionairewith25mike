@@ -242,20 +242,68 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getTransaction(id: number): Promise<Transaction | undefined> {
-    const [transaction] = await db.select().from(transactions).where(eq(transactions.id, id));
+    const [transaction] = await db.select({
+      id: transactions.id,
+      userId: transactions.userId,
+      type: transactions.type,
+      amount: transactions.amount,
+      currency: transactions.currency,
+      status: transactions.status,
+      createdAt: transactions.createdAt,
+      paymentMethod: transactions.paymentMethod,
+      transactionDetails: transactions.transactionDetails,
+      investmentId: transactions.investmentId,
+      referralId: transactions.referralId
+    }).from(transactions).where(eq(transactions.id, id));
     return transaction;
   }
 
   async getUserTransactions(userId: number): Promise<Transaction[]> {
-    return db.select().from(transactions).where(eq(transactions.userId, userId));
+    return db.select({
+      id: transactions.id,
+      userId: transactions.userId,
+      type: transactions.type,
+      amount: transactions.amount,
+      currency: transactions.currency,
+      status: transactions.status,
+      createdAt: transactions.createdAt,
+      paymentMethod: transactions.paymentMethod,
+      transactionDetails: transactions.transactionDetails,
+      investmentId: transactions.investmentId,
+      referralId: transactions.referralId
+    }).from(transactions).where(eq(transactions.userId, userId));
   }
 
   async getAllTransactions(): Promise<Transaction[]> {
-    return db.select().from(transactions);
+    return db.select({
+      id: transactions.id,
+      userId: transactions.userId,
+      type: transactions.type,
+      amount: transactions.amount,
+      currency: transactions.currency,
+      status: transactions.status,
+      createdAt: transactions.createdAt,
+      paymentMethod: transactions.paymentMethod,
+      transactionDetails: transactions.transactionDetails,
+      investmentId: transactions.investmentId,
+      referralId: transactions.referralId
+    }).from(transactions);
   }
 
   async getTransactionsByType(type: string): Promise<Transaction[]> {
-    return db.select().from(transactions).where(eq(transactions.type, type));
+    return db.select({
+      id: transactions.id,
+      userId: transactions.userId,
+      type: transactions.type,
+      amount: transactions.amount,
+      currency: transactions.currency,
+      status: transactions.status,
+      createdAt: transactions.createdAt,
+      paymentMethod: transactions.paymentMethod,
+      transactionDetails: transactions.transactionDetails,
+      investmentId: transactions.investmentId,
+      referralId: transactions.referralId
+    }).from(transactions).where(eq(transactions.type, type));
   }
 
   async updateTransaction(id: number, transactionData: Partial<Transaction>): Promise<Transaction | undefined> {
