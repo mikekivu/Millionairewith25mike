@@ -9,9 +9,10 @@ import UserSidebar from '@/components/dashboard/UserSidebar';
 import { UserStatsCards } from '@/components/dashboard/StatsCards';
 import { DataTable } from '@/components/dashboard/DataTable';
 import { formatCurrency, formatDate, getTransactionStatusColor } from '@/lib/utils';
-import { Plus, ArrowUpRight, ArrowDownRight, History, Wallet } from 'lucide-react';
+import { Plus, ArrowUpRight, ArrowDownRight, History, Wallet, Receipt } from 'lucide-react';
 import DepositModal from '@/components/dashboard/DepositModal';
 import WithdrawModal from '@/components/dashboard/WithdrawModal';
+import TransactionReceipt from '@/components/dashboard/TransactionReceipt';
 import { ColumnDef } from '@tanstack/react-table';
 
 interface Transaction {
@@ -23,16 +24,25 @@ interface Transaction {
   createdAt: string;
   paymentMethod?: string;
   transactionDetails?: string;
+  externalTransactionId?: string;
+  processingFee?: string;
 }
 
 export default function UserWallet() {
   const { toast } = useToast();
   const [depositModalOpen, setDepositModalOpen] = useState(false);
   const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [receiptModalOpen, setReceiptModalOpen] = useState(false);
 
   const { data: dashboardStats, isLoading: isLoadingStats } = useQuery({
     queryKey: ['/api/user/dashboard'],
     staleTime: 60000, // 1 minute
+  });
+
+  const { data: user } = useQuery({
+    queryKey: ['/api/auth/me'],
+    staleTime: 300000, // 5 minutes
   });
 
   const { data: transactions, isLoading: isLoadingTransactions } = useQuery({
@@ -40,6 +50,11 @@ export default function UserWallet() {
     staleTime: 60000, // 1 minute
     select: (data) => data.filter((tx: Transaction) => tx.type === 'deposit' || tx.type === 'withdrawal'),
   });
+
+  const handleViewReceipt = (transaction: Transaction) => {
+    setSelectedTransaction(transaction);
+    setReceiptModalOpen(true);
+  };
 
   const columns: ColumnDef<Transaction>[] = [
     {
@@ -99,6 +114,28 @@ export default function UserWallet() {
       header: 'Date',
       cell: ({ row }) => {
         return formatDate(row.getValue('createdAt') as string);
+      },
+    },
+    {
+      id: 'actions',
+      header: 'Actions',
+      cell: ({ row }) => {
+        const transaction = row.original;
+        const isCompleted = transaction.status === 'completed';
+        
+        return (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleViewReceipt(transaction)}
+            disabled={!isCompleted}
+            className={`${!isCompleted ? 'opacity-50 cursor-not-allowed' : 'hover:bg-orange-50'}`}
+            title={isCompleted ? 'View Receipt' : 'Receipt only available for completed transactions'}
+          >
+            <Receipt className="h-4 w-4 mr-1" />
+            Receipt
+          </Button>
+        );
       },
     }
   ];
@@ -276,6 +313,15 @@ export default function UserWallet() {
         onOpenChange={setWithdrawModalOpen} 
         currentBalance={parseFloat(dashboardStats?.walletBalance || '0')}
       />
+
+      {selectedTransaction && (
+        <TransactionReceipt
+          open={receiptModalOpen}
+          onOpenChange={setReceiptModalOpen}
+          transaction={selectedTransaction}
+          user={user}
+        />
+      )}
     </>
   );
 }
