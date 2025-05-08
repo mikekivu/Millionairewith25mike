@@ -42,7 +42,7 @@ export default function UserNetworkHeatmap() {
     }
 
     // Check if there's no data or empty referral network
-    if (!data || !data.networkTree || Object.keys(data.networkTree).length === 0) {
+    if (!data || Object.keys(data).length === 0 || (data.children && data.children.length === 0)) {
       return (
         <Alert>
           <InfoIcon className="h-4 w-4" />
@@ -55,7 +55,7 @@ export default function UserNetworkHeatmap() {
       );
     }
 
-    return <HeatmapVisualizer data={data.networkTree as ReferralNode} />;
+    return <HeatmapVisualizer data={data as ReferralNode} />;
   };
 
   return (
