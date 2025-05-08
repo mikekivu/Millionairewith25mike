@@ -76,11 +76,13 @@ export const referrals = pgTable("referrals", {
 // Payment Settings
 export const paymentSettings = pgTable("payment_settings", {
   id: serial("id").primaryKey(),
-  paymentMethod: text("payment_method").notNull().unique(), // paypal, coinbase
+  method: text("method").notNull(), // paypal, usdt_trc20
+  name: text("name").notNull(), // Display name for the payment method
   active: boolean("active").notNull().default(true),
-  walletAddress: text("wallet_address"),
-  apiKey: text("api_key"),
-  secretKey: text("secret_key"),
+  instructions: text("instructions"), // Instructions for users
+  credentials: text("credentials"), // Wallet address, PayPal email, etc.
+  minAmount: text("min_amount").notNull().default("10"),
+  maxAmount: text("max_amount").notNull().default("10000"),
 });
 
 // Contact Messages

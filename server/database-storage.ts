@@ -392,7 +392,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getPaymentSettingByMethod(method: string): Promise<PaymentSetting | undefined> {
-    const [setting] = await db.select().from(paymentSettings).where(eq(paymentSettings.paymentMethod, method));
+    const [setting] = await db.select().from(paymentSettings).where(eq(paymentSettings.method, method));
     return setting;
   }
 
