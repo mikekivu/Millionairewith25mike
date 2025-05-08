@@ -1,21 +1,22 @@
 import { drizzle } from "drizzle-orm/neon-serverless";
-import { Pool } from '@neondatabase/serverless';
-import { migrate } from "drizzle-orm/neon-serverless/migrator";
+import { Pool, neonConfig } from '@neondatabase/serverless';
+import { eq } from "drizzle-orm";
 import * as schema from '../shared/schema';
 import { nanoid } from "nanoid";
+import ws from 'ws';
+
+// Set WebSocket constructor for Neon serverless
+neonConfig.webSocketConstructor = ws;
 
 // Set up database connection
 const pool = new Pool({ connectionString: process.env.DATABASE_URL! });
 const db = drizzle(pool, { schema });
 
 async function main() {
-  console.log('Migrating database...');
-  
-  // Push the schema to the database
-  await migrate(db, { migrationsFolder: 'drizzle' });
+  console.log('Initializing database data...');
   
   // Check if admin user exists
-  const [adminUser] = await db.select().from(schema.users).where({ username: 'admin' });
+  const [adminUser] = await db.select().from(schema.users).where(eq(schema.users.username, 'admin'));
   
   // Create admin user if it doesn't exist
   if (!adminUser) {
