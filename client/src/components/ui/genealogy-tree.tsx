@@ -68,21 +68,21 @@ export function GenealogyTree({ data, width = 1200, height = 600 }: GenealogyTre
       findMaxWidth(data, 0, widths);
       const maxWidth = Math.max(...widths);
 
-      // Calculate horizontal and vertical spacing
-      const levelWidth = innerWidth / maxDepth;
-      const nodeVerticalSpacing = innerHeight / Math.max(maxWidth, 1);
+      // Calculate horizontal and vertical spacing for a vertical tree (top to bottom)
+      const levelHeight = innerHeight / Math.max(maxDepth, 1);
+      const nodeHorizontalSpacing = innerWidth / Math.max(maxWidth, 2);
 
-      // Custom recursive function to position nodes
-      function positionNodes(node: TreeNode, level: number, verticalPosition: number, positions: Map<number, {x: number, y: number}>, parentId?: number) {
-        const x = level * levelWidth + 50; // 50px offset from left
-        const y = verticalPosition * nodeVerticalSpacing + 60; // 60px offset from top
+      // Custom recursive function to position nodes for a vertical tree layout
+      function positionNodes(node: TreeNode, level: number, horizontalPosition: number, positions: Map<number, {x: number, y: number}>, parentId?: number) {
+        const y = level * levelHeight + 60; // 60px offset from top
+        const x = horizontalPosition * nodeHorizontalSpacing + (innerWidth / 2); // Center the tree horizontally
         
         positions.set(node.id, {x, y});
         
         if (node.children && node.children.length > 0) {
           // Calculate positions for children
           const childCount = node.children.length;
-          const start = verticalPosition - (childCount - 1) / 2;
+          const start = horizontalPosition - (childCount - 1) / 2;
           
           node.children.forEach((child, index) => {
             positionNodes(child, level + 1, start + index, positions, node.id);
@@ -108,10 +108,10 @@ export function GenealogyTree({ data, width = 1200, height = 600 }: GenealogyTre
             
             g.append("path")
               .attr("d", `
-                M${parentPos.x + 24},${parentPos.y}
-                H${(parentPos.x + childPos.x) / 2}
-                V${childPos.y}
-                H${childPos.x - 24}
+                M${parentPos.x},${parentPos.y + 24}
+                V${(parentPos.y + childPos.y) / 2}
+                H${childPos.x}
+                V${childPos.y - 24}
               `)
               .attr("fill", "none")
               .attr("stroke", "#3b82f6")
