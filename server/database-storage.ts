@@ -348,6 +348,8 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(users, eq(referrals.referredId, users.id))
       .orderBy(referrals.level, referrals.createdAt);
     
+    console.log(`Found ${referralData.length} referrals for user ID ${userId}`);
+    
     // Map the results to include the actual referral and the user it belongs to
     return referralData.map(r => ({
       ...r.referral,

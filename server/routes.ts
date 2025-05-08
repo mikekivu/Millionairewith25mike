@@ -471,6 +471,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/user/referrals", authMiddleware, async (req, res) => {
     try {
       const userId = req.session.userId;
+      console.log(`Fetching referrals for user ID: ${userId}`);
       const referrals = await storage.getAllUserReferrals(userId);
       
       // Group by level - referrals now already include referred user details
@@ -482,9 +483,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         referralsByLevel[referral.level].push(referral);
       }
       
+      console.log(`Grouped referrals by level: ${Object.keys(referralsByLevel).join(', ')}`);
+      console.log(`Total referrals found: ${referrals.length}`);
+      
       res.status(200).json(referralsByLevel);
     } catch (error) {
-      console.error(error);
+      console.error("Error fetching referrals:", error);
       res.status(500).json({ message: "Server error" });
     }
   });

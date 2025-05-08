@@ -57,6 +57,8 @@ export default function UserGenealogyTree() {
   // Build tree data structure from referrals
   useEffect(() => {
     if (referrals && user) {
+      console.log("Building tree data with referrals:", referrals);
+      
       // Create root node (current user)
       const root: TreeNode = {
         id: user.id,
@@ -79,9 +81,6 @@ export default function UserGenealogyTree() {
         return null;
       };
 
-      // No need to process level 1 referrals separately anymore
-      // We'll process all levels in the unified approach below
-
       // First, create a map of all users by ID for quick access
       const userNodeMap = new Map<number, TreeNode>();
       userNodeMap.set(root.id, root);
@@ -89,20 +88,31 @@ export default function UserGenealogyTree() {
       // Process all referrals and map users to their referring parent
       // This will build a proper genealogy tree based on actual referral relationships
       const allLevels = Object.keys(referrals).sort((a, b) => parseInt(a) - parseInt(b));
+      console.log("Processing level keys:", allLevels);
       
       for (const levelKey of allLevels) {
         const level = parseInt(levelKey);
         const levelReferrals = referrals[levelKey] || [];
+        console.log(`Processing level ${level} with ${levelReferrals.length} referrals`);
         
         for (const ref of levelReferrals) {
+          console.log(`Processing referral:`, ref);
+          
+          if (!ref.referredUser) {
+            console.error(`Missing referredUser data for referral ID ${ref.id}`);
+            continue;
+          }
+          
           // Create the node for this referred user
           const userNode: TreeNode = {
             id: ref.referredUser.id,
-            name: `${ref.referredUser.firstName} ${ref.referredUser.lastName}`,
+            name: `${ref.referredUser.firstName || ''} ${ref.referredUser.lastName || ''}`.trim(),
             level: level,
             isActive: ref.referredUser.active,
             children: []
           };
+          
+          console.log(`Created node for user ${userNode.name} (ID: ${userNode.id})`);
           
           // Add it to our map
           userNodeMap.set(ref.referredUser.id, userNode);
@@ -112,18 +122,21 @@ export default function UserGenealogyTree() {
           const parentNode = userNodeMap.get(referrerId);
           
           if (parentNode) {
+            console.log(`Adding user ${userNode.name} to parent ${parentNode.name}`);
             if (!parentNode.children) parentNode.children = [];
             parentNode.children.push(userNode);
           } else if (referrerId === root.id) {
             // This is a direct referral of the current user
+            console.log(`Adding user ${userNode.name} directly to root node`);
             if (!root.children) root.children = [];
             root.children.push(userNode);
+          } else {
+            console.warn(`Parent node not found for referrer ID ${referrerId}`);
           }
-          // If parent node not found, this means data inconsistency
-          // In a production system, you'd want to handle this case
         }
       }
 
+      console.log("Final tree data:", root);
       setTreeData(root);
     }
   }, [referrals, user]);
