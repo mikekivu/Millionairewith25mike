@@ -18,7 +18,7 @@ export default function LiveChat() {
       var s1 = document.createElement("script");
       var s0 = document.getElementsByTagName("script")[0];
       s1.async = true;
-      s1.src = 'https://embed.tawk.to/YOUR_TAWK_ID/default'; // Replace with your actual Tawk.to ID
+      s1.src = 'https://embed.tawk.to/63b3518347425128790b4608/1glq7crbe';
       s1.charset = 'UTF-8';
       s1.setAttribute('crossorigin', '*');
       s0.parentNode?.insertBefore(s1, s0);
