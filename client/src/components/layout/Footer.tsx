@@ -7,7 +7,7 @@ export default function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <div className="col-span-2 md:col-span-1">
             <h3 className="text-sm font-semibold text-gray-400 tracking-wider uppercase">
-              About RichLance
+              About MillionaireWith$25
             </h3>
             <p className="mt-4 text-base text-gray-300">
               A leading investment platform combining traditional investment strategies with innovative genealogy-based referral systems.
@@ -164,7 +164,7 @@ export default function Footer() {
             </Link>
           </div>
           <p className="mt-8 text-base text-gray-400 md:mt-0 md:order-1">
-            &copy; {new Date().getFullYear()} RichLance. All rights reserved.
+            &copy; {new Date().getFullYear()} MillionaireWith$25. All rights reserved.
           </p>
         </div>
       </div>

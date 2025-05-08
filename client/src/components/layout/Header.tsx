@@ -59,7 +59,7 @@ export default function Header() {
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
               <Link href="/">
-                <a className="text-primary-800 font-heading font-bold text-2xl">RichLance</a>
+                <a className="text-primary-800 font-heading font-bold text-2xl">MillionaireWith$25</a>
               </Link>
             </div>
             <div className="hidden sm:-my-px sm:ml-6 sm:flex sm:space-x-8">
