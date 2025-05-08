@@ -49,6 +49,7 @@ export default function UserSettings() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user, logout } = useAuth();
+  const [, navigate] = useLocation();
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
@@ -141,6 +142,8 @@ export default function UserSettings() {
         title: "Logged Out",
         description: "You have been successfully logged out",
       });
+      // Navigate to home page after logout
+      navigate('/');
     } catch (error) {
       toast({
         title: "Logout Failed",
@@ -151,7 +154,7 @@ export default function UserSettings() {
   };
 
   // Generate initials for avatar
-  const getInitials = (user: User | null) => {
+  const getInitials = (user: User | null | undefined) => {
     if (!user) return '';
     return `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`;
   };
