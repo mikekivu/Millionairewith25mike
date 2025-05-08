@@ -180,7 +180,7 @@ export function AdminStatsCards({ stats, isLoading = false }: AdminStatsCardsPro
               <div>
                 <p className="text-sm text-gray-500">{card.title}</p>
                 <p className="text-2xl font-bold">
-                  {typeof card.value === 'string' ? card.value : card.value.toLocaleString()}
+                  {typeof card.value === 'string' ? card.value : card.value && typeof card.value === 'number' ? card.value.toLocaleString() : '0'}
                 </p>
               </div>
               <div className={`h-10 w-10 rounded-full ${card.bgColor} flex items-center justify-center ${card.iconColor}`}>
