@@ -45,7 +45,6 @@ export default function DepositModal({ open, onOpenChange }: DepositModalProps) 
   const { data: paymentMethods, isLoading: loadingPaymentMethods } = useQuery({
     queryKey: ['/api/payment-settings'],
     staleTime: 60 * 60 * 1000, // 1 hour
-    select: (data) => data?.filter((method: any) => method.active),
   });
 
   // Create deposit request mutation
