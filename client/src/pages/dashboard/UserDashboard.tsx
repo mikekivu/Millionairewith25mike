@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrency, formatDate, getTransactionStatusColor, getTransactionTypeIcon } from '@/lib/utils';
 import { useAuth } from '@/lib/auth';
 import { ArrowUpRight, ArrowDownRight, TrendingUp, Users } from 'lucide-react';
+import LiveChat from '@/components/chat/LiveChat';
 
 export default function UserDashboard() {
   const { user } = useAuth();
@@ -165,6 +166,9 @@ export default function UserDashboard() {
           </div>
         </div>
       </div>
+      
+      {/* Live Chat Component */}
+      <LiveChat userId={user?.id} userName={user?.firstName} />
     </>
   );
 }
