@@ -128,7 +128,7 @@ export default function AdminSidebar() {
             <Link key={item.href} href={item.href}>
               <a
                 className={cn(
-                  "flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all",
+                  "flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all w-full",
                   location === item.href
                     ? "bg-gradient-to-r from-gray-700 to-gray-600 text-white shadow-md"
                     : "text-gray-300 hover:bg-gray-800 hover:text-white"
