@@ -28,7 +28,7 @@ export default function AdminMessages() {
   const { toast } = useToast();
 
   const { data: messages = [], isLoading } = useQuery({
-    queryKey: ['/api/admin/messages'],
+    queryKey: ['/api/admin/contact-messages'],
     select: (data: ContactMessage[]) => data.sort((a, b) => {
       // Sort by responded status first, then by date
       if (a.responded === b.responded) {
@@ -40,10 +40,10 @@ export default function AdminMessages() {
 
   const markAsRespondedMutation = useMutation({
     mutationFn: (messageId: number) => {
-      return apiRequest(`/api/admin/messages/${messageId}/respond`, 'POST', {});
+      return apiRequest(`/api/admin/contact-messages/${messageId}/mark-responded`, 'PUT', {});
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/messages'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/contact-messages'] });
       setDialogOpen(false);
       setResponseMessage('');
       setSelectedMessage(null);
