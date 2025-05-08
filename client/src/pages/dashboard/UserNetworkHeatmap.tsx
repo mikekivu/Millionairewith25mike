@@ -1,107 +1,135 @@
-import React from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { HeatMapVisualizer } from "@/components/ui/heatmap-visualizer";
-import DashboardLayout from "@/components/layout/DashboardLayout";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info } from "lucide-react";
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '@/lib/auth';
+import HeatmapVisualizer, { ReferralNode } from '@/components/ui/heatmap-visualizer';
+import DashboardLayout from '@/components/layout/DashboardLayout';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { InfoIcon, AlertCircle } from 'lucide-react';
 
 export default function UserNetworkHeatmap() {
-  // Fetch network performance data
-  const { data, isLoading, error } = useQuery({
+  const { user } = useAuth();
+
+  const { data, isLoading, isError } = useQuery({
     queryKey: ['/api/user/network-performance'],
-    retry: 1,
+    enabled: !!user,
   });
+
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="space-y-4">
+          <Skeleton className="h-[600px] w-full rounded-lg" />
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-[250px]" />
+            <Skeleton className="h-4 w-[400px]" />
+          </div>
+        </div>
+      );
+    }
+
+    if (isError) {
+      return (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>
+            Failed to load network performance data. Please try again later.
+          </AlertDescription>
+        </Alert>
+      );
+    }
+
+    // Check if there's no data or empty referral network
+    if (!data || !data.networkTree || Object.keys(data.networkTree).length === 0) {
+      return (
+        <Alert>
+          <InfoIcon className="h-4 w-4" />
+          <AlertTitle>No Network Data</AlertTitle>
+          <AlertDescription>
+            You don't have any referrals in your network yet. Start inviting others to see your
+            network performance data here.
+          </AlertDescription>
+        </Alert>
+      );
+    }
+
+    return <HeatmapVisualizer data={data.networkTree as ReferralNode} />;
+  };
 
   return (
     <DashboardLayout>
-      <div className="container mx-auto p-4">
-        <h1 className="text-3xl font-bold mb-6 bg-gradient-to-r from-orange-500 to-yellow-500 text-transparent bg-clip-text">
-          Network Performance Heatmap
-        </h1>
+      <div className="container py-10">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold tracking-tight">Network Performance Heatmap</h1>
+          <p className="text-muted-foreground mt-2">
+            Visualize your referral network's performance as a heat map. The colors indicate performance
+            levels with red representing lower performance and green representing higher performance.
+          </p>
+        </div>
 
-        <div className="grid grid-cols-1 gap-6">
-          {/* Network Performance Heat Map */}
-          <Card className="shadow-lg">
+        <div className="grid gap-6">
+          <Card>
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <span className="mr-2">Referral Network Performance</span>
-              </CardTitle>
+              <CardTitle>Referral Network Performance</CardTitle>
               <CardDescription>
-                Visualize your referral network's performance with color-coded indicators
+                View the performance of your referral network based on activity, investments, and 
+                referrals. This visualization helps you identify which branches of your network are
+                performing well and which may need attention.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {isLoading ? (
-                <div className="flex flex-col space-y-3">
-                  <Skeleton className="h-[500px] w-full rounded-xl" />
-                </div>
-              ) : error ? (
-                <Alert variant="destructive">
-                  <AlertTitle>Error loading network data</AlertTitle>
-                  <AlertDescription>
-                    There was a problem loading your network performance data. Please try again later.
-                  </AlertDescription>
-                </Alert>
-              ) : data ? (
-                <HeatMapVisualizer data={data} height={600} />
-              ) : (
-                <div className="text-center py-10">
-                  <p>No network data available yet</p>
-                </div>
-              )}
+              {renderContent()}
             </CardContent>
           </Card>
 
-          {/* Legend Card */}
-          <Card className="shadow-lg">
+          <Card>
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <Info className="w-5 h-5 mr-2" />
-                <span>How to Read the Heatmap</span>
-              </CardTitle>
+              <CardTitle>How to Use This Visualization</CardTitle>
+              <CardDescription>
+                Understanding the network performance heatmap
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-4">
                 <div>
-                  <h3 className="font-medium text-lg mb-2">Performance Score</h3>
-                  <p className="text-gray-600 mb-4">
-                    Each person in your network is assigned a performance score from 0-100 based on:
+                  <h3 className="font-medium text-lg">Color-Coding</h3>
+                  <p className="text-muted-foreground">
+                    Each member in your network is represented by a box with a color indicating their performance:
                   </p>
-                  <ul className="list-disc pl-5 space-y-1">
-                    <li>Account activity status (50%)</li>
-                    <li>Investment amount (30%)</li>
-                    <li>Recent transaction activity (20%)</li>
+                  <ul className="list-disc ml-6 mt-2 space-y-1">
+                    <li><span className="font-medium text-green-500">Green (75-100%)</span>: Excellent performance</li>
+                    <li><span className="font-medium text-yellow-500">Yellow (50-74%)</span>: Good performance</li>
+                    <li><span className="font-medium text-orange-500">Orange (25-49%)</span>: Fair performance</li>
+                    <li><span className="font-medium text-red-500">Red (0-24%)</span>: Poor performance</li>
                   </ul>
                 </div>
+                
                 <div>
-                  <h3 className="font-medium text-lg mb-2">Color Coding</h3>
-                  <p className="text-gray-600 mb-2">
-                    The heatmap uses color intensity to show performance:
+                  <h3 className="font-medium text-lg">Performance Metrics</h3>
+                  <p className="text-muted-foreground">
+                    Performance is calculated based on multiple factors:
                   </p>
-                  <div className="flex flex-col space-y-2">
-                    <div className="flex items-center">
-                      <div className="w-6 h-6 rounded-full bg-red-900 mr-2"></div>
-                      <span>Dark Red: 80-100% (Excellent performance)</span>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="w-6 h-6 rounded-full bg-red-600 mr-2"></div>
-                      <span>Medium Red: 60-79% (Good performance)</span>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="w-6 h-6 rounded-full bg-red-400 mr-2"></div>
-                      <span>Light Red: 40-59% (Average performance)</span>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="w-6 h-6 rounded-full bg-orange-300 mr-2"></div>
-                      <span>Light Orange: 20-39% (Needs improvement)</span>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="w-6 h-6 rounded-full bg-orange-200 mr-2"></div>
-                      <span>Very Light Orange: 0-19% (Poor performance)</span>
-                    </div>
-                  </div>
+                  <ul className="list-disc ml-6 mt-2 space-y-1">
+                    <li>Active status and login frequency</li>
+                    <li>Investment activity and amounts</li>
+                    <li>Number of personal referrals</li>
+                    <li>Depth and breadth of their referral network</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <h3 className="font-medium text-lg">Tips for Improvement</h3>
+                  <p className="text-muted-foreground">
+                    To improve the performance of your network:
+                  </p>
+                  <ul className="list-disc ml-6 mt-2 space-y-1">
+                    <li>Focus on branches with lower performance (red/orange)</li>
+                    <li>Reach out to inactive members to re-engage them</li>
+                    <li>Provide additional guidance to members who haven't referred others</li>
+                    <li>Recognize and reward high performers (green)</li>
+                  </ul>
                 </div>
               </div>
             </CardContent>

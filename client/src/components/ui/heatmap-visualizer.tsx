@@ -1,180 +1,226 @@
-import React, { useEffect, useRef } from "react";
-import * as d3 from "d3";
-import { cn } from "@/lib/utils";
+import React, { useEffect, useRef } from 'react';
+import * as d3 from 'd3';
+import { cn } from '@/lib/utils';
 
-interface ReferralNode {
+export interface ReferralNode {
   id: number;
   name: string;
   level: number;
-  performance: number; // 0-100 value representing performance (earnings, activity, etc)
-  referrals?: ReferralNode[];
+  performance: number; // 0-100 value
+  isActive: boolean;
+  children: ReferralNode[];
 }
 
-interface HeatMapVisualizerProps {
+interface HeatmapVisualizerProps {
   data: ReferralNode;
-  className?: string;
   width?: number;
   height?: number;
+  className?: string;
 }
 
-export function HeatMapVisualizer({
+export default function HeatmapVisualizer({
   data,
-  className,
   width = 900,
-  height = 500,
-}: HeatMapVisualizerProps) {
+  height = 600,
+  className
+}: HeatmapVisualizerProps) {
   const svgRef = useRef<SVGSVGElement | null>(null);
+
+  // Performance to color mapping function
+  const getColor = (performance: number): string => {
+    // Color ranges from red (low performance) to yellow to green (high performance)
+    if (performance < 25) {
+      return '#ef4444'; // Red for poor performance
+    } else if (performance < 50) {
+      return '#f97316'; // Orange for below average
+    } else if (performance < 75) {
+      return '#eab308'; // Yellow for average
+    } else {
+      return '#22c55e'; // Green for good performance
+    }
+  };
 
   useEffect(() => {
     if (!svgRef.current || !data) return;
 
-    // Clear previous visualization
-    d3.select(svgRef.current).selectAll("*").remove();
+    const svg = d3.select(svgRef.current);
+    svg.selectAll("*").remove();
 
-    // Color scale for performance heatmap
-    const colorScale = d3.scaleSequential(d3.interpolateOrRd)
-      .domain([0, 100]);
+    const margin = { top: 30, right: 30, bottom: 30, left: 30 };
+    const innerWidth = width - margin.left - margin.right;
+    const innerHeight = height - margin.top - margin.bottom;
 
-    // Convert hierarchical data to format d3 can use
-    const rootNode = d3.hierarchy(data);
+    // Create a hierarchical layout
+    const root = d3.hierarchy(data);
     
-    // Create a tree layout
-    const treeLayout = d3.tree<ReferralNode>()
-      .size([width - 100, height - 80]);
+    // Count total nodes to determine spacing
+    const totalNodes = root.descendants().length;
     
-    // Apply the layout to the hierarchy
-    const treeData = treeLayout(rootNode);
+    // Create tree layout
+    const treeLayout = d3.tree()
+      .size([innerWidth, innerHeight])
+      .separation((a, d) => (a.parent === d.parent ? 2 : 3));
     
-    // Create the SVG canvas
-    const svg = d3.select(svgRef.current)
-      .attr("width", width)
-      .attr("height", height)
-      .append("g")
-      .attr("transform", `translate(50, 40)`);
-    
-    // Create links (connections between nodes)
-    svg.selectAll(".link")
-      .data(treeData.links())
+    treeLayout(root);
+
+    // Create the main g element
+    const g = svg.append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    // Add links between nodes
+    g.selectAll(".link")
+      .data(root.links())
       .enter()
       .append("path")
       .attr("class", "link")
-      .attr("d", d3.linkHorizontal<any, any>()
-        .x(d => d.y)
-        .y(d => d.x))
-      .style("fill", "none")
-      .style("stroke", "#ccc")
-      .style("stroke-width", 1.5);
-    
-    // Create node groups
-    const node = svg.selectAll(".node")
-      .data(treeData.descendants())
+      .attr("d", d => {
+        return `M${d.source.x},${d.source.y}
+                C${d.source.x},${(d.source.y + d.target.y) / 2}
+                 ${d.target.x},${(d.source.y + d.target.y) / 2}
+                 ${d.target.x},${d.target.y}`;
+      })
+      .attr("fill", "none")
+      .attr("stroke", "#94a3b8")
+      .attr("stroke-width", 1.5)
+      .attr("opacity", 0.7);
+
+    // Create a group for each node
+    const node = g.selectAll(".node")
+      .data(root.descendants())
       .enter()
       .append("g")
       .attr("class", "node")
-      .attr("transform", d => `translate(${d.y},${d.x})`);
-    
-    // Add node circles with heatmap coloring
-    node.append("circle")
-      .attr("r", 25)
-      .style("fill", d => colorScale(d.data.performance))
-      .style("stroke", "#fff")
-      .style("stroke-width", 2);
-    
-    // Add node initials
+      .attr("transform", d => `translate(${d.x},${d.y})`);
+
+    // Add the heat map node rectangles with performance-based colors
+    node.append("rect")
+      .attr("width", 120)
+      .attr("height", 80)
+      .attr("x", -60)
+      .attr("y", -40)
+      .attr("rx", 10)
+      .attr("ry", 10)
+      .attr("fill", d => {
+        const performance = d.data.performance || 0;
+        return getColor(performance);
+      })
+      .attr("stroke", d => d.data.isActive ? "#0284c7" : "#64748b")
+      .attr("stroke-width", 2)
+      .attr("opacity", d => d.data.isActive ? 1 : 0.7);
+
+    // Add a gradient overlay to make it look more like a heat map
+    node.append("rect")
+      .attr("width", 120)
+      .attr("height", 80)
+      .attr("x", -60)
+      .attr("y", -40)
+      .attr("rx", 10)
+      .attr("ry", 10)
+      .attr("fill", "url(#heatmap-gradient)")
+      .attr("opacity", 0.2);
+
+    // Add the node labels (name)
     node.append("text")
-      .attr("dy", ".35em")
+      .attr("dy", -10)
       .attr("text-anchor", "middle")
       .attr("fill", "white")
       .attr("font-weight", "bold")
-      .text(d => {
-        const name = d.data.name || "";
-        return name.split(" ")
-          .filter(part => part.length > 0)
-          .map(n => n[0])
-          .join("");
-      });
-    
-    // Add node labels
-    node.append("text")
-      .attr("dy", "3em")
-      .attr("text-anchor", "middle")
-      .attr("font-size", "0.8em")
-      .text(d => {
-        const name = d.data.name || "";
-        return name.length > 18 ? name.substring(0, 16) + '...' : name;
-      });
-    
-    // Add performance percentage
-    node.append("text")
-      .attr("dy", "-2em")
-      .attr("text-anchor", "middle")
-      .attr("fill", "#333")
-      .attr("font-size", "0.9em")
-      .attr("font-weight", "bold")
-      .text(d => `${Math.round(d.data.performance)}%`);
-    
-    // Add legends for the heat map
-    const legendWidth = 200;
-    const legendHeight = 20;
-    
-    // Create the gradient legend
-    const legendGroup = svg.append("g")
-      .attr("transform", `translate(${width - legendWidth - 150}, ${height - 50})`);
-    
-    // Title for the legend
-    legendGroup.append("text")
-      .attr("x", 0)
-      .attr("y", -10)
       .attr("font-size", "12px")
-      .text("Performance Scale");
-    
-    // Create color gradient
-    const linearGradient = legendGroup.append("linearGradient")
-      .attr("id", "performance-gradient")
+      .attr("text-shadow", "0 1px 3px rgba(0,0,0,0.3)")
+      .text(d => d.data.name);
+
+    // Add level indicator
+    node.append("text")
+      .attr("dy", 10)
+      .attr("text-anchor", "middle")
+      .attr("fill", "white")
+      .attr("font-size", "10px")
+      .attr("font-weight", "medium")
+      .attr("text-shadow", "0 1px 2px rgba(0,0,0,0.3)")
+      .text(d => `Level: ${d.data.level}`);
+
+    // Add performance score
+    node.append("text")
+      .attr("dy", 30)
+      .attr("text-anchor", "middle")
+      .attr("fill", "white")
+      .attr("font-size", "12px")
+      .attr("font-weight", "bold")
+      .attr("text-shadow", "0 1px 3px rgba(0,0,0,0.5)")
+      .text(d => `${d.data.performance || 0}%`);
+
+    // Add status indicator
+    node.append("text")
+      .attr("dy", -30)
+      .attr("x", 45)
+      .attr("text-anchor", "end")
+      .attr("fill", "white")
+      .attr("font-size", "9px")
+      .attr("font-weight", "medium")
+      .attr("text-shadow", "0 1px 2px rgba(0,0,0,0.3)")
+      .text(d => d.data.isActive ? "Active" : "Inactive");
+
+    // Add a linear gradient for the heatmap effect
+    const defs = svg.append("defs");
+    const gradient = defs.append("linearGradient")
+      .attr("id", "heatmap-gradient")
       .attr("x1", "0%")
       .attr("y1", "0%")
       .attr("x2", "100%")
-      .attr("y2", "0%");
-    
-    // Add color stops to the gradient
-    linearGradient.selectAll("stop")
-      .data([0, 25, 50, 75, 100])
-      .enter()
-      .append("stop")
-      .attr("offset", d => `${d}%`)
-      .attr("stop-color", d => colorScale(d));
-    
-    // Add rectangle with the gradient
-    legendGroup.append("rect")
-      .attr("width", legendWidth)
-      .attr("height", legendHeight)
-      .style("fill", "url(#performance-gradient)");
-    
-    // Add labels for the gradient
-    legendGroup.selectAll(".legend-label")
-      .data([0, 25, 50, 75, 100])
-      .enter()
-      .append("text")
-      .attr("class", "legend-label")
-      .attr("x", d => (d / 100) * legendWidth)
-      .attr("y", legendHeight + 15)
-      .attr("text-anchor", d => d === 0 ? "start" : d === 100 ? "end" : "middle")
-      .attr("font-size", "10px")
-      .text(d => `${d}%`);
-      
+      .attr("y2", "100%");
+
+    gradient.append("stop")
+      .attr("offset", "0%")
+      .attr("stop-color", "white")
+      .attr("stop-opacity", 0.3);
+
+    gradient.append("stop")
+      .attr("offset", "100%")
+      .attr("stop-color", "white")
+      .attr("stop-opacity", 0);
+
+    // Add a legend
+    const legend = svg.append("g")
+      .attr("transform", `translate(${width - 180}, ${height - 120})`);
+
+    const legendTitle = legend.append("text")
+      .attr("x", 0)
+      .attr("y", 0)
+      .attr("font-size", "12px")
+      .attr("font-weight", "bold")
+      .text("Performance Legend");
+
+    const legendItems = [
+      { label: "Excellent (75-100%)", color: "#22c55e" },
+      { label: "Good (50-74%)", color: "#eab308" },
+      { label: "Fair (25-49%)", color: "#f97316" },
+      { label: "Poor (0-24%)", color: "#ef4444" }
+    ];
+
+    legendItems.forEach((item, i) => {
+      legend.append("rect")
+        .attr("x", 0)
+        .attr("y", 20 + i * 20)
+        .attr("width", 15)
+        .attr("height", 15)
+        .attr("fill", item.color);
+
+      legend.append("text")
+        .attr("x", 25)
+        .attr("y", 32 + i * 20)
+        .attr("font-size", "11px")
+        .text(item.label);
+    });
+
   }, [data, width, height]);
 
   return (
-    <div className={cn("w-full overflow-auto", className)}>
+    <div className={cn("relative", className)}>
       <svg 
         ref={svgRef} 
-        className="heatmap-visualizer"
-        style={{ 
-          width: "100%", 
-          height: "100%",
-          minWidth: `${width}px`,
-          minHeight: `${height}px` 
-        }}
+        width={width} 
+        height={height} 
+        className="overflow-visible"
       />
     </div>
   );
