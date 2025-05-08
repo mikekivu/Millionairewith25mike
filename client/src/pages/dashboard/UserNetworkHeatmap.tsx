@@ -1,20 +1,66 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth';
 import HeatmapVisualizer, { ReferralNode } from '@/components/ui/heatmap-visualizer';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { InfoIcon, AlertCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { InfoIcon, AlertCircle, ZoomIn, ZoomOut, RefreshCw, Download, Share2, Sliders } from 'lucide-react';
 
 export default function UserNetworkHeatmap() {
   const { user } = useAuth();
+  const [vizHeight, setVizHeight] = useState(600);
+  const [vizWidth, setVizWidth] = useState(900);
+  const [showInactive, setShowInactive] = useState(true);
+  const [colorScale, setColorScale] = useState("brand"); // "brand" or "traditional"
+  const [maxLevel, setMaxLevel] = useState(5);
+  const [activeTab, setActiveTab] = useState("visualization");
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['/api/user/network-performance'],
     enabled: !!user,
   });
+
+  // Handle zoom in/out
+  const handleZoomIn = () => {
+    setVizHeight(prev => Math.min(prev + 100, 1000));
+    setVizWidth(prev => Math.min(prev + 150, 1500));
+  };
+
+  const handleZoomOut = () => {
+    setVizHeight(prev => Math.max(prev - 100, 400));
+    setVizWidth(prev => Math.max(prev - 150, 600));
+  };
+
+  // Filter data to show/hide inactive users
+  const getFilteredData = (data: ReferralNode | undefined) => {
+    if (!data) return undefined;
+    
+    // Deep clone to avoid modifying the original data
+    const filteredData = JSON.parse(JSON.stringify(data));
+    
+    if (!showInactive) {
+      const filterInactive = (node: ReferralNode) => {
+        if (node.children && node.children.length > 0) {
+          node.children = node.children.filter(child => child.isActive);
+          node.children.forEach(filterInactive);
+        }
+        return node;
+      };
+      
+      return filterInactive(filteredData);
+    }
+    
+    return filteredData;
+  };
+  
+  const filteredData = getFilteredData(data as ReferralNode);
 
   const renderContent = () => {
     if (isLoading) {
@@ -55,7 +101,15 @@ export default function UserNetworkHeatmap() {
       );
     }
 
-    return <HeatmapVisualizer data={data as ReferralNode} />;
+    // Render the visualization with our personalization settings
+    return (
+      <HeatmapVisualizer 
+        data={filteredData as ReferralNode} 
+        width={vizWidth} 
+        height={vizHeight}
+        colorScale={colorScale}
+      />
+    );
   };
 
   return (

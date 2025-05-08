@@ -16,27 +16,42 @@ interface HeatmapVisualizerProps {
   width?: number;
   height?: number;
   className?: string;
+  colorScale?: "brand" | "traditional"; // "brand" = orange/red, "traditional" = green/yellow/orange/red
 }
 
 export default function HeatmapVisualizer({
   data,
   width = 900,
   height = 600,
-  className
+  className,
+  colorScale = "brand"
 }: HeatmapVisualizerProps) {
   const svgRef = useRef<SVGSVGElement | null>(null);
 
-  // Performance to color mapping function with our brand colors
+  // Performance to color mapping function based on selected color scale
   const getColor = (performance: number): string => {
-    // Color ranges with orange/red brand theme
-    if (performance < 25) {
-      return '#b91c1c'; // Deeper red for poor performance
-    } else if (performance < 50) {
-      return '#dc2626'; // Red for below average
-    } else if (performance < 75) {
-      return '#ef4444'; // Lighter red for average
+    if (colorScale === "brand") {
+      // Brand colors (orange/red theme)
+      if (performance < 25) {
+        return '#b91c1c'; // Deeper red for poor performance
+      } else if (performance < 50) {
+        return '#dc2626'; // Red for below average
+      } else if (performance < 75) {
+        return '#ef4444'; // Lighter red for average
+      } else {
+        return '#f97316'; // Orange for good performance - our primary brand color
+      }
     } else {
-      return '#f97316'; // Orange for good performance - our primary brand color
+      // Traditional colors (green/yellow/orange/red)
+      if (performance < 25) {
+        return '#ef4444'; // Red for poor performance
+      } else if (performance < 50) {
+        return '#f97316'; // Orange for below average
+      } else if (performance < 75) {
+        return '#eab308'; // Yellow for average
+      } else {
+        return '#22c55e'; // Green for good performance
+      }
     }
   };
 
@@ -200,12 +215,20 @@ export default function HeatmapVisualizer({
       .attr("font-weight", "bold")
       .text("Performance Legend");
 
-    const legendItems = [
-      { label: "Excellent (75-100%)", color: "#f97316" }, // Orange
-      { label: "Good (50-74%)", color: "#ef4444" }, // Light red
-      { label: "Fair (25-49%)", color: "#dc2626" }, // Red
-      { label: "Poor (0-24%)", color: "#b91c1c" } // Deep red
-    ];
+    // Legend items based on selected color scale
+    const legendItems = colorScale === "brand" 
+      ? [
+          { label: "Excellent (75-100%)", color: "#f97316" }, // Orange
+          { label: "Good (50-74%)", color: "#ef4444" }, // Light red
+          { label: "Fair (25-49%)", color: "#dc2626" }, // Red
+          { label: "Poor (0-24%)", color: "#b91c1c" } // Deep red
+        ]
+      : [
+          { label: "Excellent (75-100%)", color: "#22c55e" }, // Green
+          { label: "Good (50-74%)", color: "#eab308" }, // Yellow
+          { label: "Fair (25-49%)", color: "#f97316" }, // Orange
+          { label: "Poor (0-24%)", color: "#ef4444" } // Red
+        ];
 
     legendItems.forEach((item, i) => {
       legend.append("rect")
@@ -222,7 +245,7 @@ export default function HeatmapVisualizer({
         .text(item.label);
     });
 
-  }, [data, width, height]);
+  }, [data, width, height, colorScale]);
 
   return (
     <div className={cn("relative", className)}>
