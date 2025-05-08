@@ -430,7 +430,24 @@ export class DatabaseStorage implements IStorage {
   
   // Payment Settings Management
   async createPaymentSetting(setting: InsertPaymentSetting): Promise<PaymentSetting> {
-    const [newSetting] = await db.insert(paymentSettings).values(setting).returning();
+    // Ensure payment_method gets set properly by using direct SQL query
+    const [newSetting] = await db.execute(
+      `INSERT INTO payment_settings (
+        method, name, instructions, credentials, min_amount, max_amount, active, payment_method
+      ) VALUES (
+        $1, $2, $3, $4, $5, $6, $7, $8
+      ) RETURNING *`,
+      [
+        setting.method,
+        setting.name,
+        setting.instructions || null,
+        setting.credentials || null,
+        setting.minAmount || "10",
+        setting.maxAmount || "10000",
+        setting.active !== undefined ? setting.active : true,
+        setting.method // Set payment_method to the same value as method
+      ]
+    );
     return newSetting;
   }
 
@@ -449,9 +466,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updatePaymentSetting(id: number, settingData: Partial<PaymentSetting>): Promise<PaymentSetting | undefined> {
+    // If method is being updated, also update payment_method to match
+    const dataToUpdate = { ...settingData };
+    if (dataToUpdate.method) {
+      dataToUpdate.payment_method = dataToUpdate.method;
+    }
+    
+    // Update the payment setting
     const [updatedSetting] = await db
       .update(paymentSettings)
-      .set(settingData)
+      .set(dataToUpdate)
       .where(eq(paymentSettings.id, id))
       .returning();
     
