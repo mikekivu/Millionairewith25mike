@@ -95,9 +95,9 @@ export default function DepositModal({ open, onOpenChange }: DepositModalProps) 
 
   const handlePaymentMethodChange = (value: string) => {
     form.setValue('paymentMethod', value);
-    if (value.toLowerCase().includes('paypal')) {
+    if (value === 'paypal') {
       setPaymentTab('paypal');
-    } else if (value.toLowerCase().includes('crypto') || value.toLowerCase().includes('usdt')) {
+    } else if (value === 'usdt_trc20') {
       setPaymentTab('crypto');
     } else {
       setPaymentTab('bank');
@@ -307,15 +307,15 @@ Reference: DEP-${Date.now().toString().substring(8)}`}
               
               <Tabs defaultValue={paymentTab} className="w-full">
                 <TabsList className="grid grid-cols-3 mb-4">
-                  <TabsTrigger value="crypto" disabled={!form.getValues().paymentMethod.includes('usdt')}>
+                  <TabsTrigger value="crypto" disabled={form.getValues().paymentMethod !== 'usdt_trc20'}>
                     <Bitcoin className="h-4 w-4 mr-2" />
                     Crypto
                   </TabsTrigger>
-                  <TabsTrigger value="paypal" disabled={!form.getValues().paymentMethod.includes('paypal')}>
+                  <TabsTrigger value="paypal" disabled={form.getValues().paymentMethod !== 'paypal'}>
                     <CreditCard className="h-4 w-4 mr-2" />
                     PayPal
                   </TabsTrigger>
-                  <TabsTrigger value="bank" disabled={!form.getValues().paymentMethod.includes('bank')}>
+                  <TabsTrigger value="bank" disabled={form.getValues().paymentMethod !== 'bank_transfer'}>
                     <DollarSign className="h-4 w-4 mr-2" />
                     Bank
                   </TabsTrigger>

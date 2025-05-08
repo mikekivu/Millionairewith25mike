@@ -183,19 +183,38 @@ export class MemStorage implements IStorage {
     
     // Create payment settings
     this.createPaymentSetting({
-      paymentMethod: "paypal",
-      active: true,
-      walletAddress: "",
-      apiKey: process.env.PAYPAL_CLIENT_ID || "",
-      secretKey: process.env.PAYPAL_CLIENT_SECRET || ""
+      method: "paypal",
+      name: "PayPal",
+      instructions: "You will be redirected to PayPal to complete your payment. After completion, your account will be credited automatically.",
+      credentials: `{"clientId":"${process.env.PAYPAL_CLIENT_ID || ''}","clientSecret":"${process.env.PAYPAL_CLIENT_SECRET || ''}"}`,
+      minAmount: "10",
+      maxAmount: "10000",
+      active: true
     });
     
     this.createPaymentSetting({
-      paymentMethod: "coinbase",
-      active: true,
-      walletAddress: "TUt1RB8XL91QZeEPrY62QGYvM3raCUUJJb", // Example USDT TRC20 wallet address
-      apiKey: process.env.COINBASE_API_KEY || "",
-      secretKey: process.env.COINBASE_API_SECRET || ""
+      method: "usdt_trc20",
+      name: "USDT (TRC20)",
+      instructions: "Send USDT TRC20 to the wallet address displayed. Make sure to use the TRC20 network, otherwise your funds may be lost.",
+      credentials: "TUt1RB8XL91QZeEPrY62QGYvM3raCUUJJb", // Example USDT TRC20 wallet address
+      minAmount: "10",
+      maxAmount: "50000",
+      active: true
+    });
+    
+    this.createPaymentSetting({
+      method: "bank_transfer",
+      name: "Bank Transfer",
+      instructions: "Please include your transaction ID as reference when making the bank transfer. Your deposit will be processed once we've verified the payment.",
+      credentials: `Bank Name: MillionaireWith$25 Bank
+Account Name: MillionaireWith$25 Ltd
+Account Number: 1234567890
+Sort Code: 12-34-56
+Swift/BIC: MLNRWITH25
+Reference: Your Transaction ID`,
+      minAmount: "100",
+      maxAmount: "100000",
+      active: true
     });
   }
 
@@ -537,7 +556,12 @@ export class MemStorage implements IStorage {
   // Payment Settings Management
   async createPaymentSetting(setting: InsertPaymentSetting): Promise<PaymentSetting> {
     const id = this.paymentSettingId++;
-    const newSetting: PaymentSetting = { ...setting, id };
+    const newSetting: PaymentSetting = { 
+      ...setting, 
+      id,
+      minAmount: setting.minAmount || "10",
+      maxAmount: setting.maxAmount || "10000"
+    };
     this.paymentSettings.set(id, newSetting);
     return newSetting;
   }
@@ -548,7 +572,7 @@ export class MemStorage implements IStorage {
 
   async getPaymentSettingByMethod(method: string): Promise<PaymentSetting | undefined> {
     return Array.from(this.paymentSettings.values())
-      .find(setting => setting.paymentMethod === method);
+      .find(setting => setting.method === method);
   }
 
   async getAllPaymentSettings(): Promise<PaymentSetting[]> {
