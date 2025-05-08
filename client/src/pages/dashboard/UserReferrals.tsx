@@ -76,13 +76,19 @@ export default function UserReferrals() {
       accessorKey: 'referredUser.firstName',
       header: 'Name',
       cell: ({ row }) => {
-        const firstName = row.getValue('referredUser.firstName') as string;
-        const lastName = row.original.referredUser.lastName;
+        const referredUser = row.original.referredUser;
+        if (!referredUser) {
+          return <div>No user data</div>;
+        }
+        
+        const firstName = referredUser.firstName || '';
+        const lastName = referredUser.lastName || '';
+        const initials = (firstName ? firstName[0] : '') + (lastName ? lastName[0] : '');
         
         return (
           <div className="flex items-center">
             <div className="h-8 w-8 rounded-full bg-primary-100 text-primary-800 flex items-center justify-center mr-2 font-medium">
-              {firstName[0]}{lastName[0]}
+              {initials || 'U'}
             </div>
             <span>{firstName} {lastName}</span>
           </div>
@@ -93,14 +99,26 @@ export default function UserReferrals() {
       accessorKey: 'referredUser.email',
       header: 'Email',
       cell: ({ row }) => {
-        return row.getValue('referredUser.email') as string;
+        if (!row.original.referredUser) {
+          return <div>No email available</div>;
+        }
+        return row.original.referredUser.email || 'No email available';
       },
     },
     {
       accessorKey: 'referredUser.active',
       header: 'Status',
       cell: ({ row }) => {
-        const isActive = row.getValue('referredUser.active') as boolean;
+        if (!row.original.referredUser) {
+          return (
+            <Badge variant="outline" className="bg-gray-100 text-gray-800 flex items-center w-fit">
+              <BadgeX className="h-3 w-3 mr-1" />
+              Unknown
+            </Badge>
+          );
+        }
+        
+        const isActive = row.original.referredUser.active;
         
         return isActive ? (
           <Badge variant="outline" className="bg-green-100 text-green-800 flex items-center w-fit">
@@ -337,8 +355,8 @@ export default function UserReferrals() {
                         <DataTable 
                           columns={columns} 
                           data={referrals[level.toString()]} 
-                          searchColumn="referredUser.firstName"
-                          searchPlaceholder="Search by name..."
+                          searchColumn="commissionRate"
+                          searchPlaceholder="Search referrals..."
                         />
                       ) : (
                         <div className="py-8 text-center">

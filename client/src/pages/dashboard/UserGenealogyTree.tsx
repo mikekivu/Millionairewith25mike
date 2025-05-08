@@ -318,11 +318,11 @@ export default function UserGenealogyTree() {
                                 <CardContent className="p-4">
                                   <div className="flex items-center space-x-3">
                                     <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-800 font-medium">
-                                      {referral.referredUser.firstName[0]}{referral.referredUser.lastName[0]}
+                                      {(referral.referredUser.firstName?.[0] || '')}{(referral.referredUser.lastName?.[0] || '')}
                                     </div>
                                     <div>
                                       <p className="font-medium">
-                                        {referral.referredUser.firstName} {referral.referredUser.lastName}
+                                        {referral.referredUser.firstName || ''} {referral.referredUser.lastName || ''}
                                       </p>
                                       <p className="text-xs text-muted-foreground">
                                         Joined: {new Date(referral.createdAt).toLocaleDateString()}
@@ -338,8 +338,8 @@ export default function UserGenealogyTree() {
                                     </div>
                                     <div className="flex justify-between text-sm mt-1">
                                       <span className="text-muted-foreground">Status:</span>
-                                      <span className={`font-medium ${referral.referredUser.active ? 'text-green-600' : 'text-gray-500'}`}>
-                                        {referral.referredUser.active ? 'Active' : 'Inactive'}
+                                      <span className={`font-medium ${referral.referredUser?.active ? 'text-green-600' : 'text-gray-500'}`}>
+                                        {referral.referredUser?.active ? 'Active' : 'Inactive'}
                                       </span>
                                     </div>
                                   </div>
