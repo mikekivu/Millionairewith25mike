@@ -55,8 +55,15 @@ export const transactions = pgTable("transactions", {
   currency: text("currency").notNull().default("USDT"),
   status: text("status").notNull(), // pending, completed, failed
   createdAt: timestamp("created_at").notNull().defaultNow(),
-  paymentMethod: text("payment_method"), // paypal, coinbase
+  paymentMethod: text("payment_method"), // paypal, coinbase, bank_transfer, etc.
   transactionDetails: text("transaction_details"),
+  paymentProof: text("payment_proof"), // URL or path to payment proof image/document
+  externalTransactionId: text("external_transaction_id"), // ID from payment provider (PayPal, Coinbase, etc.)
+  processedAt: timestamp("processed_at"), // When the transaction was processed
+  processedBy: integer("processed_by").references(() => users.id), // Admin who processed the transaction
+  adminNotes: text("admin_notes"), // Internal notes for admins
+  receiptId: text("receipt_id"), // ID of generated receipt
+  receiptUrl: text("receipt_url"), // URL to download the receipt
   investmentId: integer("investment_id").references(() => investments.id),
   referralId: integer("referral_id").references(() => referrals.id),
 });
@@ -108,6 +115,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   }),
   investments: many(investments),
   transactions: many(transactions),
+  processedTransactions: many(transactions, { relationName: "transaction_processor" }),
   referralsAsReferrer: many(referrals, { relationName: "referrer" }),
   referralsAsReferred: many(referrals, { relationName: "referred" }),
 }));
@@ -132,6 +140,11 @@ export const transactionsRelations = relations(transactions, ({ one }) => ({
   user: one(users, {
     fields: [transactions.userId],
     references: [users.id],
+  }),
+  processor: one(users, {
+    fields: [transactions.processedBy],
+    references: [users.id],
+    relationName: "transaction_processor"
   }),
   investment: one(investments, {
     fields: [transactions.investmentId],
