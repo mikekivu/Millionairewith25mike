@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { User } from '@/lib/auth';
 import { Menu, X } from 'lucide-react';
+import logoImage from '@/assets/logoo.png';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -59,7 +60,10 @@ export default function Header() {
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
               <Link href="/">
-                <a className="text-primary-800 font-heading font-bold text-2xl">MillionaireWith$25</a>
+                <a className="flex items-center">
+                  <img src={logoImage} alt="MillionaireWith$25 Logo" className="h-10 w-auto mr-2" />
+                  <span className="text-primary-800 font-heading font-bold text-xl md:text-2xl">MillionaireWith$25</span>
+                </a>
               </Link>
             </div>
             <div className="hidden sm:-my-px sm:ml-6 sm:flex sm:space-x-8">
