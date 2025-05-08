@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mail, MessageSquare, Phone } from 'lucide-react';
+import { Mail, MessageSquare } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -26,8 +26,8 @@ export default function ContactUs() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const contactInfo: ContactInfo = {
-    email: 'support@richlance.com',
-    phone: '+1 (888) 123-4567',
+    email: 'info@millionairewith25.com',
+    phone: '',
     chatAvailable: true
   };
 
@@ -90,7 +90,7 @@ export default function ContactUs() {
         </div>
 
         <div className="mt-12 max-w-lg mx-auto lg:max-w-none">
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
             <Card>
               <CardContent className="p-6 text-center">
                 <div className="flex justify-center">
@@ -115,20 +115,6 @@ export default function ContactUs() {
                 <h3 className="mt-3 text-lg font-medium text-dark-900 font-heading">Live Chat</h3>
                 <p className="mt-2 text-dark-500">
                   Available 24/7 through the dashboard
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6 text-center">
-                <div className="flex justify-center">
-                  <div className="flex items-center justify-center h-12 w-12 rounded-full bg-primary-100 text-primary-800">
-                    <Phone className="h-5 w-5" />
-                  </div>
-                </div>
-                <h3 className="mt-3 text-lg font-medium text-dark-900 font-heading">Phone</h3>
-                <p className="mt-2 text-dark-500">
-                  {contactInfo.phone}
                 </p>
               </CardContent>
             </Card>

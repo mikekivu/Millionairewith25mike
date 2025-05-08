@@ -94,6 +94,11 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <a href="mailto:info@millionairewith25.com" className="text-base text-gray-300 hover:text-white">
+                  info@millionairewith25.com
+                </a>
+              </li>
+              <li>
                 <Link href="/terms">
                   <a className="text-base text-gray-300 hover:text-white">
                     Privacy Policy
