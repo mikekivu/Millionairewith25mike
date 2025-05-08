@@ -22,7 +22,6 @@ import AdminWithdrawals from "@/pages/admin/AdminWithdrawals";
 import AdminDeposits from "@/pages/admin/AdminDeposits";
 import AdminPlans from "@/pages/admin/AdminPlans";
 import AdminPaymentSettings from "@/pages/admin/AdminPaymentSettings";
-import AdminMessages from "@/pages/admin/AdminMessages";
 import { ProtectedRoute, AdminRoute } from "@/lib/auth";
 
 function Router() {
@@ -134,13 +133,6 @@ function Router() {
         {() => (
           <AdminRoute>
             <AdminPaymentSettings />
-          </AdminRoute>
-        )}
-      </Route>
-      <Route path="/admin/messages">
-        {() => (
-          <AdminRoute>
-            <AdminMessages />
           </AdminRoute>
         )}
       </Route>

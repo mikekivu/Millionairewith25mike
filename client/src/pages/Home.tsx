@@ -6,7 +6,7 @@ import GenealogyTreeVisualization from '@/components/home/GenealogyTreeVisualiza
 import RewardsSection from '@/components/home/RewardsSection';
 import StatsSection from '@/components/home/StatsSection';
 import HowItWorks from '@/components/home/HowItWorks';
-
+import LiveChat from '@/components/chat/LiveChat';
 
 // Import logo if available
 import logoPng from '@assets/logoo.png';
@@ -359,7 +359,8 @@ const Home: React.FC = () => {
         </div>
       </section>
       
-
+      {/* Live Chat Component */}
+      <LiveChat />
     </div>
   );
 };
