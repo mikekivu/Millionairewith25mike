@@ -29,6 +29,8 @@ export interface RegisterData {
   confirmPassword: string;
   firstName: string;
   lastName: string;
+  country?: string;
+  phoneNumber?: string;
   referralCode?: string;
   terms: boolean;
 }

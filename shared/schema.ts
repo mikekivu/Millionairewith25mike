@@ -202,6 +202,8 @@ export const registerSchema = insertUserSchema
   })
   .extend({
     confirmPassword: z.string().min(6),
+    country: z.string().optional(),
+    phoneNumber: z.string().optional(),
     referralCode: z.string().optional(),
     terms: z.boolean().refine(val => val === true, {
       message: "You must agree to the terms and conditions"

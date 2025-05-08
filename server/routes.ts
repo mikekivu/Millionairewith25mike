@@ -158,6 +158,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         email: validatedData.email,
         firstName: validatedData.firstName,
         lastName: validatedData.lastName,
+        country: validatedData.country || null,
+        phoneNumber: validatedData.phoneNumber || null,
         referralCode: validatedData.username.toUpperCase() + Math.random().toString(36).substring(2, 8),
         referredBy,
         role: "user",

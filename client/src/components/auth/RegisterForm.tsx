@@ -79,11 +79,19 @@ export default function RegisterForm() {
         registerData.referralCode = data.referralCode;
       }
       
+      if (data.country) {
+        registerData.country = data.country;
+      }
+      
+      if (data.phoneNumber) {
+        registerData.phoneNumber = data.phoneNumber;
+      }
+      
       await register(registerData);
       
       toast({
         title: "Registration Successful",
-        description: "Welcome to RichLance! Your account has been created.",
+        description: "Welcome to MillionaireWith$25! Your account has been created.",
       });
       
       navigate('/dashboard');
@@ -168,6 +176,36 @@ export default function RegisterForm() {
                 </FormItem>
               )}
             />
+            
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="country"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Country (Optional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Your country" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="phoneNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone Number (Optional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Your phone number" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <FormField
               control={form.control}
