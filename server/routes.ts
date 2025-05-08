@@ -492,6 +492,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Server error" });
     }
   });
+  
+  // Network performance heatmap data endpoint
+  app.get("/api/user/network-performance", authMiddleware, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      console.log(`Fetching network performance data for user ID: ${userId}`);
+      
+      const performanceData = await storage.getNetworkPerformance(userId);
+      
+      res.status(200).json(performanceData);
+    } catch (error) {
+      console.error("Error fetching network performance data:", error);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
 
   app.get("/api/user/referral-code", authMiddleware, async (req, res) => {
     try {
