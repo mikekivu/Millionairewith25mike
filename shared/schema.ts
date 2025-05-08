@@ -1,0 +1,153 @@
+import { pgTable, text, serial, integer, boolean, timestamp, numeric, foreignKey } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+
+// User Management
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  username: text("username").notNull().unique(),
+  password: text("password").notNull(),
+  email: text("email").notNull().unique(),
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
+  walletBalance: numeric("wallet_balance", { precision: 18, scale: 8 }).notNull().default("0"),
+  active: boolean("active").notNull().default(true),
+  role: text("role").notNull().default("user"),
+  referralCode: text("referral_code").notNull().unique(),
+  referredBy: integer("referred_by").references(() => users.id),
+  profileImage: text("profile_image"),
+});
+
+// Investment Plans
+export const plans = pgTable("plans", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  monthlyRate: numeric("monthly_rate", { precision: 5, scale: 2 }).notNull(),
+  minDeposit: numeric("min_deposit", { precision: 18, scale: 8 }).notNull(),
+  maxDeposit: numeric("max_deposit", { precision: 18, scale: 8 }).notNull(),
+  durationDays: integer("duration_days").notNull(),
+  features: text("features").array(),
+  active: boolean("active").notNull().default(true),
+});
+
+// Investments
+export const investments = pgTable("investments", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  planId: integer("plan_id").notNull().references(() => plans.id),
+  amount: numeric("amount", { precision: 18, scale: 8 }).notNull(),
+  status: text("status").notNull().default("active"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  endDate: timestamp("end_date").notNull(),
+  profit: numeric("profit", { precision: 18, scale: 8 }).notNull().default("0"),
+});
+
+// Transactions
+export const transactions = pgTable("transactions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  type: text("type").notNull(), // deposit, withdrawal, investment, referral
+  amount: numeric("amount", { precision: 18, scale: 8 }).notNull(),
+  currency: text("currency").notNull().default("USDT"),
+  status: text("status").notNull(), // pending, completed, failed
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  paymentMethod: text("payment_method"), // paypal, coinbase
+  transactionDetails: text("transaction_details"),
+  investmentId: integer("investment_id").references(() => investments.id),
+  referralId: integer("referral_id").references(() => referrals.id),
+});
+
+// Referrals
+export const referrals = pgTable("referrals", {
+  id: serial("id").primaryKey(),
+  referrerId: integer("referrer_id").notNull().references(() => users.id),
+  referredId: integer("referred_id").notNull().references(() => users.id),
+  level: integer("level").notNull(),
+  commissionRate: numeric("commission_rate", { precision: 5, scale: 2 }).notNull(),
+  commissionAmount: numeric("commission_amount", { precision: 18, scale: 8 }).notNull().default("0"),
+  status: text("status").notNull().default("active"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Payment Settings
+export const paymentSettings = pgTable("payment_settings", {
+  id: serial("id").primaryKey(),
+  paymentMethod: text("payment_method").notNull().unique(), // paypal, coinbase
+  active: boolean("active").notNull().default(true),
+  walletAddress: text("wallet_address"),
+  apiKey: text("api_key"),
+  secretKey: text("secret_key"),
+});
+
+// Contact Messages
+export const contactMessages = pgTable("contact_messages", {
+  id: serial("id").primaryKey(),
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
+  email: text("email").notNull(),
+  subject: text("subject").notNull(),
+  message: text("message").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  responded: boolean("responded").notNull().default(false),
+});
+
+// Insert Schemas
+export const insertUserSchema = createInsertSchema(users).omit({ id: true });
+export const insertPlanSchema = createInsertSchema(plans).omit({ id: true });
+export const insertInvestmentSchema = createInsertSchema(investments).omit({ id: true, createdAt: true, profit: true });
+export const insertTransactionSchema = createInsertSchema(transactions).omit({ id: true, createdAt: true });
+export const insertReferralSchema = createInsertSchema(referrals).omit({ id: true, createdAt: true, commissionAmount: true });
+export const insertPaymentSettingSchema = createInsertSchema(paymentSettings).omit({ id: true });
+export const insertContactMessageSchema = createInsertSchema(contactMessages).omit({ id: true, createdAt: true, responded: true });
+
+// Types
+export type User = typeof users.$inferSelect;
+export type InsertUser = z.infer<typeof insertUserSchema>;
+
+export type Plan = typeof plans.$inferSelect;
+export type InsertPlan = z.infer<typeof insertPlanSchema>;
+
+export type Investment = typeof investments.$inferSelect;
+export type InsertInvestment = z.infer<typeof insertInvestmentSchema>;
+
+export type Transaction = typeof transactions.$inferSelect;
+export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
+
+export type Referral = typeof referrals.$inferSelect;
+export type InsertReferral = z.infer<typeof insertReferralSchema>;
+
+export type PaymentSetting = typeof paymentSettings.$inferSelect;
+export type InsertPaymentSetting = z.infer<typeof insertPaymentSettingSchema>;
+
+export type ContactMessage = typeof contactMessages.$inferSelect;
+export type InsertContactMessage = z.infer<typeof insertContactMessageSchema>;
+
+// Auth Schemas
+export const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+});
+
+export const registerSchema = insertUserSchema
+  .pick({
+    username: true,
+    password: true,
+    email: true,
+    firstName: true,
+    lastName: true,
+  })
+  .extend({
+    confirmPassword: z.string().min(6),
+    referralCode: z.string().optional(),
+    terms: z.boolean().refine(val => val === true, {
+      message: "You must agree to the terms and conditions"
+    })
+  })
+  .refine(data => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+export type LoginInput = z.infer<typeof loginSchema>;
+export type RegisterInput = z.infer<typeof registerSchema>;
