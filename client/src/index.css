@@ -1,0 +1,169 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 20 14.3% 4.1%;
+  --muted: 60 4.8% 95.9%;
+  --muted-foreground: 25 5.3% 44.7%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 20 14.3% 4.1%;
+  --card: 0 0% 100%;
+  --card-foreground: 20 14.3% 4.1%;
+  --border: 20 5.9% 90%;
+  --input: 20 5.9% 90%;
+  
+  /* Custom colors for RichLance */
+  --primary: 210 100% 35%; /* #0056b3 */
+  --primary-dark: 210 100% 29%; /* #004494 */
+  --primary-light: 210 63% 48%; /* #3378c5 */
+  --primary-foreground: 210 100% 98%;
+  
+  --secondary: 156 100% 33%; /* #00a86b */
+  --secondary-dark: 156 100% 27%; /* #008755 */
+  --secondary-light: 156 57% 46%; /* #33ba87 */
+  --secondary-foreground: 210 100% 98%;
+  
+  --accent: 43 100% 51%; /* #ffc107 */
+  --accent-dark: 43 100% 44%; /* #e0a800 */
+  --accent-light: 43 100% 61%; /* #ffcd38 */
+  --accent-foreground: 20 14.3% 4.1%;
+  
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 60 9.1% 97.8%;
+  
+  --success: 142 76% 36%;
+  --success-foreground: 0 0% 98%;
+  
+  --warning: 38 92% 50%;
+  --warning-foreground: 0 0% 98%;
+  
+  --info: 221 83% 53%;
+  --info-foreground: 0 0% 98%;
+  
+  --ring: 210 100% 35%;
+  --radius: 0.5rem;
+  
+  /* Chart colors */
+  --chart-1: 210 100% 35%;
+  --chart-2: 156 100% 33%;
+  --chart-3: 43 100% 51%;
+  --chart-4: 0 84.2% 60.2%;
+  --chart-5: 221 83% 53%;
+}
+
+.dark {
+  --background: 20 14.3% 4.1%;
+  --foreground: 60 9.1% 97.8%;
+  --muted: 12 6.5% 15.1%;
+  --muted-foreground: 24 5.4% 63.9%;
+  --popover: 20 14.3% 4.1%;
+  --popover-foreground: 60 9.1% 97.8%;
+  --card: 20 14.3% 4.1%;
+  --card-foreground: 60 9.1% 97.8%;
+  --border: 12 6.5% 15.1%;
+  --input: 12 6.5% 15.1%;
+  
+  /* Custom colors for RichLance - Dark mode */
+  --primary: 210 90% 50%; /* #0074e8 */
+  --primary-dark: 210 100% 35%; /* #0056b3 */
+  --primary-light: 210 63% 65%; /* #6ea7e0 */
+  --primary-foreground: 210 100% 98%;
+  
+  --secondary: 156 90% 40%; /* #00cc80 */
+  --secondary-dark: 156 100% 33%; /* #00a86b */
+  --secondary-light: 156 57% 65%; /* #7fddb9 */
+  --secondary-foreground: 210 100% 98%;
+  
+  --accent: 43 100% 55%; /* #ffce38 */
+  --accent-dark: 43 100% 51%; /* #ffc107 */
+  --accent-light: 43 100% 71%; /* #ffdf7a */
+  --accent-foreground: 20 14.3% 4.1%;
+  
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  
+  --success: 142 76% 42%;
+  --success-foreground: 0 0% 98%;
+  
+  --warning: 38 92% 55%;
+  --warning-foreground: 0 0% 98%;
+  
+  --info: 221 83% 65%;
+  --info-foreground: 0 0% 98%;
+  
+  --ring: 210 90% 50%;
+  
+  /* Chart colors */
+  --chart-1: 210 90% 50%;
+  --chart-2: 156 90% 40%;
+  --chart-3: 43 100% 55%;
+  --chart-4: 0 62.8% 50.6%;
+  --chart-5: 221 83% 65%;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading font-bold;
+  }
+  
+  .font-financial {
+    font-family: 'DM Sans', sans-serif;
+  }
+}
+
+/* Custom styles for genealogy tree */
+.tree-connector {
+  position: absolute;
+  border-left: 2px solid hsl(var(--muted));
+  height: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  top: -20px;
+}
+
+.tree-horizontal-line {
+  position: absolute;
+  border-top: 2px solid hsl(var(--muted));
+  width: 100%;
+  top: -10px;
+}
+
+/* Animations */
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.slide-in {
+  animation: slideIn 0.5s ease-in-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
