@@ -24,7 +24,7 @@ interface NavItem {
 }
 
 export default function AdminSidebar() {
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
   const { user, logout } = useAuth();
   const { toast } = useToast();
 
@@ -77,6 +77,8 @@ export default function AdminSidebar() {
         title: 'Logged Out',
         description: 'You have been successfully logged out.',
       });
+      // Navigate to home page after logout
+      navigate('/');
     } catch (error) {
       toast({
         title: 'Error',

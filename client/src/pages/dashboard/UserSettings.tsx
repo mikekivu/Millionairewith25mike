@@ -13,6 +13,7 @@ import { apiRequest } from '@/lib/queryClient';
 import UserSidebar from '@/components/dashboard/UserSidebar';
 import { useAuth, User } from '@/lib/auth';
 import { UserCog, Key, Wallet, LogOut } from 'lucide-react';
+import { useLocation } from 'wouter';
 import {
   Form,
   FormControl,
