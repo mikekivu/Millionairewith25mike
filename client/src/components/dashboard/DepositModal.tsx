@@ -17,6 +17,7 @@ import { formatCurrency } from '@/lib/utils';
 import { AlertCircle, CreditCard, Copy, CheckCircle, DollarSign, Bitcoin } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import PayPalButton from '@/components/PayPalButton';
+import CryptoPaymentButton from '@/components/CryptoPaymentButton';
 
 interface DepositModalProps {
   open: boolean;
@@ -125,50 +126,12 @@ export default function DepositModal({ open, onOpenChange }: DepositModalProps) 
     switch (paymentTab) {
       case 'crypto':
         return (
-          <div className="space-y-4">
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Important</AlertTitle>
-              <AlertDescription>
-                Please send only USDT TRC20 to this address. Sending any other cryptocurrency may result in permanent loss.
-              </AlertDescription>
-            </Alert>
-            
-            <div className="mt-4">
-              <p className="text-sm font-medium mb-1">USDT TRC20 Address:</p>
-              <div className="flex items-center p-3 bg-gray-100 rounded-md">
-                <code className="text-xs flex-1 break-all">
-                  {selectedMethod?.credentials || 'TXxAb5Cdef1ghJklMnoPQr2sTu3vWXyZ4aBcDe5f'}
-                </code>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => copyToClipboard(selectedMethod?.credentials || 'TXxAb5Cdef1ghJklMnoPQr2sTu3vWXyZ4aBcDe5f')}
-                >
-                  <Copy className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-            
-            <div className="mt-4">
-              <p className="text-sm font-medium mb-1">Amount:</p>
-              <div className="flex items-center p-3 bg-gray-100 rounded-md">
-                <p className="text-sm">{formatCurrency(parseFloat(form.getValues().amount), 'USDT')}</p>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => copyToClipboard(form.getValues().amount)}
-                >
-                  <Copy className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-            
-            <div className="mt-2 text-sm text-gray-600">
-              <p className="font-medium">Instructions:</p>
-              <p>{selectedMethod?.instructions || 'Please send the exact amount to the address above. Once sent, your deposit will be processed within 30 minutes to 1 hour.'}</p>
-            </div>
-          </div>
+          <CryptoPaymentButton 
+            amount={form.getValues().amount}
+            walletAddress={selectedMethod?.credentials || 'TXxAb5Cdef1ghJklMnoPQr2sTu3vWXyZ4aBcDe5f'}
+            currency="USDT"
+            onSuccess={handleClose}
+          />
         );
       
       case 'paypal':
