@@ -23,6 +23,7 @@ import AdminDeposits from "@/pages/admin/AdminDeposits";
 import AdminPlans from "@/pages/admin/AdminPlans";
 import AdminPaymentSettings from "@/pages/admin/AdminPaymentSettings";
 import { ProtectedRoute, AdminRoute } from "@/lib/auth";
+import LiveChat from "@/components/LiveChat";
 
 function Router() {
   return (
@@ -147,6 +148,7 @@ function App() {
   return (
     <TooltipProvider>
       <Toaster />
+      <LiveChat />
       <Router />
     </TooltipProvider>
   );

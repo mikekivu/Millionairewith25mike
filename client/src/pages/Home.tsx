@@ -12,6 +12,7 @@ import Testimonials from '@/components/home/Testimonials';
 import AboutUs from '@/components/home/AboutUs';
 import ContactUs from '@/components/home/ContactUs';
 import CallToAction from '@/components/home/CallToAction';
+import GenealogyVisualization from '@/components/home/GenealogyVisualization';
 
 export default function Home() {
   return (
@@ -34,6 +35,7 @@ export default function Home() {
           <InvestmentPlans />
           <WhyChooseUs />
           <ReferralProgram />
+          <GenealogyVisualization />
           <HowItWorks />
           <Testimonials />
           <AboutUs />
