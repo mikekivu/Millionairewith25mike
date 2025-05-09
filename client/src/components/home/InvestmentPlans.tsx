@@ -165,17 +165,19 @@ export default function InvestmentPlans() {
                     </p>
                   </div>
                   
-                  <div className="mt-6 mb-4 px-4 py-3 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg">
-                    <div className="flex items-center">
-                      <div className="mr-3 bg-white p-2 rounded-full">
-                        <Gift className="h-5 w-5 text-orange-500" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">Gift: {gift.name}</p>
-                        <p className="text-xs text-gray-600">Qualify with {gift.qualification}</p>
+                  {gift && (
+                    <div className="mt-6 mb-4 px-4 py-3 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg">
+                      <div className="flex items-center">
+                        <div className="mr-3 bg-white p-2 rounded-full">
+                          <Gift className="h-5 w-5 text-orange-500" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">Gift: {gift.name}</p>
+                          <p className="text-xs text-gray-600">Qualify with {gift.qualification}</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                   
                   <div className="mt-4 space-y-3 flex-1">
                     {plan.features.map((feature, idx) => (
