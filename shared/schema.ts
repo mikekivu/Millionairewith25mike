@@ -111,6 +111,32 @@ export const contactMessages = pgTable("contact_messages", {
   responded: boolean("responded").notNull().default(false),
 });
 
+// User Messages (Member-to-member & Admin-to-member messages)
+export const userMessages = pgTable("user_messages", {
+  id: serial("id").primaryKey(),
+  senderId: integer("sender_id").notNull().references(() => users.id),
+  recipientId: integer("recipient_id").notNull().references(() => users.id),
+  subject: text("subject").notNull(),
+  message: text("message").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  read: boolean("read").notNull().default(false),
+  replied: boolean("replied").notNull().default(false),
+});
+
+// Notifications
+export const notifications = pgTable("notifications", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  title: text("title").notNull(),
+  message: text("message").notNull(),
+  type: text("type").notNull(), // payment, message, referral, plan, admin
+  status: text("status").notNull().default("unread"), // unread, read
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  entityId: integer("entity_id"), // ID of the related entity (payment ID, message ID, etc.)
+  entityType: text("entity_type"), // Type of the related entity (payment, message, etc.)
+  link: text("link"), // Optional link to navigate to when clicked
+});
+
 // Relations
 export const usersRelations = relations(users, ({ one, many }) => ({
   referer: one(users, {
