@@ -142,6 +142,8 @@ export class MemStorage implements IStorage {
     this.referrals = new Map();
     this.paymentSettings = new Map();
     this.contactMessages = new Map();
+    this.userMessages = new Map();
+    this.notifications = new Map();
     
     this.userId = 1;
     this.planId = 1;
@@ -150,6 +152,8 @@ export class MemStorage implements IStorage {
     this.referralId = 1;
     this.paymentSettingId = 1;
     this.contactMessageId = 1;
+    this.userMessageId = 1;
+    this.notificationId = 1;
     
     this.initializeData();
   }
