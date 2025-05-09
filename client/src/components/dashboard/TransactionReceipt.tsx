@@ -8,7 +8,7 @@ import {
   DialogHeader, 
   DialogTitle
 } from '@/components/ui/dialog';
-import { Receipt, Download, Printer, Send, X } from 'lucide-react';
+import { Receipt, Download, Printer, Send, X, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { downloadReceipt, generateReceiptAsBase64 } from '@/lib/receiptGenerator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -176,6 +176,32 @@ const TransactionReceipt: React.FC<TransactionReceiptProps> = ({
       title: 'Coming Soon',
       description: 'Email receipt functionality will be available soon.'
     });
+  };
+  
+  // Handler for deleting receipt
+  const handleDeleteReceipt = () => {
+    if (!receiptDataUrl) {
+      return;
+    }
+    
+    setIsLoading(true);
+    try {
+      // Clear the receipt data
+      setReceiptDataUrl(null);
+      toast({
+        title: 'Success',
+        description: 'Receipt deleted successfully.'
+      });
+    } catch (error) {
+      console.error('Error deleting receipt:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete receipt. Please try again.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

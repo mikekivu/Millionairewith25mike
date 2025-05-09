@@ -150,8 +150,20 @@ const UserMessages = () => {
 
   // Send new message mutation
   const sendMessageMutation = useMutation({
-    mutationFn: (values: MessageFormValues) =>
-      apiRequest('POST', '/api/user/messages', values),
+    mutationFn: async (values: MessageFormValues) => {
+      try {
+        const response = await apiRequest('POST', '/api/user/messages', values);
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('Error sending message:', errorData);
+          throw new Error(errorData.message || 'Failed to send message');
+        }
+        return response;
+      } catch (error) {
+        console.error('Send message error:', error);
+        throw error;
+      }
+    },
     onSuccess: () => {
       toast({
         title: 'Success',
@@ -161,10 +173,10 @@ const UserMessages = () => {
       setComposingMessage(false);
       messageForm.reset();
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
         title: 'Error',
-        description: 'Failed to send message',
+        description: error.message || 'Failed to send message',
         variant: 'destructive',
       });
     },
@@ -172,8 +184,20 @@ const UserMessages = () => {
 
   // Reply to message mutation
   const replyMessageMutation = useMutation({
-    mutationFn: (values: ReplyFormValues) =>
-      apiRequest('POST', `/api/user/messages/${selectedMessage?.id}/reply`, values),
+    mutationFn: async (values: ReplyFormValues) => {
+      try {
+        const response = await apiRequest('POST', `/api/user/messages/${selectedMessage?.id}/reply`, values);
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('Error sending reply:', errorData);
+          throw new Error(errorData.message || 'Failed to send reply');
+        }
+        return response;
+      } catch (error) {
+        console.error('Send reply error:', error);
+        throw error;
+      }
+    },
     onSuccess: () => {
       toast({
         title: 'Success',
@@ -185,10 +209,10 @@ const UserMessages = () => {
       setMessageDialogOpen(false);
       replyForm.reset();
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
         title: 'Error',
-        description: 'Failed to send reply',
+        description: error.message || 'Failed to send reply',
         variant: 'destructive',
       });
     },
