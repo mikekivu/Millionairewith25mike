@@ -33,11 +33,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             {user.role === 'admin' ? 'Admin Dashboard' : 'Member Dashboard'}
           </div>
           <div className="flex items-center space-x-4">
-            <div className="bg-orange-100 p-2 rounded-full hover:bg-orange-200 transition-colors">
+            <div className="relative bg-orange-100 p-2 rounded-full hover:bg-orange-200 transition-colors">
               <NotificationBell userRole={user.role === 'admin' ? 'admin' : 'user'} />
             </div>
-            <div className="text-sm font-medium">
-              {user.firstName} {user.lastName}
+            <div className="text-sm font-medium flex items-center">
+              <span className="mr-1">Welcome,</span>
+              <span className="font-semibold">{user.firstName} {user.lastName}</span>
             </div>
           </div>
         </header>
