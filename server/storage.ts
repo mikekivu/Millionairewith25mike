@@ -147,74 +147,155 @@ export class MemStorage implements IStorage {
     };
     this.createUser(adminUser);
     
-    // Create sample plans
+    // Create Matrix Board plans
     this.createPlan({
-      name: "Basic",
-      description: "Perfect for beginners looking to start their investment journey.",
-      monthlyRate: "5",
+      name: "Matrix Board 1",
+      description: "Join with 25 USDT. Refer 15 People to earn 200 USDT. Re-entry available.",
+      monthlyRate: "0",
+      minDeposit: "25",
+      maxDeposit: "25",
+      durationDays: 365,
+      features: [
+        "Join with 25 USDT", 
+        "Refer 15 People", 
+        "Total Income: 200 USDT", 
+        "Re-Entry: 25 USDT",
+        "Total Income After Re-Entry: 200 USDT",
+        "Reward Gift: Health Product"
+      ],
+      active: true,
+      requiredReferrals: 15,
+      totalIncome: "200",
+      reEntryAmount: "25",
+      totalIncomeAfterReEntry: "200",
+      rewardGift: "Health Product"
+    });
+    
+    this.createPlan({
+      name: "Matrix Board 2",
+      description: "Join with 100 USDT. Refer 15 People to earn 800 USDT. Re-entry available.",
+      monthlyRate: "0",
       minDeposit: "100",
-      maxDeposit: "1000",
-      durationDays: 30,
-      features: ["Min Deposit: 100 USDT", "Max Deposit: 1,000 USDT", "Duration: 30 days", "24/7 Support"],
-      active: true
+      maxDeposit: "100",
+      durationDays: 365,
+      features: [
+        "Join with 100 USDT", 
+        "Refer 15 People", 
+        "Total Income: 800 USDT", 
+        "Re-Entry: 100 USDT",
+        "Total Income After Re-Entry: 700 USDT",
+        "Reward Gift: Mobile phone"
+      ],
+      active: true,
+      requiredReferrals: 15,
+      totalIncome: "800",
+      reEntryAmount: "100",
+      totalIncomeAfterReEntry: "700",
+      rewardGift: "Mobile phone"
     });
     
     this.createPlan({
-      name: "Standard",
-      description: "Our most popular plan for active investors.",
-      monthlyRate: "8",
+      name: "Matrix Board 3",
+      description: "Join with 500 USDT. Refer 15 People to earn 4000 USDT. Re-entry available.",
+      monthlyRate: "0",
+      minDeposit: "500",
+      maxDeposit: "500",
+      durationDays: 365,
+      features: [
+        "Join with 500 USDT", 
+        "Refer 15 People", 
+        "Total Income: 4000 USDT", 
+        "Re-Entry: 500 USDT",
+        "Total Income After Re-Entry: 3500 USDT",
+        "Reward Gift: Tablet"
+      ],
+      active: true,
+      requiredReferrals: 15,
+      totalIncome: "4000",
+      reEntryAmount: "500",
+      totalIncomeAfterReEntry: "3500",
+      rewardGift: "Tablet"
+    });
+    
+    this.createPlan({
+      name: "Matrix Board 4",
+      description: "Join with 1000 USDT. Refer 15 People to earn 8000 USDT. Re-entry available.",
+      monthlyRate: "0",
       minDeposit: "1000",
-      maxDeposit: "10000",
-      durationDays: 30,
-      features: ["Min Deposit: 1,000 USDT", "Max Deposit: 10,000 USDT", "Duration: 30 days", "24/7 Support + Financial Advisor"],
-      active: true
+      maxDeposit: "1000",
+      durationDays: 365,
+      features: [
+        "Join with 1000 USDT", 
+        "Refer 15 People", 
+        "Total Income: 8000 USDT", 
+        "Re-Entry: 1000 USDT",
+        "Total Income After Re-Entry: 7000 USDT",
+        "Reward Gift: iPad"
+      ],
+      active: true,
+      requiredReferrals: 15,
+      totalIncome: "8000",
+      reEntryAmount: "1000",
+      totalIncomeAfterReEntry: "7000",
+      rewardGift: "iPad"
     });
     
     this.createPlan({
-      name: "Premium",
-      description: "For serious investors seeking maximum returns.",
-      monthlyRate: "12",
-      minDeposit: "10000",
-      maxDeposit: "50000",
-      durationDays: 30,
-      features: ["Min Deposit: 10,000 USDT", "Max Deposit: 50,000 USDT", "Duration: 30 days", "VIP Support + Dedicated Manager"],
-      active: true
+      name: "Matrix Board 5",
+      description: "Join with 4000 USDT. Refer 15 People to earn 32000 USDT. Re-entry available.",
+      monthlyRate: "0",
+      minDeposit: "4000",
+      maxDeposit: "4000",
+      durationDays: 365,
+      features: [
+        "Join with 4000 USDT", 
+        "Refer 15 People", 
+        "Total Income: 32000 USDT", 
+        "Re-Entry: 4000 USDT",
+        "Total Income After Re-Entry: 28000 USDT",
+        "Reward Gift: Laptop"
+      ],
+      active: true,
+      requiredReferrals: 15,
+      totalIncome: "32000",
+      reEntryAmount: "4000",
+      totalIncomeAfterReEntry: "28000",
+      rewardGift: "Laptop"
     });
     
-    // Create payment settings
-    this.createPaymentSetting({
-      method: "paypal",
-      name: "PayPal",
-      instructions: "You will be redirected to PayPal to complete your payment. After completion, your account will be credited automatically.",
-      credentials: `{"clientId":"${process.env.PAYPAL_CLIENT_ID || ''}","clientSecret":"${process.env.PAYPAL_CLIENT_SECRET || ''}"}`,
-      minAmount: "10",
-      maxAmount: "10000",
-      active: true
+    this.createPlan({
+      name: "Matrix Board 6",
+      description: "Join with 8000 USDT. Refer 15 People to earn 64000 USDT. Re-entry available.",
+      monthlyRate: "0",
+      minDeposit: "8000",
+      maxDeposit: "8000",
+      durationDays: 365,
+      features: [
+        "Join with 8000 USDT", 
+        "Refer 15 People", 
+        "Total Income: 64000 USDT", 
+        "Re-Entry: 8000 USDT",
+        "Total Income After Re-Entry: 56000 USDT",
+        "Reward Gift: Holiday treatment vocation"
+      ],
+      active: true,
+      requiredReferrals: 15,
+      totalIncome: "64000",
+      reEntryAmount: "8000",
+      totalIncomeAfterReEntry: "56000",
+      rewardGift: "Holiday treatment vocation"
     });
     
+    // Create payment settings - only Coinbase USDT TRC20
     this.createPaymentSetting({
       method: "usdt_trc20",
       name: "USDT (TRC20)",
-      instructions: "Send USDT TRC20 to the wallet address displayed. Make sure to use the TRC20 network, otherwise your funds may be lost.",
+      instructions: "Send USDT TRC20 to the wallet address displayed below. Make sure to use the TRC20 network on Coinbase, otherwise your funds may be lost. After sending, please upload the payment proof screenshot for verification.",
       credentials: "TUt1RB8XL91QZeEPrY62QGYvM3raCUUJJb", // Example USDT TRC20 wallet address
-      minAmount: "10",
-      maxAmount: "50000",
-      active: true
-    });
-    
-    this.createPaymentSetting({
-      method: "bank_transfer",
-      name: "Bank Transfer",
-      instructions: "Please include your transaction ID as reference when making the bank transfer. Your deposit will be processed once we've verified the payment.",
-      credentials: `Bank Name: MillionaireWith$25 Bank
-Account Name: MillionaireWith$25 Ltd
-Account Number: 1234567890
-Sort Code: 12-34-56
-Swift/BIC: MLNRWITH25
-Reference: Your Transaction ID`,
-      minAmount: "100",
-      maxAmount: "100000",
-      active: true
+      minAmount: "25", // Minimum is 25 USDT for Matrix Board 1
+      maxAmount: "8000", // Maximum is 8000 USDT for Matrix Board 6
+      active: true,
+      payment_method: "usdt_trc20"
     });
   }
 

@@ -32,6 +32,12 @@ export const plans = pgTable("plans", {
   durationDays: integer("duration_days").notNull(),
   features: text("features").array(),
   active: boolean("active").notNull().default(true),
+  // Matrix Board specific fields
+  requiredReferrals: integer("required_referrals").default(15),
+  totalIncome: numeric("total_income", { precision: 18, scale: 8 }),
+  reEntryAmount: numeric("re_entry_amount", { precision: 18, scale: 8 }),
+  totalIncomeAfterReEntry: numeric("total_income_after_reentry", { precision: 18, scale: 8 }),
+  rewardGift: text("reward_gift"),
 });
 
 // Investments

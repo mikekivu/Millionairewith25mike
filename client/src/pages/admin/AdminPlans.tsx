@@ -78,10 +78,16 @@ const planFormSchema = z.object({
   description: z.string().min(1, "Description is required"),
   minDeposit: z.string().min(1, "Minimum deposit is required"),
   maxDeposit: z.string().min(1, "Maximum deposit is required"),
-  roi: z.string().min(1, "ROI is required"),
+  roi: z.string().default("0"), // Can be 0 for Matrix Board plans
   durationDays: z.string().min(1, "Duration is required").transform(val => parseInt(val)),
-  referralBonus: z.string().min(1, "Referral bonus is required"),
-  active: z.boolean().default(true)
+  referralBonus: z.string().default("0"), // Can be 0 for Matrix Board plans
+  active: z.boolean().default(true),
+  // Matrix Board specific fields
+  requiredReferrals: z.string().default("15"),
+  totalIncome: z.string().min(0, "Total income is required"),
+  reEntryAmount: z.string().min(0, "Re-entry amount is required"),
+  totalIncomeAfterReEntry: z.string().min(0, "Total income after re-entry is required"),
+  rewardGift: z.string().optional()
 });
 
 type PlanFormValues = z.infer<typeof planFormSchema>;
@@ -218,10 +224,16 @@ export default function AdminPlans() {
       description: "",
       minDeposit: "100",
       maxDeposit: "10000",
-      roi: "5",
-      durationDays: "30",
-      referralBonus: "1",
-      active: true
+      roi: "0", // Default to 0 for Matrix Board plans
+      durationDays: "365", // Longer duration for Matrix Board plans
+      referralBonus: "0", // Default to 0 for Matrix Board plans
+      active: true,
+      // Matrix Board specific fields
+      requiredReferrals: "15",
+      totalIncome: "",
+      reEntryAmount: "",
+      totalIncomeAfterReEntry: "",
+      rewardGift: ""
     }
   });
 
@@ -243,7 +255,13 @@ export default function AdminPlans() {
       roi: plan.roi,
       durationDays: plan.durationDays.toString(),
       referralBonus: plan.referralBonus,
-      active: plan.active
+      active: plan.active,
+      // Matrix Board specific fields
+      requiredReferrals: plan.requiredReferrals?.toString() || "15",
+      totalIncome: plan.totalIncome || "",
+      reEntryAmount: plan.reEntryAmount || "",
+      totalIncomeAfterReEntry: plan.totalIncomeAfterReEntry || "",
+      rewardGift: plan.rewardGift || ""
     });
     setIsDialogOpen(true);
   };
@@ -304,24 +322,26 @@ export default function AdminPlans() {
       },
     },
     {
-      accessorKey: 'roi',
-      header: 'ROI',
+      accessorKey: 'requiredReferrals',
+      header: 'Required Referrals',
       cell: ({ row }) => {
-        return `${row.getValue('roi')}%`;
+        return row.original.requiredReferrals || '15';
       },
     },
     {
-      accessorKey: 'durationDays',
-      header: 'Duration',
+      accessorKey: 'totalIncome',
+      header: 'Total Income',
       cell: ({ row }) => {
-        return `${row.getValue('durationDays')} days`;
+        return row.original.totalIncome 
+          ? formatCurrency(row.original.totalIncome, 'USDT')
+          : formatCurrency(row.getValue('maxDeposit'), 'USDT');
       },
     },
     {
-      accessorKey: 'referralBonus',
-      header: 'Referral Bonus',
+      accessorKey: 'rewardGift',
+      header: 'Reward Gift',
       cell: ({ row }) => {
-        return `${row.getValue('referralBonus')}%`;
+        return row.original.rewardGift || '-';
       },
     },
     {
@@ -711,6 +731,85 @@ export default function AdminPlans() {
                     </FormItem>
                   )}
                 />
+              </div>
+              
+              {/* Matrix Board specific fields */}
+              <div className="mt-4 p-4 border border-dashed border-amber-300 bg-amber-50 rounded-md">
+                <h3 className="font-semibold text-amber-800 mb-3">Matrix Board Settings</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <FormField
+                    control={form.control}
+                    name="requiredReferrals"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Required Referrals</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="rewardGift"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Reward Gift</FormLabel>
+                        <FormControl>
+                          <Input type="text" placeholder="e.g. Health Product, Mobile phone" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="totalIncome"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Total Income (USDT)</FormLabel>
+                        <FormControl>
+                          <Input type="number" step="0.01" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="reEntryAmount"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Re-Entry Amount (USDT)</FormLabel>
+                        <FormControl>
+                          <Input type="number" step="0.01" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="totalIncomeAfterReEntry"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Income After Re-Entry</FormLabel>
+                        <FormControl>
+                          <Input type="number" step="0.01" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
               
               <DialogFooter>
