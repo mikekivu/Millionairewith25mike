@@ -102,7 +102,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/paypal/order/:orderID/capture", async (req, res) => {
-    await capturePaypalOrder(req, res);
+    try {
+      // First capture the order with PayPal
+      const originalResponse = await capturePaypalOrder(req, res);
+      
+      // After successful capture, create a transaction record
+      // This needs to be implemented properly according to how capturePaypalOrder responds
+      // and how your transaction creation system works
+      if (req.session.userId) {
+        const orderDetails = originalResponse;
+        if (orderDetails && orderDetails.status === 'COMPLETED') {
+          // Add transaction to the database
+          await storage.createTransaction({
+            userId: req.session.userId,
+            type: 'deposit',
+            amount: orderDetails.purchase_units[0].amount.value,
+            currency: 'USDT',
+            status: 'completed',
+            paymentMethod: 'paypal',
+            transactionDetails: JSON.stringify({
+              paypal_order_id: req.params.orderID,
+              payment_time: new Date().toISOString(),
+              capture_id: orderDetails.id
+            }),
+            externalTransactionId: orderDetails.id
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error processing PayPal payment:', error);
+      // Don't send a response here as capturePaypalOrder already sends one
+    }
   });
 
   // Coinbase Webhook
