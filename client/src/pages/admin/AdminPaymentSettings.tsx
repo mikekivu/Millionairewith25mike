@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import AdminSidebar from '@/components/dashboard/AdminSidebar';
-import { PayPalConfigForm } from '@/components/dashboard/PayPalConfigForm';
+// PayPal integration removed
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
@@ -109,22 +109,13 @@ export default function AdminPaymentSettings() {
   // Predefined payment methods
   const predefinedMethods: PredefinedMethod[] = [
     {
-      id: "paypal",
-      name: "PayPal",
-      icon: <CreditCard className="h-5 w-5" />,
-      defaultInstructions: "To deposit via PayPal, click the PayPal button and follow the instructions to complete your payment.",
-      defaultCredentials: "example@yourdomain.com",
-      minAmount: "25",
-      maxAmount: "10000"
-    },
-    {
       id: "usdt_trc20",
       name: "USDT TRC20 (Coinbase)",
       icon: <Bitcoin className="h-5 w-5" />,
-      defaultInstructions: "Send USDT to the provided wallet address using the TRC20 network only. Include your username in the transaction memo.",
+      defaultInstructions: "Send USDT to the provided wallet address using the TRC20 network only. Include your username in the transaction memo for faster processing.",
       defaultCredentials: "TXz8aYxxx...(enter your USDT TRC20 wallet address)",
       minAmount: "25",
-      maxAmount: "25000"
+      maxAmount: "8000"
     }
   ];
 
@@ -366,9 +357,22 @@ export default function AdminPaymentSettings() {
               </Button>
             </div>
             
-            {/* PayPal API Configuration */}
+            {/* Payment methods configuration instructions */}
             <div className="mb-8">
-              <PayPalConfigForm />
+              <Card>
+                <CardHeader>
+                  <CardTitle>USDT TRC20 Payments</CardTitle>
+                  <CardDescription>
+                    Configure Coinbase USDT TRC20 payment settings below
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">
+                    We have removed PayPal integration and now support only Coinbase USDT TRC20 payments.
+                    Add your Coinbase wallet address using the "Add Payment Method" button above.
+                  </p>
+                </CardContent>
+              </Card>
             </div>
             
             {isLoading ? (

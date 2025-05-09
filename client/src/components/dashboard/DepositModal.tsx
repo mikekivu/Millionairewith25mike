@@ -16,7 +16,7 @@ import { apiRequest } from '@/lib/queryClient';
 import { formatCurrency } from '@/lib/utils';
 import { AlertCircle, CreditCard, Copy, CheckCircle, DollarSign, Bitcoin } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import PayPalButton from '@/components/PayPalButton';
+// PayPal integration removed
 import CryptoPaymentButton from '@/components/CryptoPaymentButton';
 
 interface DepositModalProps {
@@ -133,26 +133,7 @@ export default function DepositModal({ open, onOpenChange }: DepositModalProps) 
           />
         );
       
-      case 'paypal':
-        return (
-          <div className="space-y-4">
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Important</AlertTitle>
-              <AlertDescription>
-                You will be redirected to PayPal to complete your payment. After successful payment, your deposit will be automatically credited to your account.
-              </AlertDescription>
-            </Alert>
-            
-            <div className="flex justify-center my-6">
-              <PayPalButton 
-                amount={form.getValues().amount}
-                currency="USD"
-                intent="CAPTURE"
-              />
-            </div>
-          </div>
-        );
+      // PayPal integration removed
       
       case 'bank':
         return (
@@ -306,14 +287,10 @@ Reference: DEP-${Date.now().toString().substring(8)}`}
               </div>
               
               <Tabs defaultValue={paymentTab} className="w-full">
-                <TabsList className="grid grid-cols-3 mb-4">
+                <TabsList className="grid grid-cols-2 mb-4">
                   <TabsTrigger value="crypto" disabled={form.getValues().paymentMethod !== 'usdt_trc20'}>
                     <Bitcoin className="h-4 w-4 mr-2" />
-                    Crypto
-                  </TabsTrigger>
-                  <TabsTrigger value="paypal" disabled={form.getValues().paymentMethod !== 'paypal'}>
-                    <CreditCard className="h-4 w-4 mr-2" />
-                    PayPal
+                    USDT TRC20
                   </TabsTrigger>
                   <TabsTrigger value="bank" disabled={form.getValues().paymentMethod !== 'bank_transfer'}>
                     <DollarSign className="h-4 w-4 mr-2" />
