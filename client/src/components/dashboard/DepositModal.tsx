@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import React, { useState, useEffect } from 'react';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -12,14 +12,25 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { formatCurrency } from '@/lib/utils';
-import { AlertCircle, Copy, CheckCircle, ExternalLink } from 'lucide-react';
+import { AlertCircle, Copy, CheckCircle, DollarSign } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import CryptoPaymentButton from '@/components/CryptoPaymentButton';
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from '@/components/ui/label';
 
 interface DepositModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
+
+// USDT deposit amounts should match the Matrix Board levels
+const MATRIX_LEVELS = [
+  { level: 1, amount: "25", income: "200", reward: "Health Product" },
+  { level: 2, amount: "100", income: "800", reward: "Mobile phone" },
+  { level: 3, amount: "500", income: "4000", reward: "Tablet" },
+  { level: 4, amount: "1000", income: "8000", reward: "iPad" },
+  { level: 5, amount: "4000", income: "32000", reward: "Laptop" },
+  { level: 6, amount: "8000", income: "64000", reward: "Holiday vacation" }
+];
 
 const depositFormSchema = z.object({
   amount: z.string()
@@ -29,9 +40,10 @@ const depositFormSchema = z.object({
     .refine(
       (val) => {
         const amount = parseFloat(val);
-        return amount >= 25 && amount <= 8000;
+        // Check if amount matches any of the Matrix Board levels
+        return MATRIX_LEVELS.some(level => parseFloat(level.amount) === amount);
       },
-      { message: "Amount must be between 25 USDT and 8000 USDT" }
+      { message: "Amount must be one of: 25, 100, 500, 1000, 4000, or 8000 USDT" }
     ),
 });
 
@@ -47,16 +59,16 @@ export default function DepositModal({ open, onOpenChange }: DepositModalProps) 
   // Fetch USDT TRC20 payment setting
   const { data: paymentSettings } = useQuery({
     queryKey: ['/api/payment-settings'],
-    staleTime: 60 * 60 * 1000, // 1 hour
-    onSuccess: (data) => {
-      if (Array.isArray(data) && data.length > 0) {
-        const usdtMethod = data.find((method: any) => method.method === 'usdt_trc20');
-        if (usdtMethod && usdtMethod.credentials) {
-          setWalletAddress(usdtMethod.credentials);
-        }
+  });
+
+  useEffect(() => {
+    if (Array.isArray(paymentSettings) && paymentSettings.length > 0) {
+      const usdtMethod = paymentSettings.find((method: any) => method.method === 'usdt_trc20');
+      if (usdtMethod && usdtMethod.credentials) {
+        setWalletAddress(usdtMethod.credentials);
       }
     }
-  });
+  }, [paymentSettings]);
 
   // Create deposit request mutation
   const depositMutation = useMutation({
@@ -104,17 +116,6 @@ export default function DepositModal({ open, onOpenChange }: DepositModalProps) 
     });
   };
 
-  const handlePaymentMethodChange = (value: string) => {
-    form.setValue('paymentMethod', value);
-    if (value === 'paypal') {
-      setPaymentTab('paypal');
-    } else if (value === 'usdt_trc20') {
-      setPaymentTab('crypto');
-    } else {
-      setPaymentTab('bank');
-    }
-  };
-
   const handleResetForm = () => {
     setStep('form');
     setDepositData(null);
@@ -126,74 +127,6 @@ export default function DepositModal({ open, onOpenChange }: DepositModalProps) 
     setTimeout(() => {
       handleResetForm();
     }, 300); // Reset after close animation
-  };
-
-  const selectedMethod = Array.isArray(paymentMethods) 
-    ? paymentMethods.find((method: any) => method.method === form.getValues().paymentMethod)
-    : undefined;
-
-  const renderPaymentInstructions = () => {
-    switch (paymentTab) {
-      case 'crypto':
-        return (
-          <CryptoPaymentButton 
-            amount={form.getValues().amount}
-            walletAddress={selectedMethod?.credentials || 'TXxAb5Cdef1ghJklMnoPQr2sTu3vWXyZ4aBcDe5f'}
-            currency="USDT"
-            onSuccess={handleClose}
-          />
-        );
-      
-      // PayPal integration removed
-      
-      case 'bank':
-        return (
-          <div className="space-y-4">
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Important</AlertTitle>
-              <AlertDescription>
-                Please include your transaction ID as reference when making the bank transfer. Your deposit will be processed once we've verified the payment.
-              </AlertDescription>
-            </Alert>
-            
-            <div className="mt-4">
-              <p className="text-sm font-medium mb-1">Bank Details:</p>
-              <div className="p-3 bg-gray-100 rounded-md">
-                <pre className="text-xs whitespace-pre-wrap">
-                  {selectedMethod?.credentials || 
-                   `Bank Name: Example Bank
-Account Name: MillionaireWith$25 Ltd
-Account Number: 1234567890
-Sort Code: 12-34-56
-Reference: DEP-${Date.now().toString().substring(8)}`}
-                </pre>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="mt-2"
-                onClick={() => copyToClipboard(selectedMethod?.credentials || '')}
-              >
-                <Copy className="h-4 w-4 mr-2" /> Copy Details
-              </Button>
-            </div>
-            
-            <div className="mt-4">
-              <p className="text-sm font-medium mb-1">Amount to Transfer:</p>
-              <p className="text-lg font-bold">{formatCurrency(parseFloat(form.getValues().amount), 'USDT')}</p>
-            </div>
-            
-            <div className="mt-2 text-sm text-gray-600">
-              <p className="font-medium">Instructions:</p>
-              <p>{selectedMethod?.instructions || 'Please transfer the exact amount using the bank details provided. Include your transaction ID as the reference. Your deposit will be processed within 1-2 business days.'}</p>
-            </div>
-          </div>
-        );
-      
-      default:
-        return null;
-    }
   };
 
   return (
