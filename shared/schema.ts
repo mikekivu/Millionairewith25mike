@@ -151,6 +151,9 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   processedTransactions: many(transactions, { relationName: "transaction_processor" }),
   referralsAsReferrer: many(referrals, { relationName: "referrer" }),
   referralsAsReferred: many(referrals, { relationName: "referred" }),
+  sentMessages: many(userMessages, { relationName: "message_sender" }),
+  receivedMessages: many(userMessages, { relationName: "message_recipient" }),
+  notifications: many(notifications),
 }));
 
 export const plansRelations = relations(plans, ({ many }) => ({
@@ -203,6 +206,26 @@ export const referralsRelations = relations(referrals, ({ one, many }) => ({
   transactions: many(transactions),
 }));
 
+export const userMessagesRelations = relations(userMessages, ({ one }) => ({
+  sender: one(users, {
+    fields: [userMessages.senderId],
+    references: [users.id],
+    relationName: "message_sender",
+  }),
+  recipient: one(users, {
+    fields: [userMessages.recipientId],
+    references: [users.id],
+    relationName: "message_recipient",
+  }),
+}));
+
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+  user: one(users, {
+    fields: [notifications.userId],
+    references: [users.id],
+  }),
+}));
+
 // Insert Schemas
 export const insertUserSchema = createInsertSchema(users).omit({ id: true });
 export const insertPlanSchema = createInsertSchema(plans).omit({ id: true });
@@ -216,6 +239,10 @@ export const insertPaymentSettingSchema = createInsertSchema(paymentSettings)
     payment_method: z.string().optional(),
   });
 export const insertContactMessageSchema = createInsertSchema(contactMessages).omit({ id: true, createdAt: true, responded: true });
+
+// New schemas for user messages and notifications
+export const insertUserMessageSchema = createInsertSchema(userMessages).omit({ id: true, createdAt: true, read: true, replied: true });
+export const insertNotificationSchema = createInsertSchema(notifications).omit({ id: true, createdAt: true, status: true });
 
 // Types
 export type User = typeof users.$inferSelect;
@@ -238,6 +265,12 @@ export type InsertPaymentSetting = z.infer<typeof insertPaymentSettingSchema>;
 
 export type ContactMessage = typeof contactMessages.$inferSelect;
 export type InsertContactMessage = z.infer<typeof insertContactMessageSchema>;
+
+export type UserMessage = typeof userMessages.$inferSelect;
+export type InsertUserMessage = z.infer<typeof insertUserMessageSchema>;
+
+export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = z.infer<typeof insertNotificationSchema>;
 
 // Auth Schemas
 export const loginSchema = z.object({

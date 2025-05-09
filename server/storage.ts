@@ -5,7 +5,9 @@ import {
   transactions, Transaction, InsertTransaction,
   referrals, Referral, InsertReferral,
   paymentSettings, PaymentSetting, InsertPaymentSetting,
-  contactMessages, ContactMessage, InsertContactMessage
+  contactMessages, ContactMessage, InsertContactMessage,
+  userMessages, UserMessage, InsertUserMessage,
+  notifications, Notification, InsertNotification
 } from "@shared/schema";
 import { nanoid } from "nanoid";
 import { addDays } from "date-fns";
@@ -68,6 +70,21 @@ export interface IStorage {
   getAllContactMessages(): Promise<ContactMessage[]>;
   markMessageAsResponded(id: number): Promise<ContactMessage | undefined>;
   
+  // User Messages Management
+  createUserMessage(message: InsertUserMessage): Promise<UserMessage>;
+  getUserMessage(id: number): Promise<UserMessage | undefined>;
+  getUserSentMessages(userId: number): Promise<UserMessage[]>;
+  getUserReceivedMessages(userId: number): Promise<UserMessage[]>;
+  markUserMessageAsRead(id: number): Promise<UserMessage | undefined>;
+  markUserMessageAsReplied(id: number): Promise<UserMessage | undefined>;
+  
+  // Notifications Management
+  createNotification(notification: InsertNotification): Promise<Notification>;
+  getNotification(id: number): Promise<Notification | undefined>;
+  getUserNotifications(userId: number): Promise<Notification[]>;
+  getUnreadUserNotifications(userId: number): Promise<Notification[]>;
+  markNotificationAsRead(id: number): Promise<Notification | undefined>;
+  
   // Dashboard statistics
   getDashboardStats(): Promise<DashboardStats>;
   getUserDashboardStats(userId: number): Promise<UserDashboardStats>;
@@ -104,6 +121,8 @@ export class MemStorage implements IStorage {
   private referrals: Map<number, Referral>;
   private paymentSettings: Map<number, PaymentSetting>;
   private contactMessages: Map<number, ContactMessage>;
+  private userMessages: Map<number, UserMessage>;
+  private notifications: Map<number, Notification>;
   
   private userId: number;
   private planId: number;
@@ -112,6 +131,8 @@ export class MemStorage implements IStorage {
   private referralId: number;
   private paymentSettingId: number;
   private contactMessageId: number;
+  private userMessageId: number;
+  private notificationId: number;
 
   constructor() {
     this.users = new Map();
