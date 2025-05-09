@@ -431,30 +431,29 @@ export class DatabaseStorage implements IStorage {
   // Payment Settings Management
   async createPaymentSetting(setting: InsertPaymentSetting): Promise<PaymentSetting> {
     try {
-      // Instead of using drizzle query builder, let's use SQL to ensure payment_method is set
-      const result = await db.execute(
-        `INSERT INTO payment_settings 
-        (method, name, instructions, credentials, min_amount, max_amount, active, payment_method) 
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
-        RETURNING *`,
-        [
-          setting.method,
-          setting.name,
-          setting.instructions || null,
-          setting.credentials || null,
-          setting.minAmount || "10",
-          setting.maxAmount || "10000",
-          setting.active !== undefined ? setting.active : true,
-          setting.method // Important: Use the same value for payment_method as method
-        ]
-      );
+      // Create a values object that matches the schema
+      const values = {
+        method: setting.method,
+        name: setting.name,
+        instructions: setting.instructions || null,
+        credentials: setting.credentials || null,
+        minAmount: setting.minAmount || "10",
+        maxAmount: setting.maxAmount || "10000",
+        active: setting.active !== undefined ? setting.active : true,
+        payment_method: setting.method // Important: Explicitly set payment_method 
+      };
       
-      if (!result || !result.rows || result.rows.length === 0) {
+      // Insert using the values object
+      const [newSetting] = await db
+        .insert(paymentSettings)
+        .values(values)
+        .returning();
+      
+      if (!newSetting) {
         throw new Error('Failed to create payment setting');
       }
       
-      // Return the first row from the result
-      return result.rows[0] as PaymentSetting;
+      return newSetting;
     } catch (error) {
       console.error('Error creating payment setting:', error);
       throw error;
@@ -477,47 +476,20 @@ export class DatabaseStorage implements IStorage {
 
   async updatePaymentSetting(id: number, settingData: Partial<PaymentSetting>): Promise<PaymentSetting | undefined> {
     try {
-      // If method is being updated, use raw SQL to update both together
+      // If method is being updated, ensure payment_method is also updated
       if (settingData.method) {
-        // Need to use raw SQL to update both fields together
-        const fields = [];
-        const values = [];
-        let paramCount = 1;
+        // Create update object with both method and payment_method set to the same value
+        const dataToUpdate: any = { ...settingData, payment_method: settingData.method };
         
-        // Build dynamic SQL based on provided fields
-        Object.entries(settingData).forEach(([key, value]) => {
-          if (key !== 'method') { // Skip method as we'll handle it specially
-            const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
-            fields.push(`${snakeKey} = $${paramCount}`);
-            values.push(value);
-            paramCount++;
-          }
-        });
-        
-        // Always update both method and payment_method together
-        fields.push(`method = $${paramCount}`);
-        values.push(settingData.method);
-        paramCount++;
-        
-        fields.push(`payment_method = $${paramCount}`);
-        values.push(settingData.method);
-        paramCount++;
-        
-        // Add ID as the last parameter
-        values.push(id);
-        
-        const result = await db.execute(
-          `UPDATE payment_settings SET ${fields.join(', ')} WHERE id = $${paramCount} RETURNING *`,
-          values
-        );
-        
-        if (!result || !result.rows || result.rows.length === 0) {
-          return undefined;
-        }
-        
-        return result.rows[0] as PaymentSetting;
+        const [updatedSetting] = await db
+          .update(paymentSettings)
+          .set(dataToUpdate)
+          .where(eq(paymentSettings.id, id))
+          .returning();
+          
+        return updatedSetting;
       } else {
-        // If not updating method, we can use the ORM approach
+        // If not updating method, we can use the standard approach
         const dataToUpdate = { ...settingData };
         
         const [updatedSetting] = await db

@@ -365,6 +365,11 @@ export default function AdminPaymentSettings() {
               </Button>
             </div>
             
+            {/* PayPal API Configuration */}
+            <div className="mb-8">
+              <PayPalConfigForm />
+            </div>
+            
             {isLoading ? (
               <div className="flex justify-center py-8">
                 <p>Loading payment methods...</p>

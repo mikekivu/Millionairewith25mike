@@ -90,6 +90,7 @@ export const paymentSettings = pgTable("payment_settings", {
   credentials: text("credentials"), // Wallet address, PayPal email, etc.
   minAmount: text("min_amount").notNull().default("10"),
   maxAmount: text("max_amount").notNull().default("10000"),
+  payment_method: text("payment_method").notNull(), // For compatibility - same as method
 });
 
 // Contact Messages
