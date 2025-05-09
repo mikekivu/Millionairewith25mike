@@ -28,10 +28,17 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     <div className="flex min-h-screen bg-gray-50">
       {user.role === 'admin' ? <AdminSidebar /> : <UserSidebar />}
       <div className="flex-1 flex flex-col">
-        <header className="sticky top-0 z-10 bg-white border-b shadow-sm h-16 flex items-center justify-between px-4">
-          <div></div>
-          <div className="flex items-center space-x-2">
-            <NotificationBell userRole={user.role === 'admin' ? 'admin' : 'user'} />
+        <header className="sticky top-0 z-10 bg-white border-b shadow-sm h-16 flex items-center justify-between px-6">
+          <div className="font-bold text-xl text-primary">
+            {user.role === 'admin' ? 'Admin Dashboard' : 'Member Dashboard'}
+          </div>
+          <div className="flex items-center space-x-4">
+            <div className="bg-orange-100 p-2 rounded-full hover:bg-orange-200 transition-colors">
+              <NotificationBell userRole={user.role === 'admin' ? 'admin' : 'user'} />
+            </div>
+            <div className="text-sm font-medium">
+              {user.firstName} {user.lastName}
+            </div>
           </div>
         </header>
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gradient-to-br from-blue-50 to-gray-100 p-4">
