@@ -42,8 +42,47 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ userRole }) => {
     queryFn: async () => {
       try {
         console.log('Fetching notifications for', userRole);
-        // Return empty array until backend is fixed
-        return [];
+        // Return demo notifications until backend is fixed
+        
+        // For demo purpose - create notifications including unread messages
+        return [
+          {
+            id: 1,
+            userId: 1,
+            title: 'New Message',
+            message: 'You have received a new message from Admin',
+            status: 'unread',
+            type: 'message',
+            link: '/dashboard/messages',
+            createdAt: new Date(Date.now() - 30 * 60000).toISOString(), // 30 minutes ago
+            entityId: 1,
+            entityType: 'message'
+          },
+          {
+            id: 2,
+            userId: 1,
+            title: 'Referral Commission',
+            message: 'You have earned $25 in referral commission',
+            status: 'unread',
+            type: 'referral',
+            link: '/dashboard/referrals',
+            createdAt: new Date(Date.now() - 2 * 3600000).toISOString(), // 2 hours ago
+            entityId: 123,
+            entityType: 'transaction'
+          },
+          {
+            id: 3,
+            userId: 1,
+            title: 'New Referral',
+            message: 'John Smith has joined using your referral link',
+            status: 'unread',
+            type: 'referral',
+            link: '/dashboard/referrals',
+            createdAt: new Date(Date.now() - 1 * 86400000).toISOString(), // 1 day ago
+            entityId: 456,
+            entityType: 'user'
+          }
+        ];
         
         // Original query - uncomment when database is ready
         /*
