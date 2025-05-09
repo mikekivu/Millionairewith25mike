@@ -16,6 +16,7 @@ import UserTransactions from "@/pages/dashboard/UserTransactions";
 import UserReferrals from "@/pages/dashboard/UserReferrals";
 import UserSettings from "@/pages/dashboard/UserSettings";
 import UserNetworkHeatmap from "@/pages/dashboard/UserNetworkHeatmap";
+import UserMessages from "@/pages/dashboard/UserMessages";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminMembers from "@/pages/admin/AdminMembers";
 import AdminWithdrawals from "@/pages/admin/AdminWithdrawals";
@@ -91,6 +92,13 @@ function Router() {
         {() => (
           <ProtectedRoute>
             <UserNetworkHeatmap />
+          </ProtectedRoute>
+        )}
+      </Route>
+      <Route path="/dashboard/messages">
+        {() => (
+          <ProtectedRoute>
+            <UserMessages />
           </ProtectedRoute>
         )}
       </Route>

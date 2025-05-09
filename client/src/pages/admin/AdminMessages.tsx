@@ -139,7 +139,7 @@ const AdminMessages = () => {
     queryKey: ['/api/admin/users'],
     queryFn: async () => {
       console.log('Fetching users for recipient selection');
-      // Return demo users until backend is fixed
+      // Return demo users until backend is fixed - added more users for selection
       return [
         {
           id: 1,
@@ -154,6 +154,34 @@ const AdminMessages = () => {
           firstName: 'Jane',
           lastName: 'Doe',
           email: 'jane@example.com'
+        },
+        {
+          id: 3,
+          username: 'mikepaul',
+          firstName: 'Mike',
+          lastName: 'Paul',
+          email: 'mike@example.com'
+        },
+        {
+          id: 4,
+          username: 'sarahsmith',
+          firstName: 'Sarah',
+          lastName: 'Smith',
+          email: 'sarah@example.com'
+        },
+        {
+          id: 5,
+          username: 'davidjones',
+          firstName: 'David',
+          lastName: 'Jones',
+          email: 'david@example.com'
+        },
+        {
+          id: 6,
+          username: 'jenniferbrown',
+          firstName: 'Jennifer',
+          lastName: 'Brown',
+          email: 'jennifer@example.com'
         }
       ];
       
