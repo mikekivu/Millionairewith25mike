@@ -32,6 +32,7 @@ interface NotificationBellProps {
 
 const NotificationBell: React.FC<NotificationBellProps> = ({ userRole }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [localReadIds, setLocalReadIds] = useState<number[]>([]);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
