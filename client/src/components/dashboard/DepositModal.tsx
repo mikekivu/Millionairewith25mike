@@ -4,8 +4,6 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -14,9 +12,8 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { formatCurrency } from '@/lib/utils';
-import { AlertCircle, CreditCard, Copy, CheckCircle, DollarSign, Bitcoin } from 'lucide-react';
+import { AlertCircle, Copy, CheckCircle, ExternalLink } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-// PayPal integration removed
 import CryptoPaymentButton from '@/components/CryptoPaymentButton';
 
 interface DepositModalProps {
@@ -28,8 +25,14 @@ const depositFormSchema = z.object({
   amount: z.string()
     .min(1, { message: "Amount is required" })
     .refine((val) => !isNaN(parseFloat(val)), { message: "Amount must be a number" })
-    .refine((val) => parseFloat(val) > 0, { message: "Amount must be greater than zero" }),
-  paymentMethod: z.string().min(1, { message: "Payment method is required" }),
+    .refine((val) => parseFloat(val) > 0, { message: "Amount must be greater than zero" })
+    .refine(
+      (val) => {
+        const amount = parseFloat(val);
+        return amount >= 25 && amount <= 8000;
+      },
+      { message: "Amount must be between 25 USDT and 8000 USDT" }
+    ),
 });
 
 type DepositFormValues = z.infer<typeof depositFormSchema>;
@@ -39,12 +42,20 @@ export default function DepositModal({ open, onOpenChange }: DepositModalProps) 
   const queryClient = useQueryClient();
   const [step, setStep] = useState<'form' | 'processing'>('form');
   const [depositData, setDepositData] = useState<any>(null);
-  const [paymentTab, setPaymentTab] = useState('crypto');
+  const [walletAddress, setWalletAddress] = useState('TUt1RB8XL91QZeEPrY62QGYvM3raCUUJJb'); // Default USDT TRC20 wallet address
 
-  // Fetch available payment methods
-  const { data: paymentMethods, isLoading: loadingPaymentMethods } = useQuery({
+  // Fetch USDT TRC20 payment setting
+  const { data: paymentSettings } = useQuery({
     queryKey: ['/api/payment-settings'],
     staleTime: 60 * 60 * 1000, // 1 hour
+    onSuccess: (data) => {
+      if (Array.isArray(data) && data.length > 0) {
+        const usdtMethod = data.find((method: any) => method.method === 'usdt_trc20');
+        if (usdtMethod && usdtMethod.credentials) {
+          setWalletAddress(usdtMethod.credentials);
+        }
+      }
+    }
   });
 
   // Create deposit request mutation
@@ -52,6 +63,7 @@ export default function DepositModal({ open, onOpenChange }: DepositModalProps) 
     mutationFn: async (data: DepositFormValues) => {
       const response = await apiRequest('POST', '/api/user/deposits', {
         ...data,
+        paymentMethod: 'usdt_trc20',
         currency: 'USDT',
         status: 'pending',
       });
@@ -76,7 +88,6 @@ export default function DepositModal({ open, onOpenChange }: DepositModalProps) 
     resolver: zodResolver(depositFormSchema),
     defaultValues: {
       amount: '',
-      paymentMethod: '',
     },
   });
 
