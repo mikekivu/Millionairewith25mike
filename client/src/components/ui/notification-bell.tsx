@@ -127,6 +127,10 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ userRole }) => {
   });
 
   const handleMarkAsRead = (notificationId: number) => {
+    // First update the local state to immediately reflect the change in the UI
+    setLocalReadIds(prev => [...prev, notificationId]);
+    
+    // Then attempt to update the server state
     markAsReadMutation.mutate(notificationId);
   };
   
@@ -151,17 +155,22 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ userRole }) => {
     }
   };
   
+  // Filter out notifications that have been locally marked as read
+  const filteredNotifications = notifications.filter(
+    notification => !localReadIds.includes(notification.id)
+  );
+  
   return (
     <Popover open={isOpen} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
-          {notifications.length > 0 && (
+          {filteredNotifications.length > 0 && (
             <Badge 
               variant="destructive" 
               className="absolute -top-1 -right-1 px-1.5 py-0.5 min-w-[18px] h-[18px]"
             >
-              {notifications.length > 9 ? "9+" : String(notifications.length)}
+              {filteredNotifications.length > 9 ? "9+" : String(filteredNotifications.length)}
             </Badge>
           )}
         </Button>
@@ -175,13 +184,13 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ userRole }) => {
             <div className="flex justify-center items-center py-8">
               <div className="h-5 w-5 border-2 border-r-transparent border-primary rounded-full animate-spin" />
             </div>
-          ) : notifications.length === 0 ? (
+          ) : filteredNotifications.length === 0 ? (
             <div className="py-6 text-center text-muted-foreground">
               <p>No new notifications</p>
             </div>
           ) : (
             <div className="divide-y divide-border">
-              {notifications.map((notification: Notification) => (
+              {filteredNotifications.map((notification: Notification) => (
                 <div 
                   key={notification.id} 
                   className={cn(
@@ -205,7 +214,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ userRole }) => {
             </div>
           )}
         </div>
-        {notifications.length > 0 && (
+        {filteredNotifications.length > 0 && (
           <div className="p-2 border-t border-border bg-muted/50">
             <Button 
               variant="ghost" 

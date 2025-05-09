@@ -2,7 +2,7 @@ import React from 'react';
 import { Helmet } from 'react-helmet';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import AdminSidebar from '@/components/dashboard/AdminSidebar';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 import { AdminStatsCards } from '@/components/dashboard/StatsCards';
 import { DataTable } from '@/components/dashboard/DataTable';
 import { formatCurrency, formatDate } from '@/lib/utils';
@@ -173,20 +173,14 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <>
+    <DashboardLayout>
       <Helmet>
         <title>Admin Dashboard - MillionaireWith$25</title>
         <meta name="description" content="Manage the MillionaireWith$25 platform and view system statistics." />
       </Helmet>
 
-      <div className="min-h-screen flex flex-col md:flex-row">
-        <div className="w-full md:w-64 lg:w-72">
-          <AdminSidebar />
-        </div>
-        
-        <div className="flex-1 bg-gray-50 p-4 md:p-8 overflow-auto">
-          <div className="max-w-7xl mx-auto">
-            <h1 className="text-2xl md:text-3xl font-bold mb-6">Admin Dashboard</h1>
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-2xl md:text-3xl font-bold mb-6">Admin Dashboard</h1>
             
             {/* Stats Cards */}
             <AdminStatsCards stats={dashboardStats || {}} isLoading={isLoadingStats} />
@@ -370,9 +364,7 @@ export default function AdminDashboard() {
                 </CardContent>
               </Card>
             </div>
-          </div>
-        </div>
       </div>
-    </>
+    </DashboardLayout>
   );
 }
