@@ -431,27 +431,30 @@ export class DatabaseStorage implements IStorage {
   // Payment Settings Management
   async createPaymentSetting(setting: InsertPaymentSetting): Promise<PaymentSetting> {
     try {
-      // Use drizzle query builder instead of raw SQL
-      const [newSetting] = await db
-        .insert(paymentSettings)
-        .values({
-          method: setting.method,
-          name: setting.name,
-          instructions: setting.instructions || null,
-          credentials: setting.credentials || null,
-          minAmount: setting.minAmount || "10",
-          maxAmount: setting.maxAmount || "10000",
-          active: setting.active !== undefined ? setting.active : true,
-        })
-        .returning();
-        
-      // Also update the payment_method column (which seems to be missing from the schema)
-      await db.execute(
-        `UPDATE payment_settings SET payment_method = $1 WHERE id = $2`,
-        [setting.method, newSetting.id]
+      // Instead of using drizzle query builder, let's use SQL to ensure payment_method is set
+      const result = await db.execute(
+        `INSERT INTO payment_settings 
+        (method, name, instructions, credentials, min_amount, max_amount, active, payment_method) 
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
+        RETURNING *`,
+        [
+          setting.method,
+          setting.name,
+          setting.instructions || null,
+          setting.credentials || null,
+          setting.minAmount || "10",
+          setting.maxAmount || "10000",
+          setting.active !== undefined ? setting.active : true,
+          setting.method // Important: Use the same value for payment_method as method
+        ]
       );
       
-      return newSetting;
+      if (!result || !result.rows || result.rows.length === 0) {
+        throw new Error('Failed to create payment setting');
+      }
+      
+      // Return the first row from the result
+      return result.rows[0] as PaymentSetting;
     } catch (error) {
       console.error('Error creating payment setting:', error);
       throw error;
@@ -473,25 +476,62 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updatePaymentSetting(id: number, settingData: Partial<PaymentSetting>): Promise<PaymentSetting | undefined> {
-    // If method is being updated, also update payment_method column with raw SQL
-    const dataToUpdate = { ...settingData };
-    
-    // First update the main record
-    const [updatedSetting] = await db
-      .update(paymentSettings)
-      .set(dataToUpdate)
-      .where(eq(paymentSettings.id, id))
-      .returning();
-      
-    // If method was updated, also update payment_method column with SQL
-    if (settingData.method) {
-      await db.execute(
-        `UPDATE payment_settings SET payment_method = $1 WHERE id = $2`,
-        [settingData.method, id]
-      );
+    try {
+      // If method is being updated, use raw SQL to update both together
+      if (settingData.method) {
+        // Need to use raw SQL to update both fields together
+        const fields = [];
+        const values = [];
+        let paramCount = 1;
+        
+        // Build dynamic SQL based on provided fields
+        Object.entries(settingData).forEach(([key, value]) => {
+          if (key !== 'method') { // Skip method as we'll handle it specially
+            const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+            fields.push(`${snakeKey} = $${paramCount}`);
+            values.push(value);
+            paramCount++;
+          }
+        });
+        
+        // Always update both method and payment_method together
+        fields.push(`method = $${paramCount}`);
+        values.push(settingData.method);
+        paramCount++;
+        
+        fields.push(`payment_method = $${paramCount}`);
+        values.push(settingData.method);
+        paramCount++;
+        
+        // Add ID as the last parameter
+        values.push(id);
+        
+        const result = await db.execute(
+          `UPDATE payment_settings SET ${fields.join(', ')} WHERE id = $${paramCount} RETURNING *`,
+          values
+        );
+        
+        if (!result || !result.rows || result.rows.length === 0) {
+          return undefined;
+        }
+        
+        return result.rows[0] as PaymentSetting;
+      } else {
+        // If not updating method, we can use the ORM approach
+        const dataToUpdate = { ...settingData };
+        
+        const [updatedSetting] = await db
+          .update(paymentSettings)
+          .set(dataToUpdate)
+          .where(eq(paymentSettings.id, id))
+          .returning();
+        
+        return updatedSetting;
+      }
+    } catch (error) {
+      console.error('Error updating payment setting:', error);
+      throw error;
     }
-    
-    return updatedSetting;
   }
 
   async togglePaymentMethod(id: number, active: boolean): Promise<PaymentSetting | undefined> {
