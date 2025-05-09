@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import AdminSidebar from '@/components/dashboard/AdminSidebar';
+import { PayPalConfigForm } from '@/components/dashboard/PayPalConfigForm';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';

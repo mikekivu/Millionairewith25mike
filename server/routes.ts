@@ -1005,6 +1005,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // PayPal API Configuration
+  app.get("/api/admin/payment-settings/paypal-config", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      // Check if PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET environment variables are set
+      const configured = !!(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET);
+      
+      res.status(200).json({
+        configured,
+        clientId: process.env.PAYPAL_CLIENT_ID || '',
+        // Don't send back the actual secret, just indicate if it's set
+        clientSecret: process.env.PAYPAL_CLIENT_SECRET ? '••••••••••••••••' : '',
+        status: configured ? 'success' : 'idle',
+        message: configured ? 'PayPal API is configured' : 'PayPal API is not configured'
+      });
+    } catch (error) {
+      console.error('Error getting PayPal config:', error);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+  
+  app.post("/api/admin/payment-settings/paypal-config", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const { clientId, clientSecret } = req.body;
+      
+      if (!clientId) {
+        return res.status(400).json({ message: "Client ID is required" });
+      }
+      
+      // If clientSecret is not provided and we already have one in env, keep using the existing one
+      const newClientSecret = clientSecret || process.env.PAYPAL_CLIENT_SECRET;
+      
+      if (!newClientSecret) {
+        return res.status(400).json({ message: "Client Secret is required" });
+      }
+      
+      // In a real-world scenario, we'd save these to a secure environment variable store
+      // For Replit, we're just updating the environment variables in memory
+      process.env.PAYPAL_CLIENT_ID = clientId;
+      process.env.PAYPAL_CLIENT_SECRET = newClientSecret;
+      
+      res.status(200).json({ 
+        message: "PayPal API configuration saved successfully",
+        configured: true,
+        status: 'success'
+      });
+    } catch (error) {
+      console.error('Error saving PayPal config:', error);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+
   app.get("/api/admin/contact-messages", authMiddleware, adminMiddleware, async (req, res) => {
     try {
       const messages = await storage.getAllContactMessages();
