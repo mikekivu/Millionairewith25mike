@@ -5,7 +5,7 @@ import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
-import AdminSidebar from '@/components/dashboard/AdminSidebar';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 import {
   Card,
   CardContent,
@@ -181,7 +181,7 @@ const AdminMessages = () => {
   });
 
   return (
-    <AdminLayout>
+    <DashboardLayout>
       <Helmet>
         <title>User Messages | Admin Dashboard</title>
         <meta name="description" content="Manage user messages in the admin dashboard" />
@@ -397,7 +397,7 @@ const AdminMessages = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </AdminLayout>
+    </DashboardLayout>
   );
 };
 

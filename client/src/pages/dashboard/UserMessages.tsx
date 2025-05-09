@@ -5,7 +5,7 @@ import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
-import DashboardLayout from '@/components/dashboard/DashboardLayout';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 import {
   Card,
   CardContent,
