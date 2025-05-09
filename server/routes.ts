@@ -1287,6 +1287,196 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Server error" });
     }
   });
+  
+  // Admin User Messages Routes
+  app.get("/api/admin/user-messages", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      // Get all users to enrich the messages with user info
+      const users = await storage.getAllUsers();
+      const userMap = new Map();
+      users.forEach(user => {
+        userMap.set(user.id, {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+        });
+      });
+      
+      // Get all messages (getting all sent messages will capture all messages in the system)
+      let allMessages = [];
+      for (const user of users) {
+        const sentMessages = await storage.getUserSentMessages(user.id);
+        allMessages = [...allMessages, ...sentMessages];
+      }
+      
+      // Sort by date, most recent first
+      allMessages.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      
+      // Enrich with user info
+      const enrichedMessages = allMessages.map(msg => ({
+        ...msg,
+        sender: userMap.get(msg.senderId),
+        recipient: userMap.get(msg.recipientId)
+      }));
+      
+      res.status(200).json(enrichedMessages);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+  
+  app.get("/api/admin/user-messages/:id", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const messageId = parseInt(req.params.id);
+      const message = await storage.getUserMessage(messageId);
+      
+      if (!message) {
+        return res.status(404).json({ message: "Message not found" });
+      }
+      
+      // Get sender and recipient info
+      const sender = await storage.getUser(message.senderId);
+      const recipient = await storage.getUser(message.recipientId);
+      
+      // Remove sensitive data
+      const { password: senderPass, ...senderInfo } = sender;
+      const { password: recipientPass, ...recipientInfo } = recipient;
+      
+      // Enrich the message
+      const enrichedMessage = {
+        ...message,
+        sender: senderInfo,
+        recipient: recipientInfo
+      };
+      
+      res.status(200).json(enrichedMessage);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+  
+  app.post("/api/admin/messages", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const adminId = req.session.userId;
+      const { recipientId, subject, content } = req.body;
+      
+      // Validate input
+      if (!recipientId || !subject || !content) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+      
+      // Check if recipient exists
+      const recipient = await storage.getUser(recipientId);
+      if (!recipient) {
+        return res.status(404).json({ message: "Recipient not found" });
+      }
+      
+      // Create message
+      const message = await storage.createUserMessage({
+        senderId: adminId,
+        recipientId,
+        subject,
+        content
+      });
+      
+      res.status(201).json({
+        message: "Message sent successfully",
+        id: message.id
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+  
+  // Admin Notifications Routes
+  app.get("/api/admin/notifications", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      const notifications = await storage.getUserNotifications(userId);
+      res.status(200).json(notifications);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+  
+  app.post("/api/admin/notifications", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const { userId, title, message, type, link } = req.body;
+      
+      // Validate input
+      if (!userId || !title || !message || !type) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+      
+      // Check if user exists
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Create notification
+      const notification = await storage.createNotification({
+        userId,
+        title,
+        message,
+        type,
+        link: link || null,
+        entityId: null,
+        entityType: null
+      });
+      
+      res.status(201).json({
+        message: "Notification created successfully",
+        notification
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+  
+  app.post("/api/admin/notifications/broadcast", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const { title, message, type, link, userRole } = req.body;
+      
+      // Validate input
+      if (!title || !message || !type) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+      
+      // Get users (filtered by role if specified)
+      let users = await storage.getAllUsers();
+      if (userRole) {
+        users = users.filter(user => user.role === userRole);
+      }
+      
+      // Create notification for each user
+      const promises = users.map(user => storage.createNotification({
+        userId: user.id,
+        title,
+        message,
+        type,
+        link: link || null,
+        entityId: null,
+        entityType: null
+      }));
+      
+      await Promise.all(promises);
+      
+      res.status(201).json({
+        message: `Notification broadcast to ${users.length} users successfully`
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
 
   const httpServer = createServer(app);
 
