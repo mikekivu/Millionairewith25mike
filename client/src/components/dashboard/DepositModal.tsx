@@ -128,7 +128,7 @@ export default function DepositModal({ open, onOpenChange }: DepositModalProps) 
       handleResetForm();
     }, 300); // Reset after close animation
   };
-
+  
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[500px]">
@@ -163,40 +163,20 @@ export default function DepositModal({ open, onOpenChange }: DepositModalProps) 
                         </div>
                       </FormControl>
                       <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="paymentMethod"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Payment Method</FormLabel>
-                      <FormControl>
-                        <Select
-                          onValueChange={handlePaymentMethodChange}
-                          value={field.value}
+                      <div className="pt-2">
+                        <RadioGroup 
+                          className="grid grid-cols-3 gap-2"
+                          onValueChange={(value) => form.setValue('amount', value)}
+                          defaultValue={field.value}
                         >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select payment method" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {loadingPaymentMethods ? (
-                              <SelectItem value="loading" disabled>Loading payment methods...</SelectItem>
-                            ) : paymentMethods && Array.isArray(paymentMethods) && paymentMethods.length > 0 ? (
-                              paymentMethods.map((method: any) => (
-                                <SelectItem key={method.id} value={method.method}>
-                                  {method.name}
-                                </SelectItem>
-                              ))
-                            ) : (
-                              <SelectItem value="none" disabled>No payment methods available</SelectItem>
-                            )}
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
+                          {MATRIX_LEVELS.map((level) => (
+                            <div key={level.level} className="flex items-center space-x-2">
+                              <RadioGroupItem value={level.amount} id={`level-${level.level}`} />
+                              <Label htmlFor={`level-${level.level}`}>{level.amount} USDT</Label>
+                            </div>
+                          ))}
+                        </RadioGroup>
+                      </div>
                     </FormItem>
                   )}
                 />
@@ -230,22 +210,47 @@ export default function DepositModal({ open, onOpenChange }: DepositModalProps) 
                 </div>
               </div>
               
-              <Tabs defaultValue={paymentTab} className="w-full">
-                <TabsList className="grid grid-cols-2 mb-4">
-                  <TabsTrigger value="crypto" disabled={form.getValues().paymentMethod !== 'usdt_trc20'}>
-                    <Bitcoin className="h-4 w-4 mr-2" />
-                    USDT TRC20
-                  </TabsTrigger>
-                  <TabsTrigger value="bank" disabled={form.getValues().paymentMethod !== 'bank_transfer'}>
-                    <DollarSign className="h-4 w-4 mr-2" />
-                    Bank
-                  </TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value={paymentTab}>
-                  {renderPaymentInstructions()}
-                </TabsContent>
-              </Tabs>
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Important</AlertTitle>
+                <AlertDescription>
+                  Please send the exact amount to the USDT TRC20 wallet address below. Your deposit will be processed once confirmed on the blockchain.
+                </AlertDescription>
+              </Alert>
+              
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-sm font-medium mb-1">USDT TRC20 Wallet Address:</p>
+                      <div className="p-3 bg-gray-100 rounded-md flex items-center justify-between">
+                        <div className="break-all text-sm">{walletAddress}</div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => copyToClipboard(walletAddress)}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <p className="text-sm font-medium mb-1">Amount to Send:</p>
+                      <p className="text-lg font-bold">{formatCurrency(parseFloat(form.getValues().amount), 'USDT')}</p>
+                    </div>
+                    
+                    <div className="text-sm text-gray-600">
+                      <p className="font-medium">Instructions:</p>
+                      <ul className="list-disc list-inside space-y-1">
+                        <li>Send <strong>only USDT</strong> on the <strong>TRC20 network</strong>.</li>
+                        <li>Include your transaction ID in the memo/reference field if possible.</li>
+                        <li>After payment, contact support if your deposit isn't credited within 24 hours.</li>
+                      </ul>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
             
             <DialogFooter className="flex flex-col sm:flex-row gap-2">
