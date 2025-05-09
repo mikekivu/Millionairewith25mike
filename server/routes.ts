@@ -12,6 +12,8 @@ import {
   insertContactMessageSchema,
   insertInvestmentSchema,
   insertTransactionSchema,
+  insertUserMessageSchema,
+  insertNotificationSchema,
 } from "@shared/schema";
 import { createPaypalOrder, capturePaypalOrder, loadPaypalDefault } from "./paypal";
 
@@ -623,6 +625,177 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       res.status(200).json({ referralCode: user.referralCode });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+  
+  // User Messages Routes
+  app.get("/api/user/messages/sent", authMiddleware, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      const messages = await storage.getUserSentMessages(userId);
+      res.status(200).json(messages);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+  
+  app.get("/api/user/messages/received", authMiddleware, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      const messages = await storage.getUserReceivedMessages(userId);
+      res.status(200).json(messages);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+  
+  app.get("/api/user/messages/:id", authMiddleware, async (req, res) => {
+    try {
+      const messageId = parseInt(req.params.id);
+      const message = await storage.getUserMessage(messageId);
+      
+      if (!message) {
+        return res.status(404).json({ message: "Message not found" });
+      }
+      
+      // Check if user is authorized to view this message
+      const userId = req.session.userId;
+      if (message.senderId !== userId && message.recipientId !== userId) {
+        return res.status(403).json({ message: "Unauthorized to view this message" });
+      }
+      
+      // If user is the recipient, mark as read
+      if (message.recipientId === userId && !message.read) {
+        await storage.markUserMessageAsRead(messageId);
+      }
+      
+      res.status(200).json(message);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+  
+  app.post("/api/user/messages", authMiddleware, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      const validatedData = insertUserMessageSchema.parse({
+        ...req.body,
+        senderId: userId,
+      });
+      
+      // Check if recipient exists
+      const recipient = await storage.getUser(validatedData.recipientId);
+      if (!recipient) {
+        return res.status(404).json({ message: "Recipient not found" });
+      }
+      
+      const message = await storage.createUserMessage(validatedData);
+      res.status(201).json({ 
+        message: "Message sent successfully", 
+        id: message.id 
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
+      console.error(error);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+  
+  app.post("/api/user/messages/:id/reply", authMiddleware, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      const messageId = parseInt(req.params.id);
+      const originalMessage = await storage.getUserMessage(messageId);
+      
+      if (!originalMessage) {
+        return res.status(404).json({ message: "Original message not found" });
+      }
+      
+      // Verify user is recipient of original message
+      if (originalMessage.recipientId !== userId) {
+        return res.status(403).json({ message: "Unauthorized to reply to this message" });
+      }
+      
+      // Create reply message
+      const validatedData = insertUserMessageSchema.parse({
+        senderId: userId,
+        recipientId: originalMessage.senderId,
+        subject: `Re: ${originalMessage.subject}`,
+        content: req.body.content,
+      });
+      
+      const replyMessage = await storage.createUserMessage(validatedData);
+      
+      // Mark original message as replied
+      await storage.markUserMessageAsReplied(messageId);
+      
+      res.status(201).json({ 
+        message: "Reply sent successfully", 
+        id: replyMessage.id 
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
+      console.error(error);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+  
+  // User Notifications Routes
+  app.get("/api/user/notifications", authMiddleware, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      const notifications = await storage.getUserNotifications(userId);
+      res.status(200).json(notifications);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+  
+  app.get("/api/user/notifications/unread", authMiddleware, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      const notifications = await storage.getUnreadUserNotifications(userId);
+      res.status(200).json(notifications);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+  
+  app.post("/api/user/notifications/:id/read", authMiddleware, async (req, res) => {
+    try {
+      const notificationId = parseInt(req.params.id);
+      const notification = await storage.getNotification(notificationId);
+      
+      if (!notification) {
+        return res.status(404).json({ message: "Notification not found" });
+      }
+      
+      // Verify user is owner of notification
+      const userId = req.session.userId;
+      if (notification.userId !== userId) {
+        return res.status(403).json({ message: "Unauthorized to mark this notification" });
+      }
+      
+      const updatedNotification = await storage.markNotificationAsRead(notificationId);
+      res.status(200).json(updatedNotification);
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Server error" });

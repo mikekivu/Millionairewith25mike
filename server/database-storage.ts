@@ -5,7 +5,9 @@ import {
   transactions, Transaction, InsertTransaction,
   referrals, Referral, InsertReferral,
   paymentSettings, PaymentSetting, InsertPaymentSetting,
-  contactMessages, ContactMessage, InsertContactMessage
+  contactMessages, ContactMessage, InsertContactMessage,
+  userMessages, UserMessage, InsertUserMessage,
+  notifications, Notification, InsertNotification
 } from "@shared/schema";
 import { db } from "./db";
 import { nanoid } from "nanoid";
@@ -533,6 +535,105 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return updatedMessage;
+  }
+  
+  // User Messages Management
+  async createUserMessage(message: InsertUserMessage): Promise<UserMessage> {
+    const [newMessage] = await db.insert(userMessages).values(message).returning();
+    
+    // Create notification for the recipient
+    await this.createNotification({
+      userId: message.recipientId,
+      title: "New Message",
+      message: "You have received a new message",
+      type: "message",
+      entityId: newMessage.id,
+      entityType: "message",
+      link: "/dashboard/messages"
+    });
+    
+    return newMessage;
+  }
+
+  async getUserMessage(id: number): Promise<UserMessage | undefined> {
+    const [message] = await db.select().from(userMessages).where(eq(userMessages.id, id));
+    return message;
+  }
+
+  async getUserSentMessages(userId: number): Promise<UserMessage[]> {
+    return db
+      .select()
+      .from(userMessages)
+      .where(eq(userMessages.senderId, userId))
+      .orderBy(desc(userMessages.createdAt));
+  }
+
+  async getUserReceivedMessages(userId: number): Promise<UserMessage[]> {
+    return db
+      .select()
+      .from(userMessages)
+      .where(eq(userMessages.recipientId, userId))
+      .orderBy(desc(userMessages.createdAt));
+  }
+
+  async markUserMessageAsRead(id: number): Promise<UserMessage | undefined> {
+    const [updatedMessage] = await db
+      .update(userMessages)
+      .set({ read: true })
+      .where(eq(userMessages.id, id))
+      .returning();
+    
+    return updatedMessage;
+  }
+
+  async markUserMessageAsReplied(id: number): Promise<UserMessage | undefined> {
+    const [updatedMessage] = await db
+      .update(userMessages)
+      .set({ replied: true })
+      .where(eq(userMessages.id, id))
+      .returning();
+    
+    return updatedMessage;
+  }
+  
+  // Notifications Management
+  async createNotification(notification: InsertNotification): Promise<Notification> {
+    const [newNotification] = await db.insert(notifications).values(notification).returning();
+    return newNotification;
+  }
+
+  async getNotification(id: number): Promise<Notification | undefined> {
+    const [notification] = await db.select().from(notifications).where(eq(notifications.id, id));
+    return notification;
+  }
+
+  async getUserNotifications(userId: number): Promise<Notification[]> {
+    return db
+      .select()
+      .from(notifications)
+      .where(eq(notifications.userId, userId))
+      .orderBy(desc(notifications.createdAt));
+  }
+
+  async getUnreadUserNotifications(userId: number): Promise<Notification[]> {
+    return db
+      .select()
+      .from(notifications)
+      .where(and(
+        eq(notifications.userId, userId),
+        eq(notifications.status, "unread")
+      ))
+      .orderBy(desc(notifications.createdAt));
+  }
+
+  async markNotificationAsRead(id: number): Promise<Notification | undefined> {
+    const [updatedNotification] = await db
+      .update(notifications)
+      .set({ status: "read" })
+      .where(eq(notifications.id, id))
+      .returning();
+    
+    return updatedNotification;
   }
   
   // Dashboard statistics
