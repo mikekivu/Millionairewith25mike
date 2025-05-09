@@ -116,12 +116,12 @@ const AdminMessages = () => {
     data: allMessages = [],
     isLoading,
     refetch,
-  } = useQuery({
+  } = useQuery<Message[]>({
     queryKey: ['/api/admin/user-messages'],
   });
 
   // Fetch all users for recipient selection
-  const { data: users = [] } = useQuery({
+  const { data: users = [] } = useQuery<User[]>({
     queryKey: ['/api/admin/users'],
   });
 

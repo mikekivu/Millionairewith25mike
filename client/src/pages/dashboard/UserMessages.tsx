@@ -117,7 +117,7 @@ const UserMessages = () => {
     data: receivedMessages = [],
     isLoading: isLoadingReceived,
     refetch: refetchReceived,
-  } = useQuery({
+  } = useQuery<Message[]>({
     queryKey: ['/api/user/messages/received'],
     enabled: activeTab === 'received',
   });
@@ -127,7 +127,7 @@ const UserMessages = () => {
     data: sentMessages = [],
     isLoading: isLoadingSent,
     refetch: refetchSent,
-  } = useQuery({
+  } = useQuery<Message[]>({
     queryKey: ['/api/user/messages/sent'],
     enabled: activeTab === 'sent',
   });

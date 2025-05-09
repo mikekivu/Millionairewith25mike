@@ -36,7 +36,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ userRole }) => {
   const queryClient = useQueryClient();
   
   // Query to fetch unread notifications
-  const { data: notifications = [], isLoading } = useQuery({
+  const { data: notifications = [], isLoading } = useQuery<Notification[]>({
     queryKey: [userRole === "admin" ? "/api/admin/notifications" : "/api/user/notifications/unread"],
     refetchInterval: 60000, // Poll for new notifications every minute
   });
@@ -100,7 +100,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ userRole }) => {
               variant="destructive" 
               className="absolute -top-1 -right-1 px-1.5 py-0.5 min-w-[18px] h-[18px]"
             >
-              {notifications.length > 9 ? "9+" : notifications.length}
+              {notifications.length > 9 ? "9+" : String(notifications.length)}
             </Badge>
           )}
         </Button>

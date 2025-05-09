@@ -2,6 +2,7 @@ import React from 'react';
 import { useAuth } from '@/lib/auth';
 import UserSidebar from '@/components/dashboard/UserSidebar';
 import AdminSidebar from '@/components/dashboard/AdminSidebar';
+import NotificationBell from '@/components/ui/notification-bell';
 import { Redirect } from 'wouter';
 
 interface DashboardLayoutProps {
@@ -26,9 +27,17 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="flex min-h-screen bg-gray-50">
       {user.role === 'admin' ? <AdminSidebar /> : <UserSidebar />}
-      <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gradient-to-br from-blue-50 to-gray-100">
-        {children}
-      </main>
+      <div className="flex-1 flex flex-col">
+        <header className="sticky top-0 z-10 bg-white border-b shadow-sm h-16 flex items-center justify-between px-4">
+          <div></div>
+          <div className="flex items-center space-x-2">
+            <NotificationBell userRole={user.role === 'admin' ? 'admin' : 'user'} />
+          </div>
+        </header>
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gradient-to-br from-blue-50 to-gray-100 p-4">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }
