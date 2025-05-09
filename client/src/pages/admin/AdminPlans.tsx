@@ -65,12 +65,18 @@ interface Plan {
   id: number;
   name: string;
   description: string;
-  minDeposit: string;
+  minDeposit: string; // Used as joinAmount for Matrix Board plans
   maxDeposit: string;
   roi: string;
   durationDays: number;
   referralBonus: string;
   active: boolean;
+  // Matrix Board specific fields
+  requiredReferrals?: number;
+  totalIncome?: string;
+  reEntryAmount?: string;
+  totalIncomeAfterReEntry?: string;
+  rewardGift?: string;
 }
 
 const planFormSchema = z.object({
@@ -220,20 +226,20 @@ export default function AdminPlans() {
   const form = useForm<PlanFormValues>({
     resolver: zodResolver(planFormSchema),
     defaultValues: {
-      name: "",
-      description: "",
-      minDeposit: "100",
+      name: "Matrix Board",
+      description: "Matrix Board investing plan with referral rewards",
+      minDeposit: "25", // This will be used as joinAmount
       maxDeposit: "10000",
-      roi: "0", // Default to 0 for Matrix Board plans
+      roi: "0", // Not relevant for Matrix Board plans
       durationDays: "365", // Longer duration for Matrix Board plans
-      referralBonus: "0", // Default to 0 for Matrix Board plans
+      referralBonus: "0", // Not relevant for Matrix Board plans
       active: true,
       // Matrix Board specific fields
       requiredReferrals: "15",
-      totalIncome: "",
-      reEntryAmount: "",
-      totalIncomeAfterReEntry: "",
-      rewardGift: ""
+      totalIncome: "200", 
+      reEntryAmount: "25",
+      totalIncomeAfterReEntry: "200",
+      rewardGift: "Health Product"
     }
   });
 
