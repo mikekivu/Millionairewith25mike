@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'wouter';
-import { Check, Gift, Smartphone, Tablet, Laptop } from 'lucide-react';
+import { Check, Gift, Smartphone, Tablet, Laptop, Monitor, Plane } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,36 +8,29 @@ import { Badge } from '@/components/ui/badge';
 interface Plan {
   id: number;
   name: string;
-  description: string;
-  monthlyRate: string;
-  minDeposit: string;
-  maxDeposit: string;
-  durationDays: number;
-  features: string[];
+  description?: string;
+  joinAmount: string;
+  requiredReferrals: number;
+  totalIncome: string;
+  reEntryAmount: string;
+  totalIncomeAfterReEntry: string;
+  rewardGift: string;
+  features?: string[];
   active: boolean;
 }
 
-// Enhanced plan data with gift information
-const planGifts = {
-  'Basic': {
-    icon: <Smartphone className="h-5 w-5" />,
-    name: 'iPhone SE',
-    qualification: '5+ active referrals'
-  },
-  'Standard': {
-    icon: <Tablet className="h-5 w-5" />,
-    name: 'iPad Air',
-    qualification: '10+ active referrals'
-  },
-  'Premium': {
-    icon: <Laptop className="h-5 w-5" />,
-    name: 'MacBook Air',
-    qualification: '15+ active referrals'
-  }
+// Icons for each plan gift
+const giftIcons = {
+  'Health Product': <Gift className="h-5 w-5" />,
+  'Mobile phone': <Smartphone className="h-5 w-5" />,
+  'Tablet': <Tablet className="h-5 w-5" />,
+  'IPad': <Tablet className="h-5 w-5" />,
+  'Laptop': <Laptop className="h-5 w-5" />,
+  'Holiday treatment vocation': <Plane className="h-5 w-5" />
 };
 
 export default function InvestmentPlans() {
-  const { data: plans = [], isLoading, error } = useQuery<Plan[]>({
+  const { data: plansFromApi = [], isLoading, error } = useQuery<any[]>({
     queryKey: ['/api/plans'],
   });
 
@@ -48,7 +41,7 @@ export default function InvestmentPlans() {
           <div className="text-center">
             <h2 className="text-3xl font-extrabold text-dark-900 sm:text-4xl font-heading">
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-yellow-500">
-                Investment Plans
+                Matrix Board Plans
               </span>
             </h2>
             <p className="mt-3 max-w-2xl mx-auto text-xl text-dark-500 sm:mt-4">
@@ -67,7 +60,7 @@ export default function InvestmentPlans() {
           <div className="text-center">
             <h2 className="text-3xl font-extrabold text-dark-900 sm:text-4xl font-heading">
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-yellow-500">
-                Investment Plans
+                Matrix Board Plans
               </span>
             </h2>
             <p className="mt-3 max-w-2xl mx-auto text-xl text-red-500 sm:mt-4">
@@ -79,39 +72,72 @@ export default function InvestmentPlans() {
     );
   }
 
-  // Fallback to static plans if API returns empty
-  const displayPlans = plans.length > 0 ? plans : [
+  // Matrix Board Plans
+  const matrixBoardPlans: Plan[] = [
     {
       id: 1,
-      name: 'Basic',
-      description: 'Perfect for beginners looking to start their investment journey.',
-      monthlyRate: '5',
-      minDeposit: '25',
-      maxDeposit: '1000',
-      durationDays: 30,
-      features: ['Min Deposit: 25 USDT', 'Max Deposit: 1,000 USDT', 'Duration: 30 days', '24/7 Support'],
+      name: 'Matrix Board 1',
+      joinAmount: '25',
+      requiredReferrals: 15,
+      totalIncome: '200',
+      reEntryAmount: '25',
+      totalIncomeAfterReEntry: '200',
+      rewardGift: 'Health Product',
       active: true
     },
     {
       id: 2,
-      name: 'Standard',
-      description: 'Our most popular plan for active investors.',
-      monthlyRate: '8',
-      minDeposit: '1000',
-      maxDeposit: '10000',
-      durationDays: 30,
-      features: ['Min Deposit: 1,000 USDT', 'Max Deposit: 10,000 USDT', 'Duration: 30 days', '24/7 Support + Financial Advisor'],
+      name: 'Matrix Board 2',
+      joinAmount: '100',
+      requiredReferrals: 15,
+      totalIncome: '800',
+      reEntryAmount: '100',
+      totalIncomeAfterReEntry: '700',
+      rewardGift: 'Mobile phone',
       active: true
     },
     {
       id: 3,
-      name: 'Premium',
-      description: 'For serious investors seeking maximum returns.',
-      monthlyRate: '12',
-      minDeposit: '10000',
-      maxDeposit: '50000',
-      durationDays: 30,
-      features: ['Min Deposit: 10,000 USDT', 'Max Deposit: 50,000 USDT', 'Duration: 30 days', 'VIP Support + Dedicated Manager'],
+      name: 'Matrix Board 3',
+      joinAmount: '500',
+      requiredReferrals: 15,
+      totalIncome: '4000',
+      reEntryAmount: '500',
+      totalIncomeAfterReEntry: '3500',
+      rewardGift: 'Tablet',
+      active: true
+    },
+    {
+      id: 4,
+      name: 'Matrix Board 4',
+      joinAmount: '1000',
+      requiredReferrals: 15,
+      totalIncome: '8000',
+      reEntryAmount: '1000',
+      totalIncomeAfterReEntry: '7000',
+      rewardGift: 'IPad',
+      active: true
+    },
+    {
+      id: 5,
+      name: 'Matrix Board 5',
+      joinAmount: '4000',
+      requiredReferrals: 15,
+      totalIncome: '32000',
+      reEntryAmount: '4000',
+      totalIncomeAfterReEntry: '28000',
+      rewardGift: 'Laptop',
+      active: true
+    },
+    {
+      id: 6,
+      name: 'Matrix Board 6',
+      joinAmount: '8000',
+      requiredReferrals: 15,
+      totalIncome: '64000',
+      reEntryAmount: '8000',
+      totalIncomeAfterReEntry: '56000',
+      rewardGift: 'Holiday treatment vocation',
       active: true
     }
   ];
@@ -122,18 +148,18 @@ export default function InvestmentPlans() {
         <div className="text-center">
           <h2 className="text-3xl font-extrabold sm:text-4xl font-heading">
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-yellow-500">
-              Investment Plans
+              Matrix Board Plans
             </span>
           </h2>
           <p className="mt-3 max-w-2xl mx-auto text-xl text-gray-600 sm:mt-4">
-            Choose an investment plan that matches your financial goals and unlock exclusive rewards.
+            Choose a Matrix Board level that matches your financial goals and unlock exclusive rewards.
           </p>
         </div>
 
         <div className="mt-12 space-y-4 sm:mt-16 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 lg:max-w-5xl lg:mx-auto xl:max-w-none xl:mx-0">
-          {displayPlans.map((plan) => {
-            const gift = planGifts[plan.name as keyof typeof planGifts];
-            const isPopular = plan.name === 'Standard';
+          {matrixBoardPlans.map((plan) => {
+            const giftIcon = giftIcons[plan.rewardGift as keyof typeof giftIcons] || <Gift className="h-5 w-5" />;
+            const isPopular = plan.name === 'Matrix Board 3';
             
             return (
               <Card 
@@ -153,41 +179,54 @@ export default function InvestmentPlans() {
                   <h3 className="text-xl font-bold text-dark-900 font-heading">
                     {plan.name}
                   </h3>
-                  <p className="text-sm text-gray-600">{plan.description}</p>
                 </CardHeader>
-                <CardContent className="pt-6 pb-2 flex-1 flex flex-col">
+                <CardContent className="pt-4 pb-2 flex-1 flex flex-col">
                   <div className="flex items-center justify-center">
                     <p className="text-center">
                       <span className="text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-yellow-500">
-                        {plan.monthlyRate}%
+                        {plan.joinAmount}
                       </span>
-                      <span className="text-base font-medium text-gray-500 ml-1">/ month</span>
+                      <span className="text-base font-medium text-gray-500 ml-1">USDT</span>
                     </p>
                   </div>
                   
-                  {gift && (
-                    <div className="mt-6 mb-4 px-4 py-3 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg">
-                      <div className="flex items-center">
-                        <div className="mr-3 bg-white p-2 rounded-full">
-                          <Gift className="h-5 w-5 text-orange-500" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">Gift: {gift.name}</p>
-                          <p className="text-xs text-gray-600">Qualify with {gift.qualification}</p>
-                        </div>
+                  <div className="mt-6 mb-4 px-4 py-3 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg">
+                    <div className="flex items-center">
+                      <div className="mr-3 bg-white p-2 rounded-full">
+                        {giftIcon}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">Reward: {plan.rewardGift}</p>
+                        <p className="text-xs text-gray-600">After referring 15 people</p>
                       </div>
                     </div>
-                  )}
+                  </div>
                   
                   <div className="mt-4 space-y-3 flex-1">
-                    {plan.features.map((feature, idx) => (
-                      <div key={idx} className="flex items-center">
-                        <div className="flex-shrink-0 text-green-500">
-                          <Check className="h-5 w-5" />
-                        </div>
-                        <p className="ml-3 text-sm text-gray-700">{feature}</p>
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 text-green-500">
+                        <Check className="h-5 w-5" />
                       </div>
-                    ))}
+                      <p className="ml-3 text-sm text-gray-700">Total Income: {plan.totalIncome} USDT</p>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 text-green-500">
+                        <Check className="h-5 w-5" />
+                      </div>
+                      <p className="ml-3 text-sm text-gray-700">Re-Entry: {plan.reEntryAmount} USDT</p>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 text-green-500">
+                        <Check className="h-5 w-5" />
+                      </div>
+                      <p className="ml-3 text-sm text-gray-700">After Re-Entry: {plan.totalIncomeAfterReEntry} USDT</p>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 text-green-500">
+                        <Check className="h-5 w-5" />
+                      </div>
+                      <p className="ml-3 text-sm text-gray-700">Required Referrals: {plan.requiredReferrals}</p>
+                    </div>
                   </div>
                 </CardContent>
                 <CardFooter className="pb-6 pt-2">
@@ -200,7 +239,7 @@ export default function InvestmentPlans() {
                           : "border-orange-500 text-orange-600 hover:bg-orange-50"
                       }`}
                     >
-                      Get Started
+                      Join Now
                     </Button>
                   </Link>
                 </CardFooter>
@@ -211,8 +250,8 @@ export default function InvestmentPlans() {
         
         <div className="mt-10 text-center">
           <p className="text-sm text-gray-500">
-            All plans include automatic compound interest and multi-level referral rewards.
-            <br />Gifts are awarded based on qualification criteria and active referrals.
+            All plans include a multi-level referral system with exciting reward gifts.
+            <br />Start with any Matrix Board level and level up your earnings as you grow your network.
           </p>
         </div>
       </div>
