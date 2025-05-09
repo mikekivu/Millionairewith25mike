@@ -52,7 +52,8 @@ async function generateMySQLExport() {
       // Get column definitions
       const columnRes = await pool.query(`
         SELECT column_name, data_type, character_maximum_length, column_default, is_nullable, 
-               pg_get_serial_sequence('${tableName}', column_name) as seq_name
+               pg_get_serial_sequence('${tableName}', column_name) as seq_name,
+               udt_name
         FROM information_schema.columns
         WHERE table_schema = 'public'
         AND table_name = $1
@@ -69,35 +70,43 @@ async function generateMySQLExport() {
         
         // Convert PostgreSQL types to MySQL types
         let mysqlType;
-        switch (col.data_type) {
-          case 'integer':
-            if (col.seq_name) {
-              mysqlType = 'INT AUTO_INCREMENT';
-            } else {
-              mysqlType = 'INT';
-            }
-            break;
-          case 'text':
-            mysqlType = 'TEXT';
-            break;
-          case 'timestamp with time zone':
-          case 'timestamp without time zone':
-            mysqlType = 'TIMESTAMP';
-            break;
-          case 'boolean':
-            mysqlType = 'TINYINT(1)';
-            break;
-          case 'numeric':
-            // For numeric types, we'll use DECIMAL with the appropriate precision
-            mysqlType = 'DECIMAL(18,8)';
-            break;
-          default:
-            // For other types, we'll just use the same type name
-            if (col.character_maximum_length && col.data_type.includes('char')) {
-              mysqlType = `VARCHAR(${col.character_maximum_length})`;
-            } else {
-              mysqlType = col.data_type.toUpperCase();
-            }
+        
+        // Handle array types
+        if (col.data_type === 'ARRAY') {
+          // Convert arrays to TEXT with JSON serialization
+          mysqlType = 'TEXT';
+          console.log(`Converting array column ${col.column_name} to TEXT for MySQL compatibility`);
+        } else {
+          switch (col.data_type) {
+            case 'integer':
+              if (col.seq_name) {
+                mysqlType = 'INT AUTO_INCREMENT';
+              } else {
+                mysqlType = 'INT';
+              }
+              break;
+            case 'text':
+              mysqlType = 'TEXT';
+              break;
+            case 'timestamp with time zone':
+            case 'timestamp without time zone':
+              mysqlType = 'TIMESTAMP';
+              break;
+            case 'boolean':
+              mysqlType = 'TINYINT(1)';
+              break;
+            case 'numeric':
+              // For numeric types, we'll use DECIMAL with the appropriate precision
+              mysqlType = 'DECIMAL(18,8)';
+              break;
+            default:
+              // For other types, we'll just use the same type name
+              if (col.character_maximum_length && col.data_type.includes('char')) {
+                mysqlType = `VARCHAR(${col.character_maximum_length})`;
+              } else {
+                mysqlType = col.data_type.toUpperCase();
+              }
+          }
         }
         
         colDef += ` ${mysqlType}`;
@@ -166,10 +175,20 @@ async function generateMySQLExport() {
         for (const row of dataRes.rows) {
           const values = columnRes.rows.map(col => {
             const value = row[col.column_name];
+            
+            // Handle null values
             if (value === null) return 'NULL';
+            
+            // Handle array values by converting to JSON strings
+            if (col.data_type === 'ARRAY' && Array.isArray(value)) {
+              return `'${JSON.stringify(value).replace(/'/g, "''")}'`;
+            }
+            
+            // Handle other value types
             if (typeof value === 'boolean') return value ? '1' : '0';
             if (typeof value === 'string') return `'${value.replace(/'/g, "''")}'`;
             if (value instanceof Date) return `'${value.toISOString().slice(0, 19).replace('T', ' ')}'`;
+            
             return value;
           });
           

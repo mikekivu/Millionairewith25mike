@@ -51,7 +51,24 @@ This guide will help you migrate your MillionareWith$25 application and database
      ```
      Replace `username`, `password`, and `database_name` with the values you noted down in Step 2.
 
-   - You might need to modify the database connection setup in `server/db.ts` to support MySQL instead of PostgreSQL.
+   - Replace the database connection setup in `server/db.ts` with the MySQL-compatible version:
+     
+     ```typescript
+     // Copy the content from server/db-compatibility.ts to server/db.ts
+     ```
+     
+   - Use the `ensureArray` helper function to handle array data:
+     
+     ```typescript
+     // Example usage in your code:
+     import { ensureArray } from './db';
+     
+     // When accessing plan features:
+     const features = ensureArray(plan.features);
+     
+     // Now features is guaranteed to be an array whether it came from 
+     // PostgreSQL (as an array) or MySQL (as a JSON string)
+     ```
 
 2. Ensure Node.js is available on your cPanel hosting (or use a hosting plan that supports Node.js).
 
@@ -108,6 +125,14 @@ If you encounter issues:
 2. Ensure your database connection string is correct.
 3. Make sure the Node.js version on your cPanel hosting is compatible with your application.
 4. Verify all required environment variables are set correctly.
+
+## Note on Array Data Type
+
+The PostgreSQL database used in Replit supports array data types (like the `features` column in the `plans` table), but MySQL does not. In the MySQL export, array columns have been converted to TEXT columns containing JSON strings. 
+
+If you need to modify these values in MySQL, remember:
+- The data is stored as a JSON string (e.g., `["item1", "item2"]`)
+- When reading this data in your application, you'll need to parse the JSON string back into an array
 
 ## Note on Payment Gateways
 
