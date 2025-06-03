@@ -286,7 +286,7 @@ export default function RegisterForm() {
 
             <Button 
               type="submit" 
-              className="w-full bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white shadow-lg shadow-orange-500/20" 
+              className="w-full bg-gradient-to-r from-[#2B97CA] to-[#1E7BA8] hover:from-[#1E7BA8] hover:to-[#155F86] text-white shadow-lg shadow-[#2B97CA]/20" 
               disabled={isLoading}
             >
               {isLoading ? "Creating Account..." : "Register"}

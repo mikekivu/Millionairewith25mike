@@ -119,7 +119,7 @@ export default function Header() {
                 <Button 
                   variant="default" 
                   onClick={handleLogout}
-                  className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white flex items-center gap-2 shadow-lg shadow-orange-500/20"
+                  className="bg-gradient-to-r from-[#2B97CA] to-[#1E7BA8] hover:from-[#1E7BA8] hover:to-[#155F86] text-white flex items-center gap-2 shadow-lg shadow-[#2B97CA]/20"
                 >
                   <LogOut className="h-4 w-4" />
                   Logout
@@ -130,14 +130,14 @@ export default function Header() {
                 <Link href="/login">
                   <Button 
                     variant="outline"
-                    className="border-orange-300 text-orange-600 hover:bg-gradient-to-r hover:from-orange-500 hover:to-yellow-500 hover:text-white hover:border-transparent"
+                    className="border-[#2B97CA] text-[#2B97CA] hover:bg-gradient-to-r hover:from-[#2B97CA] hover:to-[#1E7BA8] hover:text-white hover:border-transparent"
                   >
                     Login
                   </Button>
                 </Link>
                 <Link href="/register">
                   <Button
-                    className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white shadow-lg shadow-orange-500/20"
+                    className="bg-gradient-to-r from-[#2B97CA] to-[#1E7BA8] hover:from-[#1E7BA8] hover:to-[#155F86] text-white shadow-lg shadow-[#2B97CA]/20"
                   >
                     Register
                   </Button>

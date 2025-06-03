@@ -237,8 +237,8 @@ export default function InvestmentPlans() {
                       variant={isPopular ? "default" : "outline"}
                       className={`w-full transition-all duration-300 shadow-md hover:shadow-lg ${
                         isPopular
-                          ? "bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white shadow-lg shadow-orange-500/20"
-                          : "border-2 border-orange-500 text-orange-600 hover:bg-gradient-to-r hover:from-orange-50 hover:to-yellow-50 hover:border-yellow-500"
+                          ? "bg-gradient-to-r from-[#2B97CA] to-[#1E7BA8] hover:from-[#1E7BA8] hover:to-[#155F86] text-white shadow-lg shadow-[#2B97CA]/20"
+                          : "border-2 border-[#2B97CA] text-[#2B97CA] hover:bg-gradient-to-r hover:from-[#2B97CA]/10 hover:to-[#1E7BA8]/10 hover:border-[#1E7BA8]"
                       }`}
                     >
                       Join Now
