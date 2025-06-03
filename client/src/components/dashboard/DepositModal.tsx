@@ -269,7 +269,7 @@ export default function DepositModal({ open, onOpenChange }: DepositModalProps) 
               </form>
             </Form>
           </>
-        ) : (
+        ) : step === 'processing' ? (
           <>
             <DialogHeader>
               <DialogTitle>Complete Your Deposit</DialogTitle>

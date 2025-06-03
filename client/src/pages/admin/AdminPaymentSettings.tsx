@@ -543,6 +543,9 @@ export default function AdminPaymentSettings() {
           </Tabs>
         </div>
       </div>
+    </>
+  );
+}
 
       {/* Add/Edit Payment Method Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>
