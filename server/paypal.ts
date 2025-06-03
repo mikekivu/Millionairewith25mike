@@ -11,6 +11,7 @@ const PAYPAL_BASE_URL = process.env.NODE_ENV === 'production'
 
 export async function getClientToken() {
   if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
+    console.log("PayPal credentials not configured, using demo mode");
     return "demo_client_token";
   }
 
@@ -26,6 +27,11 @@ export async function getClientToken() {
       },
       body: 'grant_type=client_credentials'
     });
+
+    if (!response.ok) {
+      console.log("PayPal API call failed, falling back to demo mode");
+      return "demo_client_token";
+    }
 
     const data = await response.json();
     return data.access_token || "demo_client_token";
