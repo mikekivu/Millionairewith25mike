@@ -49,15 +49,20 @@ export function useAuth() {
     try {
       const response = await apiRequest('POST', '/api/auth/login', credentials);
 
+      // Always check content type first
+      const contentType = response.headers.get('content-type');
+      const isJson = contentType && contentType.includes('application/json');
+
       if (!response.ok) {
         let errorMessage = 'Login failed';
         try {
-          const contentType = response.headers.get('content-type');
-          if (contentType && contentType.includes('application/json')) {
+          if (isJson) {
             const errorData = await response.json();
             errorMessage = errorData.message || errorMessage;
           } else {
             // Server returned HTML or other non-JSON content
+            const textResponse = await response.text();
+            console.error('Non-JSON response:', textResponse);
             errorMessage = response.status === 404 ? 'Login endpoint not found' : 
                          response.status >= 500 ? 'Server error occurred' : 
                          'Login failed';
@@ -68,9 +73,9 @@ export function useAuth() {
         throw new Error(errorMessage);
       }
 
-      // Check if response is JSON
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
+      // Check if successful response is JSON
+      if (!isJson) {
+        console.error('Expected JSON response but got:', contentType);
         throw new Error('Server returned invalid response format');
       }
 
@@ -101,15 +106,20 @@ export function useAuth() {
     try {
       const response = await apiRequest('POST', '/api/auth/register', userData);
 
+      // Always check content type first
+      const contentType = response.headers.get('content-type');
+      const isJson = contentType && contentType.includes('application/json');
+
       if (!response.ok) {
         let errorMessage = 'Registration failed';
         try {
-          const contentType = response.headers.get('content-type');
-          if (contentType && contentType.includes('application/json')) {
+          if (isJson) {
             const errorData = await response.json();
             errorMessage = errorData.message || errorMessage;
           } else {
             // Server returned HTML or other non-JSON content
+            const textResponse = await response.text();
+            console.error('Non-JSON response:', textResponse);
             errorMessage = response.status === 404 ? 'Registration endpoint not found' : 
                          response.status >= 500 ? 'Server error occurred' : 
                          'Registration failed';
@@ -120,9 +130,9 @@ export function useAuth() {
         throw new Error(errorMessage);
       }
 
-      // Check if response is JSON
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
+      // Check if successful response is JSON
+      if (!isJson) {
+        console.error('Expected JSON response but got:', contentType);
         throw new Error('Server returned invalid response format');
       }
 
