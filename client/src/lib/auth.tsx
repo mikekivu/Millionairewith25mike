@@ -50,35 +50,40 @@ export function useAuth() {
       const response = await apiRequest('POST', '/api/auth/login', credentials);
       
       if (!response.ok) {
-        let errorData;
+        let errorMessage = 'Login failed';
         try {
           const responseText = await response.text();
-          try {
-            errorData = JSON.parse(responseText);
-          } catch {
-            // If response is not JSON (like HTML error page), create a generic error
-            errorData = { 
-              message: response.status === 404 ? 'Login endpoint not found' : 
-                      response.status >= 500 ? 'Server error occurred' : 
-                      'Login failed' 
-            };
+          if (responseText) {
+            try {
+              const errorData = JSON.parse(responseText);
+              errorMessage = errorData.message || errorMessage;
+            } catch {
+              // If response is not JSON, use status-based message
+              errorMessage = response.status === 404 ? 'Login endpoint not found' : 
+                           response.status >= 500 ? 'Server error occurred' : 
+                           'Login failed';
+            }
           }
         } catch {
-          errorData = { message: 'Network error' };
+          errorMessage = 'Network error';
         }
-        throw new Error(errorData.message || `Login failed with status ${response.status}`);
+        throw new Error(errorMessage);
       }
 
       let data;
       try {
         const responseText = await response.text();
+        if (!responseText) {
+          throw new Error('Empty response from server');
+        }
         data = JSON.parse(responseText);
-      } catch {
+      } catch (parseError) {
+        console.error('JSON parse error:', parseError);
         throw new Error('Invalid response format from server');
       }
 
-      if (!data.success || !data.token) {
-        throw new Error(data.message || 'Invalid response from server');
+      if (!data.token) {
+        throw new Error(data.message || 'No authentication token received');
       }
 
       // Store token in localStorage
@@ -102,35 +107,40 @@ export function useAuth() {
       const response = await apiRequest('POST', '/api/auth/register', userData);
       
       if (!response.ok) {
-        let errorData;
+        let errorMessage = 'Registration failed';
         try {
           const responseText = await response.text();
-          try {
-            errorData = JSON.parse(responseText);
-          } catch {
-            // If response is not JSON (like HTML error page), create a generic error
-            errorData = { 
-              message: response.status === 404 ? 'Registration endpoint not found' : 
-                      response.status >= 500 ? 'Server error occurred' : 
-                      'Registration failed' 
-            };
+          if (responseText) {
+            try {
+              const errorData = JSON.parse(responseText);
+              errorMessage = errorData.message || errorMessage;
+            } catch {
+              // If response is not JSON, use status-based message
+              errorMessage = response.status === 404 ? 'Registration endpoint not found' : 
+                           response.status >= 500 ? 'Server error occurred' : 
+                           'Registration failed';
+            }
           }
         } catch {
-          errorData = { message: 'Network error' };
+          errorMessage = 'Network error';
         }
-        throw new Error(errorData.message || `Registration failed with status ${response.status}`);
+        throw new Error(errorMessage);
       }
 
       let data;
       try {
         const responseText = await response.text();
+        if (!responseText) {
+          throw new Error('Empty response from server');
+        }
         data = JSON.parse(responseText);
-      } catch {
+      } catch (parseError) {
+        console.error('JSON parse error:', parseError);
         throw new Error('Invalid response format from server');
       }
 
       if (!data.token) {
-        throw new Error(data.message || 'Registration failed');
+        throw new Error(data.message || 'No authentication token received');
       }
 
       // Store token in localStorage
