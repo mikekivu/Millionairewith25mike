@@ -10,9 +10,7 @@ import { UserStatsCards } from '@/components/dashboard/StatsCards';
 import { useLocation } from 'wouter';
 import { DataTable } from '@/components/dashboard/DataTable';
 import { formatCurrency, formatDate, getTransactionStatusColor } from '@/lib/utils';
-import { Plus, ArrowUpRight, ArrowDownRight, History, Wallet, Receipt } from 'lucide-react';
-import DepositModal from '@/components/dashboard/DepositModal';
-import WithdrawModal from '@/components/dashboard/WithdrawModal';
+import { ArrowUpRight, ArrowDownRight, History, Wallet, Receipt } from 'lucide-react';
 import TransactionReceipt from '@/components/dashboard/TransactionReceipt';
 import { ColumnDef } from '@tanstack/react-table';
 
@@ -32,8 +30,6 @@ interface Transaction {
 export default function UserWallet() {
   const { toast } = useToast();
   const [, navigate] = useLocation();
-  const [depositModalOpen, setDepositModalOpen] = useState(false);
-  const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [receiptModalOpen, setReceiptModalOpen] = useState(false);
 
@@ -50,7 +46,7 @@ export default function UserWallet() {
   const { data: transactions, isLoading: isLoadingTransactions } = useQuery({
     queryKey: ['/api/user/transactions'],
     staleTime: 60000, // 1 minute
-    select: (data) => data.filter((tx: Transaction) => tx.type === 'deposit' || tx.type === 'withdrawal'),
+    select: (data) => data.filter((tx: Transaction) => tx.type === 'investment' || tx.type === 'referral'),
   });
 
   const handleViewReceipt = (transaction: Transaction) => {
@@ -64,10 +60,10 @@ export default function UserWallet() {
       header: 'Type',
       cell: ({ row }) => {
         const type = row.getValue('type') as string;
-        const Icon = type === 'deposit' ? ArrowDownRight : ArrowUpRight;
-        const bgColor = type === 'deposit' ? 'bg-green-100' : 'bg-red-100';
-        const textColor = type === 'deposit' ? 'text-green-700' : 'text-red-700';
-        
+        const Icon = type === 'investment' ? ArrowDownRight : ArrowUpRight;
+        const bgColor = type === 'investment' ? 'bg-blue-100' : 'bg-green-100';
+        const textColor = type === 'investment' ? 'text-blue-700' : 'text-green-700';
+
         return (
           <div className="flex items-center">
             <div className={`flex items-center justify-center h-8 w-8 rounded-full ${bgColor} ${textColor} mr-2`}>
@@ -85,18 +81,10 @@ export default function UserWallet() {
         const amount = parseFloat(row.getValue('amount'));
         const type = row.getValue('type') as string;
         const currency = row.original.currency || 'USDT';
-        const textColor = type === 'deposit' ? 'text-green-700' : 'text-red-700';
-        const prefix = type === 'deposit' ? '+' : '-';
-        
+        const textColor = type === 'investment' ? 'text-blue-700' : 'text-green-700';
+        const prefix = type === 'referral' ? '+' : '';
+
         return <span className={`font-medium ${textColor}`}>{prefix}{formatCurrency(amount, currency)}</span>;
-      },
-    },
-    {
-      accessorKey: 'paymentMethod',
-      header: 'Payment Method',
-      cell: ({ row }) => {
-        const method = row.getValue('paymentMethod') as string;
-        return <span className="capitalize">{method || 'N/A'}</span>;
       },
     },
     {
@@ -124,7 +112,7 @@ export default function UserWallet() {
       cell: ({ row }) => {
         const transaction = row.original;
         const isCompleted = transaction.status === 'completed';
-        
+
         return (
           <Button
             variant="ghost"
@@ -146,33 +134,23 @@ export default function UserWallet() {
     <>
       <Helmet>
         <title>Wallet - ProsperityGroups</title>
-        <meta name="description" content="Manage your ProsperityGroups wallet, make deposits, and withdraw funds." />
+        <meta name="description" content="View your ProsperityGroups wallet balance and transaction history." />
       </Helmet>
 
       <div className="min-h-screen flex flex-col md:flex-row">
         <div className="w-full md:w-64 lg:w-72">
           <UserSidebar />
         </div>
-        
+
         <div className="flex-1 bg-gray-50 p-4 md:p-8 overflow-auto">
           <div className="max-w-7xl mx-auto">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold">Wallet</h1>
-                <p className="text-gray-600 mt-1">Add funds to your wallet to start investing in our plans</p>
-              </div>
-              <div className="flex space-x-2 mt-4 md:mt-0">
-                <Button onClick={() => setDepositModalOpen(true)} className="bg-green-600 hover:bg-green-700">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Deposit
-                </Button>
-                <Button onClick={() => setWithdrawModalOpen(true)} variant="outline">
-                  <ArrowUpRight className="mr-2 h-4 w-4" />
-                  Withdraw
-                </Button>
+                <p className="text-gray-600 mt-1">View your wallet balance and transaction history</p>
               </div>
             </div>
-            
+
             <Card className="mb-8">
               <CardHeader className="pb-3">
                 <CardTitle className="text-2xl">Balance</CardTitle>
@@ -206,24 +184,16 @@ export default function UserWallet() {
                     </div>
                   )}
                 </div>
-                {!isLoadingStats && parseFloat(dashboardStats?.walletBalance || '0') === 0 && (
-                  <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <p className="text-blue-800 font-medium">Get Started</p>
-                    <p className="text-blue-600 text-sm mt-1">
-                      Make your first deposit to start investing in our high-return plans. All plans offer guaranteed returns!
-                    </p>
-                  </div>
-                )}
               </CardContent>
             </Card>
-            
+
             <Tabs defaultValue="all" className="w-full">
               <TabsList className="mb-4">
                 <TabsTrigger value="all">All Transactions</TabsTrigger>
-                <TabsTrigger value="deposits">Deposits</TabsTrigger>
-                <TabsTrigger value="withdrawals">Withdrawals</TabsTrigger>
+                <TabsTrigger value="investments">Investments</TabsTrigger>
+                <TabsTrigger value="referrals">Referrals</TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="all">
                 <Card>
                   <CardHeader>
@@ -247,78 +217,64 @@ export default function UserWallet() {
                     ) : (
                       <div className="text-center py-8">
                         <p className="text-muted-foreground">No transactions found</p>
-                        <Button 
-                          variant="outline" 
-                          className="mt-4"
-                          onClick={() => setDepositModalOpen(true)}
-                        >
-                          Make your first deposit
-                        </Button>
                       </div>
                     )}
                   </CardContent>
                 </Card>
               </TabsContent>
-              
-              <TabsContent value="deposits">
+
+              <TabsContent value="investments">
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center">
-                      <ArrowDownRight className="mr-2 h-5 w-5 text-green-600" />
-                      Deposit History
+                      <ArrowDownRight className="mr-2 h-5 w-5 text-blue-600" />
+                      Investment History
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     {isLoadingTransactions ? (
                       <div className="flex justify-center py-8">
-                        <p>Loading deposits...</p>
+                        <p>Loading investments...</p>
                       </div>
                     ) : transactions ? (
                       <DataTable 
                         columns={columns} 
-                        data={transactions.filter((tx: Transaction) => tx.type === 'deposit')} 
-                        searchColumn="paymentMethod"
-                        searchPlaceholder="Search deposits..."
+                        data={transactions.filter((tx: Transaction) => tx.type === 'investment')} 
+                        searchColumn="transactionDetails"
+                        searchPlaceholder="Search investments..."
                       />
                     ) : (
                       <div className="text-center py-8">
-                        <p className="text-muted-foreground">No deposits found</p>
-                        <Button 
-                          variant="outline" 
-                          className="mt-4"
-                          onClick={() => setDepositModalOpen(true)}
-                        >
-                          Make a deposit
-                        </Button>
+                        <p className="text-muted-foreground">No investments found</p>
                       </div>
                     )}
                   </CardContent>
                 </Card>
               </TabsContent>
-              
-              <TabsContent value="withdrawals">
+
+              <TabsContent value="referrals">
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center">
-                      <ArrowUpRight className="mr-2 h-5 w-5 text-red-600" />
-                      Withdrawal History
+                      <ArrowUpRight className="mr-2 h-5 w-5 text-green-600" />
+                      Referral Earnings
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     {isLoadingTransactions ? (
                       <div className="flex justify-center py-8">
-                        <p>Loading withdrawals...</p>
+                        <p>Loading referrals...</p>
                       </div>
                     ) : transactions ? (
                       <DataTable 
                         columns={columns}
-                        data={transactions.filter((tx: Transaction) => tx.type === 'withdrawal')} 
-                        searchColumn="paymentMethod"
-                        searchPlaceholder="Search withdrawals..."
+                        data={transactions.filter((tx: Transaction) => tx.type === 'referral')} 
+                        searchColumn="transactionDetails"
+                        searchPlaceholder="Search referrals..."
                       />
                     ) : (
                       <div className="text-center py-8">
-                        <p className="text-muted-foreground">No withdrawals found</p>
+                        <p className="text-muted-foreground">No referral earnings found</p>
                       </div>
                     )}
                   </CardContent>
@@ -328,17 +284,6 @@ export default function UserWallet() {
           </div>
         </div>
       </div>
-
-      <DepositModal 
-        open={depositModalOpen} 
-        onOpenChange={setDepositModalOpen} 
-      />
-
-      <WithdrawModal 
-        open={withdrawModalOpen} 
-        onOpenChange={setWithdrawModalOpen} 
-        currentBalance={parseFloat(dashboardStats?.walletBalance || '0')}
-      />
 
       {selectedTransaction && (
         <TransactionReceipt

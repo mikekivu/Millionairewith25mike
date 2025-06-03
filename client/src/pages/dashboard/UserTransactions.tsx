@@ -140,14 +140,7 @@ export default function UserTransactions() {
                   <History className="mr-2 h-4 w-4" />
                   All
                 </TabsTrigger>
-                <TabsTrigger value="deposits" className="flex items-center">
-                  <ArrowDownRight className="mr-2 h-4 w-4 text-green-600" />
-                  Deposits ({depositCount})
-                </TabsTrigger>
-                <TabsTrigger value="withdrawals" className="flex items-center">
-                  <ArrowUpRight className="mr-2 h-4 w-4 text-red-600" />
-                  Withdrawals ({withdrawalCount})
-                </TabsTrigger>
+                
                 <TabsTrigger value="investments" className="flex items-center">
                   <TrendingUp className="mr-2 h-4 w-4 text-blue-600" />
                   Investments ({investmentCount})
@@ -187,63 +180,7 @@ export default function UserTransactions() {
                 </Card>
               </TabsContent>
               
-              <TabsContent value="deposits">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <ArrowDownRight className="mr-2 h-5 w-5 text-green-600" />
-                      Deposits
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {isLoading ? (
-                      <div className="flex justify-center py-8">
-                        <p>Loading deposits...</p>
-                      </div>
-                    ) : transactions ? (
-                      <DataTable 
-                        columns={columns}
-                        data={transactions.filter(tx => tx.type === 'deposit')}
-                        searchColumn="paymentMethod"
-                        searchPlaceholder="Search by payment method..."
-                      />
-                    ) : (
-                      <div className="text-center py-8">
-                        <p className="text-muted-foreground">No deposits found</p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
               
-              <TabsContent value="withdrawals">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <ArrowUpRight className="mr-2 h-5 w-5 text-red-600" />
-                      Withdrawals
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {isLoading ? (
-                      <div className="flex justify-center py-8">
-                        <p>Loading withdrawals...</p>
-                      </div>
-                    ) : transactions ? (
-                      <DataTable 
-                        columns={columns}
-                        data={transactions.filter(tx => tx.type === 'withdrawal')}
-                        searchColumn="paymentMethod"
-                        searchPlaceholder="Search by payment method..."
-                      />
-                    ) : (
-                      <div className="text-center py-8">
-                        <p className="text-muted-foreground">No withdrawals found</p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
               
               <TabsContent value="investments">
                 <Card>
