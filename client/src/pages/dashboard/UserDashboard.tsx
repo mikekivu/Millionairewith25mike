@@ -8,7 +8,7 @@ import { useAuth } from '@/lib/auth';
 import { TrendingUp, Users, DollarSign, Clock, Share2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import UserSidebar from '@/components/dashboard/UserSidebar';
-import StatsCards from '@/components/dashboard/StatsCards';
+import { UserStatsCards } from '@/components/dashboard/StatsCards';
 import InvestmentPerformance from '@/components/dashboard/InvestmentPerformance';
 import ReferralTools from '@/components/dashboard/ReferralTools';
 
@@ -89,7 +89,7 @@ export default function UserDashboard() {
               </h1>
             </div>
 
-            <StatsCards stats={dashboardStats} />
+            <UserStatsCards stats={dashboardStats} />
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
               <div className="lg:col-span-2 space-y-6">
