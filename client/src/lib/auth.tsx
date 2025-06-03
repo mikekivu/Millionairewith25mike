@@ -49,13 +49,13 @@ export function useAuth() {
     try {
       const response = await apiRequest('POST', '/api/auth/login', credentials);
       const data = await response.json();
-      
+
       // Store token in localStorage
       localStorage.setItem('token', data.token);
-      
+
       // Refetch user data
       await refetch();
-      
+
       return data;
     } catch (error) {
       throw error;
@@ -66,13 +66,13 @@ export function useAuth() {
     try {
       const response = await apiRequest('POST', '/api/auth/register', userData);
       const data = await response.json();
-      
+
       // Store token in localStorage
       localStorage.setItem('token', data.token);
-      
+
       // Refetch user data
       await refetch();
-      
+
       return data;
     } catch (error) {
       throw error;
@@ -84,11 +84,11 @@ export function useAuth() {
       await apiRequest('POST', '/api/auth/logout');
       // Remove token from localStorage
       localStorage.removeItem('token');
-      
+
       // Force query cache clear and reset state
       queryClient.clear();
       queryClient.setQueryData(['/api/auth/me'], null);
-      
+
       // Refresh the page to ensure clean state
       window.location.href = '/';
     } catch (error) {
@@ -97,7 +97,7 @@ export function useAuth() {
       localStorage.removeItem('token');
       queryClient.clear();
       queryClient.setQueryData(['/api/auth/me'], null);
-      
+
       // Refresh the page even on error
       window.location.href = '/';
     }

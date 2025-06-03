@@ -288,19 +288,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { email, password } = req.body;
 
+      // Validate input
+      if (!email || !password) {
+        return res.status(400).json({ message: "Email and password are required" });
+      }
+
+      console.log(`Login attempt for email: ${email}`);
+
       const user = await storage.getUserByEmail(email);
       if (!user) {
+        console.log(`User not found for email: ${email}`);
         return res.status(400).json({ message: "Invalid email or password" });
       }
 
       // Check if user is active
       if (!user.active) {
+        console.log(`Inactive user login attempt: ${email}`);
         return res.status(403).json({ message: "Account is deactivated" });
       }
 
       // Verify password
       const isPasswordValid = await bcrypt.compare(password, user.password);
       if (!isPasswordValid) {
+        console.log(`Invalid password for user: ${email}`);
         return res.status(400).json({ message: "Invalid email or password" });
       }
 
@@ -310,22 +320,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Set user in session
       req.session.userId = user.id;
 
+      console.log(`Successful login for user: ${email}, role: ${user.role}`);
+
       // Return user without password
       const { password: userPassword, ...userWithoutPassword } = user;
       res.status(200).json({ 
         message: "Login successful", 
         user: userWithoutPassword,
-        token
+        token,
+        success: true
       });
     } catch (error) {
+      console.error('Login error:', error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({ 
           message: "Validation error", 
           errors: error.errors 
         });
       }
-      console.error(error);
-      res.status(500).json({ message: "Server error" });
+      res.status(500).json({ message: "Server error during login" });
     }
   });
 

@@ -52,22 +52,30 @@ export default function LoginForm() {
       
       const response = await login(loginData);
       
-      toast({
-        title: "Login Successful",
-        description: "Welcome back to MillionaireWith$25!",
-      });
-      
-      // Redirect to dashboard based on role
-      if (response.user.role === 'admin') {
-        navigate('/admin');
+      if (response && response.user) {
+        toast({
+          title: "Login Successful",
+          description: "Welcome back to ProsperityGroups!",
+        });
+        
+        // Small delay to ensure state is updated
+        setTimeout(() => {
+          // Redirect to dashboard based on role
+          if (response.user.role === 'admin') {
+            navigate('/admin');
+          } else {
+            navigate('/dashboard/wallet');
+          }
+        }, 100);
       } else {
-        navigate('/dashboard/wallet');
+        throw new Error('Invalid response from server');
       }
     } catch (error) {
       console.error('Login error:', error);
+      const errorMessage = error instanceof Error ? error.message : "Invalid email or password. Please try again.";
       toast({
         title: "Login Failed",
-        description: error instanceof Error ? error.message : "Invalid email or password. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
