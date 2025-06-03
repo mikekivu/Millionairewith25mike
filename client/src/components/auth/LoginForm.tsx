@@ -55,7 +55,7 @@ export default function LoginForm() {
       const response = await login(loginData);
       console.log('Login response:', response);
       
-      if (response && response.user) {
+      if (response && response.success && response.user) {
         toast({
           title: "Login Successful",
           description: "Welcome back to ProsperityGroups!",
@@ -72,7 +72,7 @@ export default function LoginForm() {
         }, 100);
       } else {
         console.error('Invalid response structure:', response);
-        throw new Error('Invalid response from server');
+        throw new Error(response?.message || 'Invalid response from server');
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -147,11 +147,13 @@ export default function LoginForm() {
                 )}
               />
 
-              <Link href="/forgot-password">
-                <a className="text-sm text-primary-600 hover:text-primary-500">
-                  Forgot password?
-                </a>
-              </Link>
+              <button
+                type="button"
+                onClick={() => navigate('/forgot-password')}
+                className="text-sm text-primary-600 hover:text-primary-500 underline bg-transparent border-none cursor-pointer"
+              >
+                Forgot password?
+              </button>
             </div>
 
             <Button 
@@ -167,11 +169,13 @@ export default function LoginForm() {
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
             Don't have an account?{' '}
-            <Link href="/register">
-              <a className="text-primary-600 hover:text-primary-500 font-medium">
-                Register now
-              </a>
-            </Link>
+            <button
+              type="button"
+              onClick={() => navigate('/register')}
+              className="text-primary-600 hover:text-primary-500 font-medium underline bg-transparent border-none cursor-pointer"
+            >
+              Register now
+            </button>
           </p>
         </div>
       </CardContent>

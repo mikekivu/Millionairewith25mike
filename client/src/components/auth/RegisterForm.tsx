@@ -266,17 +266,21 @@ export default function RegisterForm() {
                   <div className="space-y-1 leading-none">
                     <FormLabel>
                       I agree to the{' '}
-                      <Link href="/terms">
-                        <a className="text-primary-600 hover:text-primary-500">
-                          Terms of Service
-                        </a>
-                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => navigate('/terms')}
+                        className="text-primary-600 hover:text-primary-500 underline bg-transparent border-none cursor-pointer"
+                      >
+                        Terms of Service
+                      </button>
                       {' '}and{' '}
-                      <Link href="/terms">
-                        <a className="text-primary-600 hover:text-primary-500">
-                          Privacy Policy
-                        </a>
-                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => navigate('/terms')}
+                        className="text-primary-600 hover:text-primary-500 underline bg-transparent border-none cursor-pointer"
+                      >
+                        Privacy Policy
+                      </button>
                     </FormLabel>
                     <FormMessage />
                   </div>
@@ -297,11 +301,13 @@ export default function RegisterForm() {
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
             Already have an account?{' '}
-            <Link href="/login">
-              <a className="text-primary-600 hover:text-primary-500 font-medium">
-                Login
-              </a>
-            </Link>
+            <button
+              type="button"
+              onClick={() => navigate('/login')}
+              className="text-primary-600 hover:text-primary-500 font-medium underline bg-transparent border-none cursor-pointer"
+            >
+              Login
+            </button>
           </p>
         </div>
       </CardContent>

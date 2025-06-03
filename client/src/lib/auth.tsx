@@ -48,12 +48,6 @@ export function useAuth() {
   const login = async (credentials: LoginData) => {
     try {
       const response = await apiRequest('POST', '/api/auth/login', credentials);
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Login failed');
-      }
-
       const data = await response.json();
 
       if (!data.success || !data.token) {
@@ -78,6 +72,10 @@ export function useAuth() {
       const response = await apiRequest('POST', '/api/auth/register', userData);
       const data = await response.json();
 
+      if (!data.token) {
+        throw new Error(data.message || 'Registration failed');
+      }
+
       // Store token in localStorage
       localStorage.setItem('token', data.token);
 
@@ -86,6 +84,7 @@ export function useAuth() {
 
       return data;
     } catch (error) {
+      console.error('Register error:', error);
       throw error;
     }
   };
