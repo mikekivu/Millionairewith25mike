@@ -7,32 +7,32 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
-export async function apiRequest(
-  method: string,
-  url: string,
-  data?: unknown | undefined,
-): Promise<Response> {
-  const headers: Record<string, string> = {};
-  
-  if (data) {
-    headers["Content-Type"] = "application/json";
-  }
-  
-  // Include JWT token from localStorage if available
+export async function apiRequest(method: string, endpoint: string, data?: any) {
   const token = localStorage.getItem('token');
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
-  
-  const res = await fetch(url, {
-    method,
-    headers,
-    body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
-  });
 
-  await throwIfResNotOk(res);
-  return res;
+  const config: RequestInit = {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token && { Authorization: `Bearer ${token}` }),
+    },
+    credentials: 'include', // Include cookies for session handling
+  };
+
+  if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
+    config.body = JSON.stringify(data);
+  }
+
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ 
+      message: response.status === 401 ? 'Invalid email or password' : 'Network error' 
+    }));
+    throw new Error(errorData.message || `HTTP ${response.status}`);
+  }
+
+  return response;
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
@@ -42,13 +42,13 @@ export const getQueryFn: <T>(options: {
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
     const headers: Record<string, string> = {};
-    
+
     // Include JWT token from localStorage if available
     const token = localStorage.getItem('token');
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     }
-    
+
     const res = await fetch(queryKey[0] as string, {
       headers,
       credentials: "include",

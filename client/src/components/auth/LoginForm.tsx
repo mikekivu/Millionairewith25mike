@@ -44,6 +44,8 @@ export default function LoginForm() {
 
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
+    console.log('Attempting login for:', data.email);
+    
     try {
       const loginData: LoginData = {
         email: data.email,
@@ -51,6 +53,7 @@ export default function LoginForm() {
       };
       
       const response = await login(loginData);
+      console.log('Login response:', response);
       
       if (response && response.user) {
         toast({
@@ -68,6 +71,7 @@ export default function LoginForm() {
           }
         }, 100);
       } else {
+        console.error('Invalid response structure:', response);
         throw new Error('Invalid response from server');
       }
     } catch (error) {
@@ -78,6 +82,9 @@ export default function LoginForm() {
         description: errorMessage,
         variant: "destructive",
       });
+      
+      // Clear any potentially invalid token
+      localStorage.removeItem('token');
     } finally {
       setIsLoading(false);
     }

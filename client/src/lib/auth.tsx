@@ -48,7 +48,17 @@ export function useAuth() {
   const login = async (credentials: LoginData) => {
     try {
       const response = await apiRequest('POST', '/api/auth/login', credentials);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Login failed');
+      }
+
       const data = await response.json();
+
+      if (!data.success || !data.token) {
+        throw new Error(data.message || 'Invalid response from server');
+      }
 
       // Store token in localStorage
       localStorage.setItem('token', data.token);
@@ -58,6 +68,7 @@ export function useAuth() {
 
       return data;
     } catch (error) {
+      console.error('Login error:', error);
       throw error;
     }
   };
