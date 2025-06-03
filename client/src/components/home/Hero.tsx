@@ -53,13 +53,13 @@ export default function Hero() {
 
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href="/register">
-                <div className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-blue-500 to-emerald-500 hover:from-blue-600 hover:to-emerald-600 shadow-lg shadow-blue-500/20 cursor-pointer">
+                <div className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 shadow-lg shadow-orange-500/20 cursor-pointer">
                   Get started now <ArrowRight className="ml-2 h-5 w-5" />
                 </div>
               </Link>
 
               <Link href="#plans">
-                <div className="inline-flex items-center justify-center px-6 py-3 border border-blue-300 text-base font-medium rounded-md text-blue-600 bg-white hover:bg-blue-50 cursor-pointer">
+                <div className="inline-flex items-center justify-center px-6 py-3 border border-orange-300 text-base font-medium rounded-md text-orange-600 bg-white hover:bg-orange-50 cursor-pointer">
                   View investment plans
                 </div>
               </Link>

@@ -119,7 +119,7 @@ export default function Header() {
                 <Button 
                   variant="default" 
                   onClick={handleLogout}
-                  className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white flex items-center gap-2"
+                  className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white flex items-center gap-2 shadow-lg shadow-orange-500/20"
                 >
                   <LogOut className="h-4 w-4" />
                   Logout
@@ -129,15 +129,15 @@ export default function Header() {
               <>
                 <Link href="/login">
                   <Button 
-                    variant="ghost"
-                    className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                    variant="outline"
+                    className="border-orange-300 text-orange-600 hover:bg-gradient-to-r hover:from-orange-500 hover:to-yellow-500 hover:text-white hover:border-transparent"
                   >
                     Login
                   </Button>
                 </Link>
                 <Link href="/register">
                   <Button
-                    className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white"
+                    className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white shadow-lg shadow-orange-500/20"
                   >
                     Register
                   </Button>

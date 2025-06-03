@@ -13,9 +13,8 @@ export default function CallToAction() {
           <div className="inline-flex rounded-md shadow">
             <Link href="/register">
               <Button 
-                variant="secondary" 
                 size="lg" 
-                className="text-primary-800 bg-white hover:bg-gray-50"
+                className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white shadow-lg shadow-orange-500/20"
               >
                 Create Account
               </Button>
@@ -24,9 +23,9 @@ export default function CallToAction() {
           <div className="ml-3 inline-flex rounded-md shadow">
             <Link href="/login">
               <Button 
-                variant="default" 
+                variant="outline"
                 size="lg" 
-                className="bg-primary-700 hover:bg-primary-600"
+                className="border-orange-300 text-orange-600 bg-white hover:bg-gradient-to-r hover:from-orange-500 hover:to-yellow-500 hover:text-white hover:border-transparent"
               >
                 Login
               </Button>
