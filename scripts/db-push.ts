@@ -82,18 +82,24 @@ async function main() {
     console.log('Creating default payment settings...');
     await db.insert(schema.paymentSettings).values([
       {
-        paymentMethod: "paypal",
+        method: "paypal",
+        name: "PayPal",
         active: true,
-        walletAddress: "",
-        apiKey: process.env.PAYPAL_CLIENT_ID || "",
-        secretKey: process.env.PAYPAL_CLIENT_SECRET || ""
+        instructions: "Pay using your PayPal account",
+        credentials: process.env.PAYPAL_CLIENT_ID || "",
+        minAmount: "10",
+        maxAmount: "10000",
+        payment_method: "paypal"
       },
       {
-        paymentMethod: "coinbase",
+        method: "usdt_trc20",
+        name: "USDT (TRC20)",
         active: true,
-        walletAddress: "TUt1RB8XL91QZeEPrY62QGYvM3raCUUJJb", // Example USDT TRC20 wallet address
-        apiKey: process.env.COINBASE_API_KEY || "",
-        secretKey: process.env.COINBASE_API_SECRET || ""
+        instructions: "Send USDT to the wallet address below",
+        credentials: "TUt1RB8XL91QZeEPrY62QGYvM3raCUUJJb",
+        minAmount: "10",
+        maxAmount: "10000",
+        payment_method: "usdt_trc20"
       }
     ]);
   }
