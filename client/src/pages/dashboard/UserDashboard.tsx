@@ -4,14 +4,14 @@ import { Helmet } from 'react-helmet';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import UserSidebar from '@/components/dashboard/UserSidebar';
-import StatsCards from '@/components/dashboard/StatsCards';
-import InvestmentPerformance from '@/components/dashboard/InvestmentPerformance';
-import ReferralTools from '@/components/dashboard/ReferralTools';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { useAuth } from '@/lib/auth';
 import { TrendingUp, Users, DollarSign, Clock, Share2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import UserSidebar from '@/components/dashboard/UserSidebar';
+import StatsCards from '@/components/dashboard/StatsCards';
+import InvestmentPerformance from '@/components/dashboard/InvestmentPerformance';
+import ReferralTools from '@/components/dashboard/ReferralTools';
 
 export default function UserDashboard() {
   const { user } = useAuth();

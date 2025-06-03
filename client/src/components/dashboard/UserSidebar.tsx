@@ -113,8 +113,8 @@ function UserSidebar() {
             <Logo size="md" className="shadow-lg" />
             <div className="ml-2">
               <h1 className="text-xl font-bold text-white">
-                <span className="text-orange-500">Millionare</span>
-                <span className="text-yellow-400">With$25</span>
+                <span className="text-orange-500">Prosperity</span>
+                <span className="text-yellow-400">Groups</span>
               </h1>
             </div>
           </div>
