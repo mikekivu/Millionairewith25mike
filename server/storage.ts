@@ -24,7 +24,7 @@ export interface IStorage {
   getUserReferrals(userId: number): Promise<User[]>;
   toggleUserStatus(id: number, active: boolean): Promise<User | undefined>;
   deleteUser(id: number): Promise<boolean>;
-  
+
   // Plans Management
   createPlan(plan: InsertPlan): Promise<Plan>;
   getPlan(id: number): Promise<Plan | undefined>;
@@ -33,14 +33,14 @@ export interface IStorage {
   updatePlan(id: number, plan: Partial<Plan>): Promise<Plan | undefined>;
   togglePlanStatus(id: number, active: boolean): Promise<Plan | undefined>;
   deletePlan(id: number): Promise<boolean>;
-  
+
   // Investments Management
   createInvestment(investment: InsertInvestment): Promise<Investment>;
   getInvestment(id: number): Promise<Investment | undefined>;
   getUserInvestments(userId: number): Promise<Investment[]>;
   getAllInvestments(): Promise<Investment[]>;
   updateInvestment(id: number, investment: Partial<Investment>): Promise<Investment | undefined>;
-  
+
   // Transactions Management
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
   getTransaction(id: number): Promise<Transaction | undefined>;
@@ -48,14 +48,14 @@ export interface IStorage {
   getAllTransactions(): Promise<Transaction[]>;
   getTransactionsByType(type: string): Promise<Transaction[]>;
   updateTransaction(id: number, transaction: Partial<Transaction>): Promise<Transaction | undefined>;
-  
+
   // Referral Management
   createReferral(referral: InsertReferral): Promise<Referral>;
   getReferral(id: number): Promise<Referral | undefined>;
   getUserReferralsByLevel(userId: number, level: number): Promise<Referral[]>;
   getAllUserReferrals(userId: number): Promise<Referral[]>;
   updateReferral(id: number, referral: Partial<Referral>): Promise<Referral | undefined>;
-  
+
   // Payment Settings Management
   createPaymentSetting(setting: InsertPaymentSetting): Promise<PaymentSetting>;
   getPaymentSetting(id: number): Promise<PaymentSetting | undefined>;
@@ -63,13 +63,13 @@ export interface IStorage {
   getAllPaymentSettings(): Promise<PaymentSetting[]>;
   updatePaymentSetting(id: number, setting: Partial<PaymentSetting>): Promise<PaymentSetting | undefined>;
   togglePaymentMethod(id: number, active: boolean): Promise<PaymentSetting | undefined>;
-  
+
   // Contact Messages Management
   createContactMessage(message: InsertContactMessage): Promise<ContactMessage>;
   getContactMessage(id: number): Promise<ContactMessage | undefined>;
   getAllContactMessages(): Promise<ContactMessage[]>;
   markMessageAsResponded(id: number): Promise<ContactMessage | undefined>;
-  
+
   // User Messages Management
   createUserMessage(message: InsertUserMessage): Promise<UserMessage>;
   getUserMessage(id: number): Promise<UserMessage | undefined>;
@@ -77,18 +77,18 @@ export interface IStorage {
   getUserReceivedMessages(userId: number): Promise<UserMessage[]>;
   markUserMessageAsRead(id: number): Promise<UserMessage | undefined>;
   markUserMessageAsReplied(id: number): Promise<UserMessage | undefined>;
-  
+
   // Notifications Management
   createNotification(notification: InsertNotification): Promise<Notification>;
   getNotification(id: number): Promise<Notification | undefined>;
   getUserNotifications(userId: number): Promise<Notification[]>;
   getUnreadUserNotifications(userId: number): Promise<Notification[]>;
   markNotificationAsRead(id: number): Promise<Notification | undefined>;
-  
+
   // Dashboard statistics
   getDashboardStats(): Promise<DashboardStats>;
   getUserDashboardStats(userId: number): Promise<UserDashboardStats>;
-  
+
   // Network visualization
   getNetworkPerformance(userId: number): Promise<any>;
 }
@@ -123,7 +123,7 @@ export class MemStorage implements IStorage {
   private contactMessages: Map<number, ContactMessage>;
   private userMessages: Map<number, UserMessage>;
   private notifications: Map<number, Notification>;
-  
+
   private userId: number;
   private planId: number;
   private investmentId: number;
@@ -144,7 +144,7 @@ export class MemStorage implements IStorage {
     this.contactMessages = new Map();
     this.userMessages = new Map();
     this.notifications = new Map();
-    
+
     this.userId = 1;
     this.planId = 1;
     this.investmentId = 1;
@@ -154,7 +154,7 @@ export class MemStorage implements IStorage {
     this.contactMessageId = 1;
     this.userMessageId = 1;
     this.notificationId = 1;
-    
+
     this.initializeData();
   }
 
@@ -171,7 +171,7 @@ export class MemStorage implements IStorage {
       referralCode: "ADMIN" + nanoid(8),
     };
     this.createUser(adminUser);
-    
+
     // Create Matrix Board plans
     this.createPlan({
       name: "Matrix Board 1",
@@ -195,7 +195,7 @@ export class MemStorage implements IStorage {
       totalIncomeAfterReEntry: "200",
       rewardGift: "Health Product"
     });
-    
+
     this.createPlan({
       name: "Matrix Board 2",
       description: "Join with 100 USDT. Refer 15 People to earn 800 USDT. Re-entry available.",
@@ -218,7 +218,7 @@ export class MemStorage implements IStorage {
       totalIncomeAfterReEntry: "700",
       rewardGift: "Mobile phone"
     });
-    
+
     this.createPlan({
       name: "Matrix Board 3",
       description: "Join with 500 USDT. Refer 15 People to earn 4000 USDT. Re-entry available.",
@@ -241,7 +241,7 @@ export class MemStorage implements IStorage {
       totalIncomeAfterReEntry: "3500",
       rewardGift: "Tablet"
     });
-    
+
     this.createPlan({
       name: "Matrix Board 4",
       description: "Join with 1000 USDT. Refer 15 People to earn 8000 USDT. Re-entry available.",
@@ -264,7 +264,7 @@ export class MemStorage implements IStorage {
       totalIncomeAfterReEntry: "7000",
       rewardGift: "iPad"
     });
-    
+
     this.createPlan({
       name: "Matrix Board 5",
       description: "Join with 4000 USDT. Refer 15 People to earn 32000 USDT. Re-entry available.",
@@ -287,7 +287,7 @@ export class MemStorage implements IStorage {
       totalIncomeAfterReEntry: "28000",
       rewardGift: "Laptop"
     });
-    
+
     this.createPlan({
       name: "Matrix Board 6",
       description: "Join with 8000 USDT. Refer 15 People to earn 64000 USDT. Re-entry available.",
@@ -310,7 +310,7 @@ export class MemStorage implements IStorage {
       totalIncomeAfterReEntry: "56000",
       rewardGift: "Holiday treatment vocation"
     });
-    
+
     // Create payment settings - only Coinbase USDT TRC20
     this.createPaymentSetting({
       method: "usdt_trc20",
@@ -344,13 +344,13 @@ export class MemStorage implements IStorage {
   async createUser(user: InsertUser): Promise<User> {
     const id = this.userId++;
     const newUser: User = { ...user, id, walletBalance: "0" };
-    
+
     if (!newUser.referralCode) {
       newUser.referralCode = newUser.username.toUpperCase() + nanoid(8);
     }
-    
+
     this.users.set(id, newUser);
-    
+
     if (newUser.referredBy) {
       const referrer = await this.getUser(newUser.referredBy);
       if (referrer) {
@@ -361,7 +361,7 @@ export class MemStorage implements IStorage {
           commissionRate: "10",
           status: "active"
         });
-        
+
         // Create referrals for higher levels if applicable
         const referrerChain = await this.getReferrerChain(referrer.id);
         for (let i = 0; i < referrerChain.length && i < 4; i++) { // Up to level 5
@@ -376,7 +376,7 @@ export class MemStorage implements IStorage {
         }
       }
     }
-    
+
     return newUser;
   }
 
@@ -385,7 +385,7 @@ export class MemStorage implements IStorage {
     if (!existingUser) {
       return undefined;
     }
-    
+
     const updatedUser = { ...existingUser, ...user };
     this.users.set(id, updatedUser);
     return updatedUser;
@@ -398,7 +398,7 @@ export class MemStorage implements IStorage {
   async getUserReferrals(userId: number): Promise<User[]> {
     const referrals = Array.from(this.referrals.values())
       .filter(ref => ref.referrerId === userId && ref.level === 1);
-      
+
     const referredUsers: User[] = [];
     for (const ref of referrals) {
       const user = await this.getUser(ref.referredId);
@@ -406,7 +406,7 @@ export class MemStorage implements IStorage {
         referredUsers.push(user);
       }
     }
-    
+
     return referredUsers;
   }
 
@@ -443,7 +443,7 @@ export class MemStorage implements IStorage {
     if (!existingPlan) {
       return undefined;
     }
-    
+
     const updatedPlan = { ...existingPlan, ...plan };
     this.plans.set(id, updatedPlan);
     return updatedPlan;
@@ -467,7 +467,7 @@ export class MemStorage implements IStorage {
       profit: "0"
     };
     this.investments.set(id, newInvestment);
-    
+
     // Create transaction record for the investment
     await this.createTransaction({
       userId: investment.userId,
@@ -479,14 +479,14 @@ export class MemStorage implements IStorage {
       transactionDetails: `Investment in plan #${investment.planId}`,
       investmentId: id
     });
-    
+
     // Deduct from user's wallet
     const user = await this.getUser(investment.userId);
     if (user) {
       const newBalance = parseFloat(user.walletBalance) - parseFloat(investment.amount);
       await this.updateUser(user.id, { walletBalance: newBalance.toString() });
     }
-    
+
     return newInvestment;
   }
 
@@ -507,7 +507,7 @@ export class MemStorage implements IStorage {
     if (!existingInvestment) {
       return undefined;
     }
-    
+
     const updatedInvestment = { ...existingInvestment, ...investment };
     this.investments.set(id, updatedInvestment);
     return updatedInvestment;
@@ -518,7 +518,7 @@ export class MemStorage implements IStorage {
     const id = this.transactionId++;
     const newTransaction: Transaction = { ...transaction, id, createdAt: new Date() };
     this.transactions.set(id, newTransaction);
-    
+
     // If it's a deposit, add to user's wallet
     if (transaction.type === "deposit" && transaction.status === "completed") {
       const user = await this.getUser(transaction.userId);
@@ -527,7 +527,7 @@ export class MemStorage implements IStorage {
         await this.updateUser(user.id, { walletBalance: newBalance.toString() });
       }
     }
-    
+
     // If it's a withdrawal, subtract from user's wallet
     if (transaction.type === "withdrawal" && transaction.status === "completed") {
       const user = await this.getUser(transaction.userId);
@@ -536,7 +536,7 @@ export class MemStorage implements IStorage {
         await this.updateUser(user.id, { walletBalance: newBalance.toString() });
       }
     }
-    
+
     // If it's a referral commission, add to referrer's wallet
     if (transaction.type === "referral" && transaction.status === "completed" && transaction.referralId) {
       const referral = await this.getReferral(transaction.referralId);
@@ -545,7 +545,7 @@ export class MemStorage implements IStorage {
         if (referrer) {
           const newBalance = parseFloat(referrer.walletBalance) + parseFloat(transaction.amount);
           await this.updateUser(referrer.id, { walletBalance: newBalance.toString() });
-          
+
           // Update referral commission amount
           await this.updateReferral(referral.id, { 
             commissionAmount: (parseFloat(referral.commissionAmount) + parseFloat(transaction.amount)).toString() 
@@ -553,7 +553,7 @@ export class MemStorage implements IStorage {
         }
       }
     }
-    
+
     return newTransaction;
   }
 
@@ -578,7 +578,7 @@ export class MemStorage implements IStorage {
     if (!existingTransaction) {
       return undefined;
     }
-    
+
     // If we're changing status from pending to completed
     if (
       existingTransaction.status === "pending" && 
@@ -593,7 +593,7 @@ export class MemStorage implements IStorage {
           await this.updateUser(user.id, { walletBalance: newBalance.toString() });
         }
       }
-      
+
       // Handle withdrawal completion
       if (existingTransaction.type === "withdrawal") {
         const user = await this.getUser(existingTransaction.userId);
@@ -602,7 +602,7 @@ export class MemStorage implements IStorage {
           await this.updateUser(user.id, { walletBalance: newBalance.toString() });
         }
       }
-      
+
       // Handle referral commission
       if (existingTransaction.type === "referral" && existingTransaction.referralId) {
         const referral = await this.getReferral(existingTransaction.referralId);
@@ -611,7 +611,7 @@ export class MemStorage implements IStorage {
           if (referrer) {
             const newBalance = parseFloat(referrer.walletBalance) + parseFloat(existingTransaction.amount);
             await this.updateUser(referrer.id, { walletBalance: newBalance.toString() });
-            
+
             // Update referral commission amount
             await this.updateReferral(referral.id, { 
               commissionAmount: (parseFloat(referral.commissionAmount) + parseFloat(existingTransaction.amount)).toString() 
@@ -620,7 +620,7 @@ export class MemStorage implements IStorage {
         }
       }
     }
-    
+
     const updatedTransaction = { ...existingTransaction, ...transaction };
     this.transactions.set(id, updatedTransaction);
     return updatedTransaction;
@@ -647,7 +647,7 @@ export class MemStorage implements IStorage {
     // Get all referrals where this user is the referrer
     const referrals = Array.from(this.referrals.values())
       .filter(ref => ref.referrerId === userId);
-    
+
     // Enrich with referred user data for easier display
     const enrichedReferrals = await Promise.all(
       referrals.map(async (referral) => {
@@ -665,7 +665,7 @@ export class MemStorage implements IStorage {
         };
       })
     );
-    
+
     return enrichedReferrals;
   }
 
@@ -674,7 +674,7 @@ export class MemStorage implements IStorage {
     if (!existingReferral) {
       return undefined;
     }
-    
+
     const updatedReferral = { ...existingReferral, ...referral };
     this.referrals.set(id, updatedReferral);
     return updatedReferral;
@@ -711,7 +711,7 @@ export class MemStorage implements IStorage {
     if (!existingSetting) {
       return undefined;
     }
-    
+
     const updatedSetting = { ...existingSetting, ...setting };
     this.paymentSettings.set(id, updatedSetting);
     return updatedSetting;
@@ -742,7 +742,7 @@ export class MemStorage implements IStorage {
     if (!existingMessage) {
       return undefined;
     }
-    
+
     const updatedMessage = { ...existingMessage, responded: true };
     this.contactMessages.set(id, updatedMessage);
     return updatedMessage;
@@ -754,11 +754,11 @@ export class MemStorage implements IStorage {
     if (!user || !user.referredBy) {
       return chain;
     }
-    
+
     chain.push(user.referredBy);
     return this.getReferrerChain(user.referredBy, chain);
   }
-  
+
   private getCommissionRateForLevel(level: number): string {
     switch (level) {
       case 2: return "5";
@@ -774,23 +774,23 @@ export class MemStorage implements IStorage {
     const allUsers = await this.getAllUsers();
     const activeUsers = allUsers.filter(user => user.active);
     const inactiveUsers = allUsers.filter(user => !user.active);
-    
+
     const allInvestments = await this.getAllInvestments();
     const totalInvested = allInvestments.reduce((sum, inv) => sum + parseFloat(inv.amount), 0).toString();
-    
+
     const allDeposits = await this.getTransactionsByType("deposit");
     const completedDeposits = allDeposits.filter(tx => tx.status === "completed");
     const totalDeposits = completedDeposits.reduce((sum, tx) => sum + parseFloat(tx.amount), 0).toString();
-    
+
     const allWithdrawals = await this.getTransactionsByType("withdrawal");
     const completedWithdrawals = allWithdrawals.filter(tx => tx.status === "completed");
     const totalWithdrawals = completedWithdrawals.reduce((sum, tx) => sum + parseFloat(tx.amount), 0).toString();
-    
+
     const allTransactions = await this.getAllTransactions();
     const recentTransactions = allTransactions
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       .slice(0, 10);
-    
+
     const recentUsers = allUsers
       .sort((a, b) => {
         const aId = a.id;
@@ -798,7 +798,7 @@ export class MemStorage implements IStorage {
         return bId - aId; // Sort by ID descending (assuming higher ID = newer)
       })
       .slice(0, 10);
-    
+
     return {
       totalUsers: allUsers.length,
       activeUsers: activeUsers.length,
@@ -816,26 +816,26 @@ export class MemStorage implements IStorage {
     if (!user) {
       throw new Error("User not found");
     }
-    
+
     const userInvestments = await this.getUserInvestments(userId);
     const totalInvested = userInvestments.reduce((sum, inv) => sum + parseFloat(inv.amount), 0).toString();
-    
+
     const userTransactions = await this.getUserTransactions(userId);
     const earningsTransactions = userTransactions.filter(tx => 
       (tx.type === "investment" && tx.status === "completed" && parseFloat(tx.amount) > 0)
     );
     const totalEarnings = earningsTransactions.reduce((sum, tx) => sum + parseFloat(tx.amount), 0).toString();
-    
+
     const referralTransactions = userTransactions.filter(tx => 
       tx.type === "referral" && tx.status === "completed"
     );
     const referralEarnings = referralTransactions.reduce((sum, tx) => sum + parseFloat(tx.amount), 0).toString();
-    
+
     const activeInvestments = userInvestments.filter(inv => inv.status === "active").length;
-    
+
     const userReferrals = await this.getAllUserReferrals(userId);
     const referralCount = userReferrals.length;
-    
+
     return {
       walletBalance: user.walletBalance,
       totalInvested,
@@ -844,17 +844,15 @@ export class MemStorage implements IStorage {
       activeInvestments,
       referralCount
     };
-  }
-  
-  async getNetworkPerformance(userId: number): Promise<any> {
+    async getNetworkPerformance(userId: number): Promise<any> {
     const user = await this.getUser(userId);
     if (!user) {
       throw new Error(`User with id ${userId} not found`);
     }
-    
+
     // Get user's direct referrals (level 1)
     const directReferrals = await this.getUserReferralsByLevel(userId, 1);
-    
+
     // If no referrals, return just the user
     if (directReferrals.length === 0) {
       return {
@@ -867,23 +865,23 @@ export class MemStorage implements IStorage {
         children: []
       };
     }
-    
+
     // Build the referral tree recursively
     const referralTree = await this.buildReferralPerformanceTree(userId, 0, 5); // Max 5 levels deep
-    
+
     return referralTree;
   }
-  
+
   private async buildReferralPerformanceTree(userId: number, currentLevel: number, maxLevel: number): Promise<any> {
     if (currentLevel > maxLevel) return null;
-    
+
     // Get user info
     const user = await this.getUser(userId);
     if (!user) return null;
-    
+
     // Get direct referrals
     const directReferrals = await this.getUserReferralsByLevel(userId, 1);
-    
+
     // Calculate performance score based on wallet balance, activity, etc.
     const userInvestments = await this.getUserInvestments(userId);
     const investmentAmount = userInvestments.reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
@@ -891,13 +889,13 @@ export class MemStorage implements IStorage {
     const recentActivity = userTransactions.filter(tx => 
       new Date(tx.createdAt).getTime() > Date.now() - (30 * 24 * 60 * 60 * 1000) // Last 30 days
     ).length;
-    
+
     // Performance formula: active status (50%) + investment amount (30%) + recent activity (20%)
     let performanceScore = 0;
     performanceScore += user.active ? 50 : 0;
     performanceScore += Math.min(investmentAmount / 500, 1) * 30; // Cap at $500 for max score
     performanceScore += Math.min(recentActivity / 5, 1) * 20; // Cap at 5 activities for max score
-    
+
     // Build tree node
     const treeNode = {
       id: userId,
@@ -908,7 +906,7 @@ export class MemStorage implements IStorage {
       isActive: user.active,
       children: []
     };
-    
+
     // Process child nodes recursively
     if (currentLevel < maxLevel && directReferrals.length > 0) {
       for (const referral of directReferrals) {
@@ -917,13 +915,13 @@ export class MemStorage implements IStorage {
           currentLevel + 1, 
           maxLevel
         );
-        
+
         if (childNode) {
           treeNode.children.push(childNode);
         }
       }
     }
-    
+
     return treeNode;
   }
 }
