@@ -22,28 +22,42 @@ export default function Header() {
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
-      // Clear auth token from localStorage
+      // Clear auth token from localStorage first
       localStorage.removeItem('token');
       // Clear all queries to reset the app state
       queryClient.clear();
       // Invalidate user auth state
       queryClient.setQueryData(['/api/auth/me'], null);
 
+      // Call logout endpoint
+      await fetch('/api/auth/logout', { 
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
       toast({
         title: 'Logged out successfully',
         description: 'You have been logged out of your account',
       });
 
-      // Navigate to the home page without a full page reload
-      // to ensure React components update correctly
+      // Force complete page reload to ensure clean state
       window.location.href = '/';
     } catch (error) {
+      // Even if logout API fails, still clear local state
+      localStorage.removeItem('token');
+      queryClient.clear();
+      queryClient.setQueryData(['/api/auth/me'], null);
+      
       toast({
-        title: 'Error',
-        description: 'Failed to log out. Please try again.',
-        variant: 'destructive',
+        title: 'Logged out',
+        description: 'You have been logged out successfully.',
       });
+      
+      // Force page reload
+      window.location.href = '/';
     }
   };
 

@@ -296,6 +296,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  router.post('/auth/logout', async (req, res) => {
+    try {
+      // Clear session
+      req.session.destroy((err) => {
+        if (err) {
+          console.error('Session destruction error:', err);
+        }
+      });
+      
+      // Clear session cookies
+      res.clearCookie('connect.sid');
+      
+      console.log('User logged out successfully');
+      res.status(200).json({ message: "Logged out successfully" });
+    } catch (error) {
+      console.error('Logout error:', error);
+      res.status(500).json({ message: "Logout failed" });
+    }
+  });
+
   router.get('/auth/me', authMiddleware, async (req, res) => {
     try {
       const userId = req.session.userId;

@@ -161,24 +161,26 @@ export function useAuth() {
 
   const logout = async () => {
     try {
-      await apiRequest('POST', '/api/auth/logout');
-      // Remove token from localStorage
+      // Clear token from localStorage first
       localStorage.removeItem('token');
-
-      // Force query cache clear and reset state
+      
+      // Clear query cache and reset authentication state
       queryClient.clear();
       queryClient.setQueryData(['/api/auth/me'], null);
-
-      // Refresh the page to ensure clean state
+      
+      // Call logout endpoint
+      await apiRequest('POST', '/api/auth/logout');
+      
+      // Force a complete page reload to ensure clean state
       window.location.href = '/';
     } catch (error) {
       console.error('Logout error:', error);
-      // Still remove token and clear cache on error
+      // Even if API call fails, still clear local state
       localStorage.removeItem('token');
       queryClient.clear();
       queryClient.setQueryData(['/api/auth/me'], null);
-
-      // Refresh the page even on error
+      
+      // Force page reload
       window.location.href = '/';
     }
   };
