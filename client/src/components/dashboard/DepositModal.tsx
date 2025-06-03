@@ -16,6 +16,7 @@ import { AlertCircle, Copy, CheckCircle, DollarSign } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from '@/components/ui/label';
+import PesapalButton from '@/components/PesapalButton';
 
 interface DepositModalProps {
   open: boolean;
@@ -45,6 +46,7 @@ const depositFormSchema = z.object({
       },
       { message: "Amount must be one of: 25, 100, 500, 1000, 4000, or 8000 USDT" }
     ),
+  paymentMethod: z.string().min(1, { message: "Payment method is required" }),
 });
 
 type DepositFormValues = z.infer<typeof depositFormSchema>;
@@ -52,9 +54,10 @@ type DepositFormValues = z.infer<typeof depositFormSchema>;
 export default function DepositModal({ open, onOpenChange }: DepositModalProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [step, setStep] = useState<'form' | 'processing'>('form');
+  const [step, setStep] = useState<'form' | 'processing' | 'pesapal'>('form');
   const [depositData, setDepositData] = useState<any>(null);
   const [walletAddress, setWalletAddress] = useState('TUt1RB8XL91QZeEPrY62QGYvM3raCUUJJb'); // Default USDT TRC20 wallet address
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('usdt_trc20');
 
   // Fetch USDT TRC20 payment setting
   const { data: paymentSettings } = useQuery({
@@ -100,11 +103,16 @@ export default function DepositModal({ open, onOpenChange }: DepositModalProps) 
     resolver: zodResolver(depositFormSchema),
     defaultValues: {
       amount: '',
+      paymentMethod: 'usdt_trc20',
     },
   });
 
   const onSubmit = (values: DepositFormValues) => {
-    depositMutation.mutate(values);
+    if (values.paymentMethod === 'pesapal') {
+      setStep('pesapal');
+    } else {
+      depositMutation.mutate(values);
+    }
   };
 
   const copyToClipboard = (text: string) => {
@@ -119,6 +127,7 @@ export default function DepositModal({ open, onOpenChange }: DepositModalProps) 
   const handleResetForm = () => {
     setStep('form');
     setDepositData(null);
+    setSelectedPaymentMethod('usdt_trc20');
     form.reset();
   };
 
@@ -178,10 +187,46 @@ export default function DepositModal({ open, onOpenChange }: DepositModalProps) 
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <FormField
                   control={form.control}
+                  name="paymentMethod"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Payment Method</FormLabel>
+                      <FormControl>
+                        <RadioGroup 
+                          className="grid grid-cols-1 gap-3"
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            setSelectedPaymentMethod(value);
+                          }}
+                          defaultValue={field.value}
+                        >
+                          <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                            <RadioGroupItem value="usdt_trc20" id="usdt" />
+                            <Label htmlFor="usdt" className="flex-1 cursor-pointer">
+                              <div className="font-medium">USDT TRC20</div>
+                              <div className="text-sm text-gray-500">Pay with USDT on TRON network</div>
+                            </Label>
+                          </div>
+                          <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                            <RadioGroupItem value="pesapal" id="pesapal" />
+                            <Label htmlFor="pesapal" className="flex-1 cursor-pointer">
+                              <div className="font-medium">Pesapal (Mobile Money)</div>
+                              <div className="text-sm text-gray-500">M-Pesa, Airtel Money, T-Kash, Cards</div>
+                            </Label>
+                          </div>
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
                   name="amount"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Amount (USDT)</FormLabel>
+                      <FormLabel>Amount ({selectedPaymentMethod === 'pesapal' ? 'KES' : 'USDT'})</FormLabel>
                       <FormControl>
                         <div className="relative">
                           <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
@@ -196,20 +241,22 @@ export default function DepositModal({ open, onOpenChange }: DepositModalProps) 
                         </div>
                       </FormControl>
                       <FormMessage />
-                      <div className="pt-2">
-                        <RadioGroup 
-                          className="grid grid-cols-3 gap-2"
-                          onValueChange={(value) => form.setValue('amount', value)}
-                          defaultValue={field.value}
-                        >
-                          {MATRIX_LEVELS.map((level) => (
-                            <div key={level.level} className="flex items-center space-x-2">
-                              <RadioGroupItem value={level.amount} id={`level-${level.level}`} />
-                              <Label htmlFor={`level-${level.level}`}>{level.amount} USDT</Label>
-                            </div>
-                          ))}
-                        </RadioGroup>
-                      </div>
+                      {selectedPaymentMethod === 'usdt_trc20' && (
+                        <div className="pt-2">
+                          <RadioGroup 
+                            className="grid grid-cols-3 gap-2"
+                            onValueChange={(value) => form.setValue('amount', value)}
+                            defaultValue={field.value}
+                          >
+                            {MATRIX_LEVELS.map((level) => (
+                              <div key={level.level} className="flex items-center space-x-2">
+                                <RadioGroupItem value={level.amount} id={`level-${level.level}`} />
+                                <Label htmlFor={`level-${level.level}`}>{level.amount} USDT</Label>
+                              </div>
+                            ))}
+                          </RadioGroup>
+                        </div>
+                      )}
                     </FormItem>
                   )}
                 />
@@ -292,6 +339,59 @@ export default function DepositModal({ open, onOpenChange }: DepositModalProps) 
               </Button>
               <Button onClick={handleClose}>
                 Close
+              </Button>
+            </DialogFooter>
+          </>
+        ) : step === 'pesapal' ? (
+          <>
+            <DialogHeader>
+              <DialogTitle>Pay with Pesapal</DialogTitle>
+              <DialogDescription>
+                Complete your payment using M-Pesa, Airtel Money, T-Kash, or card
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 my-6">
+              <div className="flex justify-between items-center p-3 bg-gray-50 rounded-md">
+                <div>
+                  <p className="text-sm text-gray-500">Amount</p>
+                  <p className="font-medium">{form.getValues().amount} KES</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Payment Method</p>
+                  <p className="font-medium">Pesapal</p>
+                </div>
+              </div>
+
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Secure Payment</AlertTitle>
+                <AlertDescription>
+                  Your payment will be processed securely through Pesapal. You'll be redirected to complete the payment.
+                </AlertDescription>
+              </Alert>
+
+              <PesapalButton
+                amount={form.getValues().amount}
+                currency="KES"
+                description="Wallet Deposit"
+                userEmail="user@example.com" // You'll need to get this from auth context
+                onSuccess={(data) => {
+                  setDepositData(data);
+                  setStep('processing');
+                }}
+                onError={(error) => {
+                  console.error('Pesapal payment error:', error);
+                }}
+              />
+            </div>
+
+            <DialogFooter className="flex flex-col sm:flex-row gap-2">
+              <Button variant="outline" onClick={() => setStep('form')}>
+                Back to Form
+              </Button>
+              <Button onClick={handleClose}>
+                Cancel
               </Button>
             </DialogFooter>
           </>

@@ -16,6 +16,7 @@ import {
   insertNotificationSchema,
 } from "@shared/schema";
 import { createPaypalOrder, capturePaypalOrder, loadPaypalDefault } from "./paypal";
+import { createPesapalOrder, handlePesapalCallback, handlePesapalIPN, getPesapalTransactionStatus } from "./pesapal";
 import express from 'express';
 import { nanoid } from 'nanoid';
 import { authenticateToken } from './db-compatibility.js';
@@ -147,6 +148,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Error processing PayPal payment:', error);
       // Don't send a response here as capturePaypalOrder already sends one
     }
+  });
+
+  // Pesapal Integration Routes
+  app.post("/api/pesapal/order", async (req, res) => {
+    await createPesapalOrder(req, res);
+  });
+
+  app.get("/api/pesapal/callback", async (req, res) => {
+    await handlePesapalCallback(req, res);
+  });
+
+  app.get("/api/pesapal/ipn", async (req, res) => {
+    await handlePesapalIPN(req, res);
+  });
+
+  app.get("/api/pesapal/status/:orderTrackingId", async (req, res) => {
+    await getPesapalTransactionStatus(req, res);
   });
 
   // Coinbase Webhook
@@ -1239,6 +1257,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error('Error saving PayPal config:', error);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Pesapal API Configuration
+  app.get("/api/admin/payment-settings/pesapal-config", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      // Check if PESAPAL_CONSUMER_KEY and PESAPAL_CONSUMER_SECRET environment variables are set
+      const configured = !!(process.env.PESAPAL_CONSUMER_KEY && process.env.PESAPAL_CONSUMER_SECRET);
+      
+      res.status(200).json({
+        configured,
+        consumerKey: process.env.PESAPAL_CONSUMER_KEY || '',
+        // Don't send back the actual secret, just indicate if it's set
+        consumerSecret: process.env.PESAPAL_CONSUMER_SECRET ? '••••••••••••••••' : '',
+        sandbox: process.env.NODE_ENV !== 'production',
+        status: configured ? 'success' : 'idle',
+        message: configured ? 'Pesapal API is configured' : 'Pesapal API is not configured'
+      });
+    } catch (error) {
+      console.error('Error getting Pesapal config:', error);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+  
+  app.post("/api/admin/payment-settings/pesapal-config", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const { consumerKey, consumerSecret } = req.body;
+      
+      if (!consumerKey) {
+        return res.status(400).json({ message: "Consumer Key is required" });
+      }
+      
+      // If consumerSecret is not provided and we already have one in env, keep using the existing one
+      const newConsumerSecret = consumerSecret || process.env.PESAPAL_CONSUMER_SECRET;
+      
+      if (!newConsumerSecret) {
+        return res.status(400).json({ message: "Consumer Secret is required" });
+      }
+      
+      // Update environment variables in memory
+      process.env.PESAPAL_CONSUMER_KEY = consumerKey;
+      process.env.PESAPAL_CONSUMER_SECRET = newConsumerSecret;
+      
+      res.status(200).json({ 
+        message: "Pesapal API configuration saved successfully",
+        configured: true,
+        status: 'success'
+      });
+    } catch (error) {
+      console.error('Error saving Pesapal config:', error);
       res.status(500).json({ message: "Server error" });
     }
   });

@@ -3,6 +3,8 @@ import { Helmet } from 'react-helmet';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import AdminSidebar from '@/components/dashboard/AdminSidebar';
+import PayPalConfigForm from '@/components/dashboard/PayPalConfigForm';
+import PesapalConfigForm from '@/components/dashboard/PesapalConfigForm';
 // PayPal integration removed
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -61,6 +63,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 interface PaymentSetting {
   id: number;
@@ -105,7 +108,7 @@ export default function AdminPaymentSettings() {
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
   const [newStatus, setNewStatus] = useState<boolean>(false);
   const [selectedPredefinedMethod, setSelectedPredefinedMethod] = useState<string | null>(null);
-  
+
   // Predefined payment methods
   const predefinedMethods: PredefinedMethod[] = [
     {
@@ -182,7 +185,7 @@ export default function AdminPaymentSettings() {
         instructions: data.instructions || "",
         credentials: data.credentials || ""
       };
-      
+
       console.log("Creating payment setting with data:", formattedData);
       const response = await apiRequest('POST', '/api/admin/payment-settings', formattedData);
       return response.json();
@@ -218,7 +221,7 @@ export default function AdminPaymentSettings() {
         instructions: data.instructions || "",
         credentials: data.credentials || ""
       };
-      
+
       console.log("Updating payment setting with data:", formattedData);
       const response = await apiRequest('PUT', `/api/admin/payment-settings/${id}`, formattedData);
       return response.json();
@@ -373,7 +376,7 @@ export default function AdminPaymentSettings() {
 
   const getPaymentIcon = (method: string | undefined) => {
     if (!method) return <CreditCard />;
-    
+
     const methodLower = method.toLowerCase();
     if (methodLower.includes('paypal')) return <CreditCard />;
     if (methodLower.includes('crypto') || methodLower.includes('usdt') || methodLower.includes('trc20')) return <Bitcoin />;
@@ -392,7 +395,7 @@ export default function AdminPaymentSettings() {
         <div className="w-full md:w-64 lg:w-72">
           <AdminSidebar />
         </div>
-        
+
         <div className="flex-1 bg-gray-50 p-4 md:p-8 overflow-auto">
           <div className="max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-6">
@@ -401,7 +404,7 @@ export default function AdminPaymentSettings() {
                 <Plus className="h-4 w-4 mr-2" /> Add Payment Method
               </Button>
             </div>
-            
+
             {/* Payment methods configuration instructions */}
             <div className="mb-8">
               <Card>
@@ -419,110 +422,125 @@ export default function AdminPaymentSettings() {
                 </CardContent>
               </Card>
             </div>
-            
-            {isLoading ? (
-              <div className="flex justify-center py-8">
-                <p>Loading payment methods...</p>
-              </div>
-            ) : paymentSettings && Array.isArray(paymentSettings) && paymentSettings.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {paymentSettings.map((setting) => (
-                  <Card key={setting.id} className={!setting.active ? "opacity-75" : ""}>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <div className="flex items-center">
-                        <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
-                          setting.active ? 'bg-primary-100 text-primary-800' : 'bg-gray-100 text-gray-500'
-                        }`}>
-                          {getPaymentIcon(setting.method)}
+             <Tabs defaultValue="methods" className="space-y-6">
+            <TabsList>
+              <TabsTrigger value="methods">Payment Methods</TabsTrigger>
+              <TabsTrigger value="paypal-config">PayPal Config</TabsTrigger>
+              <TabsTrigger value="pesapal-config">Pesapal Config</TabsTrigger>
+            </TabsList>
+            <TabsContent value="methods">
+              {isLoading ? (
+                <div className="flex justify-center py-8">
+                  <p>Loading payment methods...</p>
+                </div>
+              ) : paymentSettings && Array.isArray(paymentSettings) && paymentSettings.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {paymentSettings.map((setting) => (
+                    <Card key={setting.id} className={!setting.active ? "opacity-75" : ""}>
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <div className="flex items-center">
+                          <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
+                            setting.active ? 'bg-primary-100 text-primary-800' : 'bg-gray-100 text-gray-500'
+                          }`}>
+                            {getPaymentIcon(setting.method)}
+                          </div>
+                          <div className="ml-3">
+                            <CardTitle className="text-xl">{setting.name}</CardTitle>
+                            <CardDescription>{setting.method}</CardDescription>
+                          </div>
                         </div>
-                        <div className="ml-3">
-                          <CardTitle className="text-xl">{setting.name}</CardTitle>
-                          <CardDescription>{setting.method}</CardDescription>
+                        <div>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-8 w-8 p-0">
+                                <span className="sr-only">Open menu</span>
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuItem onClick={() => handleEditSetting(setting)}>
+                                <PencilLine className="h-4 w-4 mr-2" />
+                                Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => handleToggleStatus(setting.id, !setting.active)}
+                                className={setting.active ? "text-red-600" : "text-green-600"}
+                              >
+                                {setting.active ? (
+                                  <>
+                                    <ToggleLeft className="h-4 w-4 mr-2" />
+                                    Disable
+                                  </>
+                                ) : (
+                                  <>
+                                    <ToggleRight className="h-4 w-4 mr-2" />
+                                    Enable
+                                  </>
+                                )}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => handleDeleteSetting(setting.id)}
+                                className="text-red-600"
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
-                      </div>
-                      <div>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <span className="sr-only">Open menu</span>
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => handleEditSetting(setting)}>
-                              <PencilLine className="h-4 w-4 mr-2" />
-                              Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => handleToggleStatus(setting.id, !setting.active)}
-                              className={setting.active ? "text-red-600" : "text-green-600"}
-                            >
-                              {setting.active ? (
-                                <>
-                                  <ToggleLeft className="h-4 w-4 mr-2" />
-                                  Disable
-                                </>
-                              ) : (
-                                <>
-                                  <ToggleRight className="h-4 w-4 mr-2" />
-                                  Enable
-                                </>
-                              )}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => handleDeleteSetting(setting.id)}
-                              className="text-red-600"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-2 gap-2 pb-3 text-sm">
-                        <div className="text-muted-foreground">Status:</div>
-                        <div className={`inline-flex items-center text-xs leading-5 font-semibold rounded-full px-2 py-1 ${
-                          setting.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                        }`}>
-                          {setting.active ? (
-                            <>
-                              <CheckCircle className="h-3 w-3 mr-1" /> Active
-                            </>
-                          ) : (
-                            <>
-                              <XCircle className="h-3 w-3 mr-1" /> Inactive
-                            </>
-                          )}
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-2 gap-2 pb-3 text-sm">
+                          <div className="text-muted-foreground">Status:</div>
+                          <div className={`inline-flex items-center text-xs leading-5 font-semibold rounded-full px-2 py-1 ${
+                            setting.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          }`}>
+                            {setting.active ? (
+                              <>
+                                <CheckCircle className="h-3 w-3 mr-1" /> Active
+                              </>
+                            ) : (
+                              <>
+                                <XCircle className="h-3 w-3 mr-1" /> Inactive
+                              </>
+                            )}
+                          </div>
+                          <div className="text-muted-foreground">Min Amount:</div>
+                          <div>${setting.minAmount} USDT</div>
+                          <div className="text-muted-foreground">Max Amount:</div>
+                          <div>${setting.maxAmount} USDT</div>
                         </div>
-                        <div className="text-muted-foreground">Min Amount:</div>
-                        <div>${setting.minAmount} USDT</div>
-                        <div className="text-muted-foreground">Max Amount:</div>
-                        <div>${setting.maxAmount} USDT</div>
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-2">
-                        Instructions: {setting.instructions && setting.instructions.length > 80
-                          ? `${setting.instructions.substring(0, 80)}...`
-                          : setting.instructions || 'No instructions provided'}
-                      </p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground mb-4">No payment methods configured</p>
-                <Button 
-                  onClick={() => setIsDialogOpen(true)}
-                  variant="outline"
-                >
-                  <Plus className="h-4 w-4 mr-2" /> Add Your First Payment Method
-                </Button>
-              </div>
-            )}
-          </div>
+                        <p className="text-sm text-muted-foreground mt-2">
+                          Instructions: {setting.instructions && setting.instructions.length > 80
+                            ? `${setting.instructions.substring(0, 80)}...`
+                            : setting.instructions || 'No instructions provided'}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground mb-4">No payment methods configured</p>
+                  <Button 
+                    onClick={() => setIsDialogOpen(true)}
+                    variant="outline"
+                  >
+                    <Plus className="h-4 w-4 mr-2" /> Add Your First Payment Method
+                  </Button>
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="paypal-config">
+              <PayPalConfigForm />
+            </TabsContent>
+
+            <TabsContent value="pesapal-config">
+              <PesapalConfigForm />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
 
@@ -537,7 +555,7 @@ export default function AdminPaymentSettings() {
                 : 'Add a new payment method for users to deposit and withdraw funds'}
             </DialogDescription>
           </DialogHeader>
-          
+
           {/* Predefined Payment Method Selection */}
           {!editingSetting && (
             <div className="mb-6">
@@ -565,7 +583,7 @@ export default function AdminPaymentSettings() {
               </div>
             </div>
           )}
-          
+
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -585,7 +603,7 @@ export default function AdminPaymentSettings() {
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="name"
@@ -603,7 +621,7 @@ export default function AdminPaymentSettings() {
                   )}
                 />
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
@@ -618,7 +636,7 @@ export default function AdminPaymentSettings() {
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="maxAmount"
@@ -633,7 +651,7 @@ export default function AdminPaymentSettings() {
                   )}
                 />
               </div>
-              
+
               <FormField
                 control={form.control}
                 name="instructions"
@@ -652,7 +670,7 @@ export default function AdminPaymentSettings() {
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="credentials"
@@ -671,7 +689,7 @@ export default function AdminPaymentSettings() {
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="active"
@@ -692,7 +710,7 @@ export default function AdminPaymentSettings() {
                   </FormItem>
                 )}
               />
-              
+
               <DialogFooter>
                 <Button type="submit" disabled={createSettingMutation.isPending || updateSettingMutation.isPending}>
                   {createSettingMutation.isPending || updateSettingMutation.isPending ? (
