@@ -4,7 +4,7 @@ import { Link } from 'wouter';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import LoginForm from '@/components/auth/LoginForm';
-import logoImage from '@/assets/logoo.png';
+import Logo from '@/components/Logo';
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Cell } from 'recharts';
 
 // Sample data for visualization
@@ -40,13 +40,13 @@ export default function Login() {
 
       <div className="min-h-screen flex flex-col">
         <Header />
-        
+
         <main className="flex-grow flex items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 py-6 px-4 sm:px-6 lg:px-8">
           <div className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row bg-white rounded-xl shadow-xl overflow-hidden">
             {/* Left side - Login form */}
             <div className="w-full lg:w-1/2 px-6 py-12 sm:px-12">
               <div className="text-center mb-8">
-                <img src={logoImage} alt="MillionaireWith$25 Logo" className="h-16 mx-auto mb-4" />
+                <Logo className="h-16 mx-auto mb-4" />
                 <h1 className="text-2xl font-bold text-dark-900 mb-2">
                   <span className="text-orange-500">Welcome Back to</span>
                   <span className="text-yellow-500 block">ProsperityGroups</span>
@@ -55,16 +55,16 @@ export default function Login() {
                   Enter your credentials and login
                 </p>
               </div>
-              
+
               <LoginForm />
             </div>
-            
+
             {/* Right side - Dashboard preview */}
             <div className="hidden lg:block w-1/2 bg-gray-50 p-6 border-l border-gray-200">
               <div className="h-full rounded-xl bg-white p-4 flex flex-col">
                 <h2 className="text-xl font-semibold text-gray-800 mb-2">Welcome to</h2>
                 <h3 className="text-2xl font-bold mb-6 bg-gradient-to-r from-orange-500 to-yellow-500 text-transparent bg-clip-text">Dashboard</h3>
-                
+
                 <div className="grid grid-cols-3 gap-3 mb-6">
                   <div className="bg-green-100 p-3 rounded-lg shadow-sm">
                     <div className="text-xs text-green-600 font-semibold">Profits</div>
@@ -82,7 +82,7 @@ export default function Login() {
                     <div className="text-xs text-green-700">+10% ↑</div>
                   </div>
                 </div>
-                
+
                 <div className="flex-grow">
                   <p className="text-sm font-medium text-gray-700 mb-2">Performance Chart</p>
                   <div className="h-48">
@@ -103,7 +103,7 @@ export default function Login() {
                     </ResponsiveContainer>
                   </div>
                 </div>
-                
+
                 <div className="border-t border-gray-100 pt-4 mt-auto">
                   <p className="text-sm font-medium text-gray-700 mb-2">Team Members</p>
                   <div className="flex items-center">
@@ -142,7 +142,7 @@ export default function Login() {
             </div>
           </div>
         </main>
-        
+
         <Footer />
       </div>
     </>

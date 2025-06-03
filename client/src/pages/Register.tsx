@@ -4,8 +4,8 @@ import { Link } from 'wouter';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import RegisterForm from '@/components/auth/RegisterForm';
-import logoImage from '@/assets/logoo.png';
 import { PieChart, Pie, LineChart, Line, BarChart, Bar, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Cell } from 'recharts';
+import Logo from '@/components/Logo';
 
 // Sample data for visualization
 const referralEarningsData = [
@@ -39,13 +39,13 @@ export default function Register() {
 
       <div className="min-h-screen flex flex-col">
         <Header />
-        
+
         <main className="flex-grow flex items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 py-6 px-4 sm:px-6 lg:px-8">
           <div className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row bg-white rounded-xl shadow-xl overflow-hidden">
             {/* Left side - Registration form */}
             <div className="w-full lg:w-1/2 px-6 py-12 sm:px-12">
               <div className="text-center mb-8">
-                <img src={logoImage} alt="ProsperityGroups Logo" className="h-16 mx-auto mb-4" />
+                <Logo className="h-16 mx-auto mb-4" />
                 <h1 className="text-2xl font-bold text-dark-900 mb-2">
                   <span className="text-orange-500">Start Your Journey with</span>
                   <span className="text-yellow-500 block">ProsperityGroups</span>
@@ -54,16 +54,16 @@ export default function Register() {
                   Create your account and start earning today
                 </p>
               </div>
-              
+
               <RegisterForm />
             </div>
-            
+
             {/* Right side - Profit visualization */}
             <div className="hidden lg:block w-1/2 bg-gray-50 p-6 border-l border-gray-200">
               <div className="h-full rounded-xl bg-white p-4 flex flex-col">
                 <h2 className="text-xl font-semibold text-gray-800 mb-2">Your Profit</h2>
                 <h3 className="text-2xl font-bold mb-6 bg-gradient-to-r from-orange-500 to-yellow-500 text-transparent bg-clip-text">Earning Visualizations</h3>
-                
+
                 <div className="mb-6">
                   <h4 className="text-md font-semibold text-gray-700 mb-3">Referral Commission Structure</h4>
                   <div className="h-48">
@@ -86,7 +86,7 @@ export default function Register() {
                     </ResponsiveContainer>
                   </div>
                 </div>
-                
+
                 <div className="flex-grow">
                   <h4 className="text-md font-semibold text-gray-700 mb-3">Investment Growth Projection</h4>
                   <div className="h-48">
@@ -107,7 +107,7 @@ export default function Register() {
                     </ResponsiveContainer>
                   </div>
                 </div>
-                
+
                 <div className="border-t border-gray-100 pt-4 mt-auto">
                   <div className="flex items-center space-x-2 text-sm text-gray-600">
                     <div className="bg-orange-500 w-3 h-3 rounded-full"></div>
@@ -127,7 +127,7 @@ export default function Register() {
             </div>
           </div>
         </main>
-        
+
         <Footer />
       </div>
     </>
