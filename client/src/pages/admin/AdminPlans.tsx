@@ -94,7 +94,7 @@ export default function AdminPlans() {
   const [selectedPlanId, setSelectedPlanId] = useState<number | null>(null);
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
   const [newStatus, setNewStatus] = useState<boolean>(false);
-  const [isSuperAdmin, setIsSuperAdmin] = useState<boolean(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState<boolean>(false);
 
   // Check if current user is super admin
   const { data: currentUser } = useQuery({
