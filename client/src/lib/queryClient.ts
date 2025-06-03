@@ -7,32 +7,52 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
-export async function apiRequest(method: string, endpoint: string, data?: any) {
-  const token = localStorage.getItem('token');
+export async function apiRequest(
+  method: string,
+  url: string,
+  data?: any,
+  timeout = 30000
+): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
 
-  const config: RequestInit = {
-    method,
-    headers: {
+  try {
+    const headers: HeadersInit = {
       'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` }),
-    },
-    credentials: 'include', // Include cookies for session handling
-  };
+      'Accept': 'application/json',
+    };
 
-  if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
-    config.body = JSON.stringify(data);
+    // Add auth token if available
+    const token = localStorage.getItem('token');
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const config: RequestInit = {
+      method,
+      headers,
+      signal: controller.signal,
+      credentials: 'same-origin',
+    };
+
+    if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
+      config.body = JSON.stringify(data);
+    }
+
+    const response = await fetch(url, config);
+    clearTimeout(timeoutId);
+
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('Request timed out');
+    }
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new Error('Network connection failed - please check your internet connection');
+    }
+    throw error;
   }
-
-  const response = await fetch(endpoint, config);
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ 
-      message: response.status === 401 ? 'Invalid email or password' : 'Network error' 
-    }));
-    throw new Error(errorData.message || `HTTP ${response.status}`);
-  }
-
-  return response;
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";

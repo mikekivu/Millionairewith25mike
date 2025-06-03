@@ -50,11 +50,32 @@ export function useAuth() {
       const response = await apiRequest('POST', '/api/auth/login', credentials);
       
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Network error' }));
+        let errorData;
+        try {
+          const responseText = await response.text();
+          try {
+            errorData = JSON.parse(responseText);
+          } catch {
+            // If response is not JSON (like HTML error page), create a generic error
+            errorData = { 
+              message: response.status === 404 ? 'Login endpoint not found' : 
+                      response.status >= 500 ? 'Server error occurred' : 
+                      'Login failed' 
+            };
+          }
+        } catch {
+          errorData = { message: 'Network error' };
+        }
         throw new Error(errorData.message || `Login failed with status ${response.status}`);
       }
 
-      const data = await response.json();
+      let data;
+      try {
+        const responseText = await response.text();
+        data = JSON.parse(responseText);
+      } catch {
+        throw new Error('Invalid response format from server');
+      }
 
       if (!data.success || !data.token) {
         throw new Error(data.message || 'Invalid response from server');
@@ -81,11 +102,32 @@ export function useAuth() {
       const response = await apiRequest('POST', '/api/auth/register', userData);
       
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Network error' }));
+        let errorData;
+        try {
+          const responseText = await response.text();
+          try {
+            errorData = JSON.parse(responseText);
+          } catch {
+            // If response is not JSON (like HTML error page), create a generic error
+            errorData = { 
+              message: response.status === 404 ? 'Registration endpoint not found' : 
+                      response.status >= 500 ? 'Server error occurred' : 
+                      'Registration failed' 
+            };
+          }
+        } catch {
+          errorData = { message: 'Network error' };
+        }
         throw new Error(errorData.message || `Registration failed with status ${response.status}`);
       }
 
-      const data = await response.json();
+      let data;
+      try {
+        const responseText = await response.text();
+        data = JSON.parse(responseText);
+      } catch {
+        throw new Error('Invalid response format from server');
+      }
 
       if (!data.token) {
         throw new Error(data.message || 'Registration failed');
