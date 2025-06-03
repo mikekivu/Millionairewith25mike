@@ -25,13 +25,13 @@ interface ChartData {
 }
 
 interface InvestmentPerformanceProps {
-  data: ChartData[];
+  data?: ChartData[];
   isLoading?: boolean;
 }
 
-export default function InvestmentPerformance({ data, isLoading = false }: InvestmentPerformanceProps) {
+export default function InvestmentPerformance({ data = [], isLoading = false }: InvestmentPerformanceProps) {
   const [timeRange, setTimeRange] = useState('30');
-  
+
   if (isLoading) {
     return (
       <Card>
@@ -69,58 +69,43 @@ export default function InvestmentPerformance({ data, isLoading = false }: Inves
       </CardHeader>
       <CardContent className="p-0">
         <div className="h-[300px] w-full p-2">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart
-              data={filteredData}
-              margin={{
-                top: 20,
-                right: 30,
-                left: 0,
-                bottom: 0,
-              }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip formatter={(value) => `${value} USDT`} />
-              <Legend />
-              <Area
-                type="monotone"
-                dataKey="investment"
-                stackId="1"
-                stroke="#3B82F6"
-                fill="#93C5FD"
-              />
-              <Area
-                type="monotone"
-                dataKey="profit"
-                stackId="1"
-                stroke="#10B981"
-                fill="#6EE7B7"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { TrendingUp } from 'lucide-react';
-
-export default function InvestmentPerformance() {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center">
-          <TrendingUp className="h-5 w-5 mr-2" />
-          Investment Performance
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="text-center py-8">
-          <p className="text-gray-500">Investment performance chart will be displayed here</p>
+          {filteredData.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart
+                data={filteredData}
+                margin={{
+                  top: 20,
+                  right: 30,
+                  left: 0,
+                  bottom: 0,
+                }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip formatter={(value) => `${value} USDT`} />
+                <Legend />
+                <Area
+                  type="monotone"
+                  dataKey="investment"
+                  stackId="1"
+                  stroke="#3B82F6"
+                  fill="#93C5FD"
+                />
+                <Area
+                  type="monotone"
+                  dataKey="profit"
+                  stackId="1"
+                  stroke="#10B981"
+                  fill="#6EE7B7"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-full text-gray-500">
+              <p>No investment data available</p>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
