@@ -424,7 +424,7 @@ export class DatabaseStorage implements IStorage {
         profileImage: r.referredUser.profileImage
       } : null
     }));
-  } catch (error) {
+    } catch (error) {
       console.error('Referrals query timeout');
       return [];
     }
