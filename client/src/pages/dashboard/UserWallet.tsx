@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import UserSidebar from '@/components/dashboard/UserSidebar';
 import { UserStatsCards } from '@/components/dashboard/StatsCards';
+import { useLocation } from 'wouter';
 import { DataTable } from '@/components/dashboard/DataTable';
 import { formatCurrency, formatDate, getTransactionStatusColor } from '@/lib/utils';
 import { Plus, ArrowUpRight, ArrowDownRight, History, Wallet, Receipt } from 'lucide-react';
@@ -30,6 +31,7 @@ interface Transaction {
 
 export default function UserWallet() {
   const { toast } = useToast();
+  const [, navigate] = useLocation();
   const [depositModalOpen, setDepositModalOpen] = useState(false);
   const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
@@ -155,7 +157,10 @@ export default function UserWallet() {
         <div className="flex-1 bg-gray-50 p-4 md:p-8 overflow-auto">
           <div className="max-w-7xl mx-auto">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-              <h1 className="text-2xl md:text-3xl font-bold">Wallet</h1>
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold">Wallet</h1>
+                <p className="text-gray-600 mt-1">Add funds to your wallet to start investing in our plans</p>
+              </div>
               <div className="flex space-x-2 mt-4 md:mt-0">
                 <Button onClick={() => setDepositModalOpen(true)} className="bg-green-600 hover:bg-green-700">
                   <Plus className="mr-2 h-4 w-4" />
@@ -174,20 +179,41 @@ export default function UserWallet() {
                 <CardDescription>Your current wallet balance</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center">
-                  <div className="h-16 w-16 rounded-full bg-primary-100 flex items-center justify-center text-primary-800 mr-4">
-                    <Wallet className="h-8 w-8" />
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="h-16 w-16 rounded-full bg-primary-100 flex items-center justify-center text-primary-800 mr-4">
+                      <Wallet className="h-8 w-8" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Available Balance</p>
+                      <p className="text-4xl font-bold">
+                        {isLoadingStats 
+                          ? <span className="animate-pulse">Loading...</span>
+                          : formatCurrency(dashboardStats?.walletBalance || '0', 'USDT')
+                        }
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Available Balance</p>
-                    <p className="text-4xl font-bold">
-                      {isLoadingStats 
-                        ? <span className="animate-pulse">Loading...</span>
-                        : formatCurrency(dashboardStats?.walletBalance || '0', 'USDT')
-                      }
+                  {!isLoadingStats && parseFloat(dashboardStats?.walletBalance || '0') > 0 && (
+                    <div className="text-right">
+                      <p className="text-sm text-gray-500 mb-2">Ready to invest?</p>
+                      <Button 
+                        onClick={() => navigate('/dashboard/investments')}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        View Investment Plans
+                      </Button>
+                    </div>
+                  )}
+                </div>
+                {!isLoadingStats && parseFloat(dashboardStats?.walletBalance || '0') === 0 && (
+                  <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <p className="text-blue-800 font-medium">Get Started</p>
+                    <p className="text-blue-600 text-sm mt-1">
+                      Make your first deposit to start investing in our high-return plans. All plans offer guaranteed returns!
                     </p>
                   </div>
-                </div>
+                )}
               </CardContent>
             </Card>
             

@@ -61,7 +61,7 @@ export default function LoginForm() {
       if (response.user.role === 'admin') {
         navigate('/admin');
       } else {
-        navigate('/dashboard');
+        navigate('/dashboard/wallet');
       }
     } catch (error) {
       console.error('Login error:', error);

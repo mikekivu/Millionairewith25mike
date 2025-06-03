@@ -94,7 +94,7 @@ export default function RegisterForm() {
         description: "Welcome to MillionaireWith$25! Your account has been created.",
       });
       
-      navigate('/dashboard');
+      navigate('/dashboard/wallet');
     } catch (error) {
       console.error('Register error:', error);
       toast({

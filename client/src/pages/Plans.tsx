@@ -34,7 +34,7 @@ export default function Plans() {
 
   const handleGetStarted = (plan: Plan) => {
     if (isAuthenticated) {
-      navigate('/dashboard/investments');
+      navigate('/dashboard/wallet');
     } else {
       navigate('/register');
     }
