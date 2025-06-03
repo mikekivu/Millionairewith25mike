@@ -10,7 +10,7 @@ export default function Footer() {
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center mb-4">
               <Logo size="md" className="mr-3" />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-yellow-500 font-heading font-bold text-xl">MW$25</span>
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-yellow-500 font-heading font-bold text-xl">PG</span>
             </div>
             <p className="mt-2 text-base text-gray-300">
               A leading investment platform combining strategic investments with innovative multi-level network marketing.
@@ -207,7 +207,7 @@ export default function Footer() {
             </div>
           </div>
           <p className="mt-8 text-center text-base text-gray-400">
-            &copy; {new Date().getFullYear()} MillionaireWith$25. All rights reserved.
+            &copy; {new Date().getFullYear()} ProsperityGroups. All rights reserved.
           </p>
         </div>
       </div>

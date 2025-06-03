@@ -82,8 +82,8 @@ export default function UserDashboard() {
   return (
     <DashboardLayout>
       <Helmet>
-        <title>Dashboard - MillionaireWith$25</title>
-        <meta name="description" content="Manage your investments, track your earnings, and monitor your referrals from your MillionaireWith$25 dashboard." />
+        <title>Dashboard - ProsperityGroups</title>
+        <meta name="description" content="Manage your investments, track your earnings, and monitor your referrals from your ProsperityGroups dashboard." />
       </Helmet>
 
       <div className="max-w-7xl mx-auto">

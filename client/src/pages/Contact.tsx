@@ -8,12 +8,12 @@ export default function Contact() {
   return (
     <>
       <Helmet>
-        <title>Contact Us - MillionaireWith$25</title>
-        <meta name="description" content="Get in touch with the MillionaireWith$25 team. We're here to help you with any questions about our investment platform and genealogy-based referral system." />
-        <meta property="og:title" content="Contact Us - MillionaireWith$25" />
-        <meta property="og:description" content="Get in touch with the MillionaireWith$25 team. We're here to help with any questions about our platform." />
+        <title>Contact Us - ProsperityGroups</title>
+        <meta name="description" content="Get in touch with the ProsperityGroups team. We're here to help you with any questions about our investment platform and genealogy-based referral system." />
+        <meta property="og:title" content="Contact Us - ProsperityGroups" />
+        <meta property="og:description" content="Get in touch with the ProsperityGroups team. We're here to help with any questions about our platform." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://millionairewith25.com/contact" />
+        <meta property="og:url" content="https://prosperitygroups.com/contact" />
       </Helmet>
 
       <div className="min-h-screen flex flex-col">
@@ -40,7 +40,7 @@ export default function Contact() {
                   Frequently Asked Questions
                 </h2>
                 <p className="mt-3 max-w-2xl mx-auto text-xl text-dark-500 sm:mt-4">
-                  Find answers to common questions about MillionaireWith$25
+                  Find answers to common questions about ProsperityGroups
                 </p>
               </div>
               

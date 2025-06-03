@@ -65,7 +65,7 @@ export default function Header() {
               <Link href="/">
                 <div className="flex items-center cursor-pointer">
                   <Logo size="md" className="mr-3" />
-                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-yellow-500 font-heading font-bold text-xl md:text-2xl">MillionaireWith$25</span>
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-yellow-500 font-heading font-bold text-xl md:text-2xl">ProsperityGroups</span>
                 </div>
               </Link>
             </div>

@@ -25,10 +25,10 @@ export default function AboutUs() {
         <div className="lg:grid lg:grid-cols-2 lg:gap-8 lg:items-center">
           <div>
             <h2 className="text-3xl font-extrabold text-dark-900 sm:text-4xl font-heading">
-              About MillionaireWith$25
+              About ProsperityGroups
             </h2>
             <p className="mt-3 max-w-3xl text-lg text-dark-500">
-              MillionaireWith$25 is a leading investment platform combining traditional investment strategies with innovative genealogy-based referral systems. Our mission is to empower individuals to achieve financial freedom through smart investing and network building.
+              ProsperityGroups is a leading investment platform combining traditional investment strategies with innovative genealogy-based referral systems. Our mission is to empower individuals to achieve financial freedom through smart investing and network building.
             </p>
             <div className="mt-8 space-y-4">
               {features.map((feature, index) => (

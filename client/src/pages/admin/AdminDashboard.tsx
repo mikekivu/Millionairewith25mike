@@ -175,8 +175,8 @@ export default function AdminDashboard() {
   return (
     <DashboardLayout>
       <Helmet>
-        <title>Admin Dashboard - MillionaireWith$25</title>
-        <meta name="description" content="Manage the MillionaireWith$25 platform and view system statistics." />
+        <title>Admin Dashboard - ProsperityGroups</title>
+        <meta name="description" content="Manage the ProsperityGroups platform and view system statistics." />
       </Helmet>
 
       <div className="max-w-7xl mx-auto">

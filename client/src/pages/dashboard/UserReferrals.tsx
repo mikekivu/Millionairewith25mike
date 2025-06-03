@@ -163,8 +163,8 @@ export default function UserReferrals() {
   return (
     <>
       <Helmet>
-        <title>Referrals - MillionaireWith$25</title>
-        <meta name="description" content="Manage your MillionaireWith$25 referrals and track your commissions." />
+        <title>Referrals - ProsperityGroups</title>
+        <meta name="description" content="Manage your ProsperityGroups referrals and track your commissions." />
       </Helmet>
 
       <div className="min-h-screen flex flex-col md:flex-row">

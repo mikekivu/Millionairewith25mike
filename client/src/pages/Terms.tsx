@@ -7,12 +7,12 @@ export default function Terms() {
   return (
     <>
       <Helmet>
-        <title>Terms and Conditions - MillionaireWith$25</title>
-        <meta name="description" content="Read and understand the terms and conditions that govern the use of the MillionaireWith$25 investment platform." />
-        <meta property="og:title" content="Terms and Conditions - MillionaireWith$25" />
-        <meta property="og:description" content="Read and understand the terms and conditions that govern the use of the MillionaireWith$25 investment platform." />
+        <title>Terms and Conditions - ProsperityGroups</title>
+        <meta name="description" content="Read and understand the terms and conditions that govern the use of the ProsperityGroups investment platform." />
+        <meta property="og:title" content="Terms and Conditions - ProsperityGroups" />
+        <meta property="og:description" content="Read and understand the terms and conditions that govern the use of the ProsperityGroups investment platform." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://richlance.com/terms" />
+        <meta property="og:url" content="https://prosperitygroups.com/terms" />
       </Helmet>
 
       <div className="min-h-screen flex flex-col">

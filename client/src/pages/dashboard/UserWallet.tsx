@@ -143,8 +143,8 @@ export default function UserWallet() {
   return (
     <>
       <Helmet>
-        <title>Wallet - MillionaireWith$25</title>
-        <meta name="description" content="Manage your MillionaireWith$25 wallet, make deposits, and withdraw funds." />
+        <title>Wallet - ProsperityGroups</title>
+        <meta name="description" content="Manage your ProsperityGroups wallet, make deposits, and withdraw funds." />
       </Helmet>
 
       <div className="min-h-screen flex flex-col md:flex-row">

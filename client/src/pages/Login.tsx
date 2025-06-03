@@ -30,12 +30,12 @@ export default function Login() {
   return (
     <>
       <Helmet>
-        <title>Login - MillionaireWith$25</title>
-        <meta name="description" content="Log in to your MillionaireWith$25 account to manage your investments and track your referral earnings." />
-        <meta property="og:title" content="Login - MillionaireWith$25" />
-        <meta property="og:description" content="Log in to your MillionaireWith$25 account to manage your investments and track your referral earnings." />
+        <title>Login - ProsperityGroups</title>
+        <meta name="description" content="Log in to your ProsperityGroups account to manage your investments and track your referral earnings." />
+        <meta property="og:title" content="Login - ProsperityGroups" />
+        <meta property="og:description" content="Log in to your ProsperityGroups account to manage your investments and track your referral earnings." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://millionairewith25.com/login" />
+        <meta property="og:url" content="https://prosperitygroups.com/login" />
       </Helmet>
 
       <div className="min-h-screen flex flex-col">
@@ -49,7 +49,7 @@ export default function Login() {
                 <img src={logoImage} alt="MillionaireWith$25 Logo" className="h-16 mx-auto mb-4" />
                 <h1 className="text-2xl font-bold text-dark-900 mb-2">
                   <span className="text-orange-500">Welcome Back to</span>
-                  <span className="text-yellow-500 block">MillionaireWith$25</span>
+                  <span className="text-yellow-500 block">ProsperityGroups</span>
                 </h1>
                 <p className="text-gray-600 mt-2">
                   Enter your credentials and login

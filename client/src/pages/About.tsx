@@ -12,16 +12,16 @@ export default function About() {
     <>
       <Helmet>
         <title>About Us - MillionaireWith$25</title>
-        <meta name="description" content="Learn more about MillionaireWith$25, a leading investment platform combining traditional investment strategies with innovative genealogy-based referral systems." />
+        <meta name="description" content="Learn more about ProsperityGroups, a leading investment platform combining traditional investment strategies with innovative genealogy-based referral systems." />
         <meta property="og:title" content="About Us - MillionaireWith$25" />
-        <meta property="og:description" content="Learn more about MillionaireWith$25, a leading investment platform with innovative genealogy-based referral systems." />
+        <meta property="og:description" content="Learn more about ProsperityGroups, a leading investment platform with innovative genealogy-based referral systems." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://richlance.com/about" />
       </Helmet>
 
       <div className="min-h-screen flex flex-col">
         <Header />
-        
+
         <main className="flex-grow">
           <div className="bg-primary-800 text-white py-20">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -33,10 +33,10 @@ export default function About() {
               </p>
             </div>
           </div>
-          
+
           <AboutUs />
           <Stats />
-          
+
           <section className="py-16 bg-gray-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="text-center">
@@ -47,7 +47,7 @@ export default function About() {
                   Empowering individuals to achieve financial independence through smart investments.
                 </p>
               </div>
-              
+
               <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-2">
                 <div>
                   <h3 className="text-xl font-bold text-dark-900 mb-4">Our Vision</h3>
@@ -64,11 +64,11 @@ export default function About() {
               </div>
             </div>
           </section>
-          
+
           <HowItWorks />
           <CallToAction />
         </main>
-        
+
         <Footer />
       </div>
     </>

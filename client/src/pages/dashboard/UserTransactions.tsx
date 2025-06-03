@@ -121,8 +121,8 @@ export default function UserTransactions() {
   return (
     <>
       <Helmet>
-        <title>Transactions - MillionaireWith$25</title>
-        <meta name="description" content="View and track your transaction history on the MillionaireWith$25 platform." />
+        <title>Transactions - ProsperityGroups</title>
+        <meta name="description" content="View and track your transaction history on the ProsperityGroups platform." />
       </Helmet>
 
       <div className="min-h-screen flex flex-col md:flex-row">
