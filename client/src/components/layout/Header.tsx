@@ -29,12 +29,12 @@ export default function Header() {
       queryClient.clear();
       // Invalidate user auth state
       queryClient.setQueryData(['/api/auth/me'], null);
-      
+
       toast({
         title: 'Logged out successfully',
         description: 'You have been logged out of your account',
       });
-      
+
       // Navigate to the home page without a full page reload
       // to ensure React components update correctly
       window.location.href = '/';
@@ -65,7 +65,7 @@ export default function Header() {
               <Link href="/">
                 <div className="flex items-center cursor-pointer">
                   <Logo size="md" className="mr-3" />
-                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-blue-500 font-heading font-bold text-xl md:text-2xl">ProsperityGroups</span>
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-emerald-500 font-heading font-bold text-xl md:text-2xl">ProsperityGroups</span>
                 </div>
               </Link>
             </div>

@@ -15,11 +15,11 @@ const profitData = [
 ];
 
 const networkData = [
-  { name: 'Level 1', value: 30, fill: '#FF9500' },
-  { name: 'Level 2', value: 25, fill: '#FFB800' },
-  { name: 'Level 3', value: 20, fill: '#FFC933' },
-  { name: 'Level 4', value: 15, fill: '#FFD966' },
-  { name: 'Level 5', value: 10, fill: '#FFE599' },
+  { name: 'Level 1', value: 30, fill: '#3b82f6' },
+  { name: 'Level 2', value: 25, fill: '#06b6d4' },
+  { name: 'Level 3', value: 20, fill: '#10b981' },
+  { name: 'Level 4', value: 15, fill: '#22d3ee' },
+  { name: 'Level 5', value: 10, fill: '#34d399' },
 ];
 
 const investmentData = [
@@ -36,13 +36,13 @@ export default function Hero() {
           {/* Content */}
           <div className="space-y-8">
             <div>
-              <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800 mb-6">
+              <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 mb-6">
                 <TrendingUp className="h-4 w-4 mr-2" />
                 Start with just $25 and grow your wealth
               </div>
 
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold font-heading leading-tight">
-                <span className="block bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-yellow-500">Grow your wealth</span>
+                <span className="block bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-emerald-500">Grow your wealth</span>
                 <span className="block text-gray-900">with intelligent investing</span>
               </h1>
 
@@ -53,37 +53,37 @@ export default function Hero() {
 
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href="/register">
-                <div className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 shadow-lg shadow-purple-500/20 cursor-pointer">
+                <div className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-blue-500 to-emerald-500 hover:from-blue-600 hover:to-emerald-600 shadow-lg shadow-blue-500/20 cursor-pointer">
                   Get started now <ArrowRight className="ml-2 h-5 w-5" />
                 </div>
               </Link>
 
               <Link href="#plans">
-                <div className="inline-flex items-center justify-center px-6 py-3 border border-orange-300 text-base font-medium rounded-md text-orange-600 bg-white hover:bg-orange-50 cursor-pointer">
+                <div className="inline-flex items-center justify-center px-6 py-3 border border-blue-300 text-base font-medium rounded-md text-blue-600 bg-white hover:bg-blue-50 cursor-pointer">
                   View investment plans
                 </div>
               </Link>
             </div>
 
             <div className="grid grid-cols-3 gap-4">
-              <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-lg">
-                <div className="flex gap-2 items-center text-orange-600 font-semibold mb-1">
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg">
+                <div className="flex gap-2 items-center text-blue-600 font-semibold mb-1">
                   <DollarSign className="h-4 w-4" />
                   <span className="text-lg">$25</span>
                 </div>
                 <p className="text-sm text-gray-600">Minimum deposit to start</p>
               </div>
 
-              <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 p-4 rounded-lg">
-                <div className="flex gap-2 items-center text-orange-600 font-semibold mb-1">
+              <div className="bg-gradient-to-br from-cyan-50 to-cyan-100 p-4 rounded-lg">
+                <div className="flex gap-2 items-center text-cyan-600 font-semibold mb-1">
                   <TrendingUp className="h-4 w-4" />
                   <span className="text-lg">12%</span>
                 </div>
                 <p className="text-sm text-gray-600">Monthly ROI</p>
               </div>
 
-              <div className="bg-gradient-to-br from-amber-50 to-amber-100 p-4 rounded-lg">
-                <div className="flex gap-2 items-center text-orange-600 font-semibold mb-1">
+              <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-4 rounded-lg">
+                <div className="flex gap-2 items-center text-emerald-600 font-semibold mb-1">
                   <Users className="h-4 w-4" />
                   <span className="text-lg">5 Levels</span>
                 </div>
@@ -94,11 +94,11 @@ export default function Hero() {
 
           {/* Visualizations */}
           <div className="relative">
-            <div className="absolute -top-10 -right-10 w-64 h-64 bg-yellow-300 rounded-full mix-blend-multiply filter blur-2xl opacity-20"></div>
-            <div className="absolute -bottom-8 -left-8 w-64 h-64 bg-orange-300 rounded-full mix-blend-multiply filter blur-2xl opacity-20"></div>
+            <div className="absolute -top-10 -right-10 w-64 h-64 bg-cyan-300 rounded-full mix-blend-multiply filter blur-2xl opacity-20"></div>
+            <div className="absolute -bottom-8 -left-8 w-64 h-64 bg-blue-300 rounded-full mix-blend-multiply filter blur-2xl opacity-20"></div>
 
             <div className="relative bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
-              <div className="bg-gradient-to-r from-orange-500 to-yellow-500 py-4 px-6">
+              <div className="bg-gradient-to-r from-blue-500 to-emerald-500 py-4 px-6">
                 <h3 className="text-white font-semibold text-lg">Platform Analytics</h3>
               </div>
 
@@ -110,14 +110,14 @@ export default function Hero() {
                       <AreaChart data={profitData}>
                         <defs>
                           <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#FF9500" stopOpacity={0.8}/>
-                            <stop offset="95%" stopColor="#FF9500" stopOpacity={0}/>
+                            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
+                            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
                           </linearGradient>
                         </defs>
                         <XAxis dataKey="month" tick={{fontSize: 10}} />
                         <YAxis tick={{fontSize: 10}} />
                         <Tooltip />
-                        <Area type="monotone" dataKey="profit" stroke="#FF9500" fill="url(#colorProfit)" />
+                        <Area type="monotone" dataKey="profit" stroke="#3b82f6" fill="url(#colorProfit)" />
                       </AreaChart>
                     </ResponsiveContainer>
                   </div>
@@ -159,12 +159,12 @@ export default function Hero() {
                       >
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="plan" />
-                        <YAxis yAxisId="left" orientation="left" stroke="#FF9500" tick={{fontSize: 10}} />
-                        <YAxis yAxisId="right" orientation="right" stroke="#FFCB33" tick={{fontSize: 10}} />
+                        <YAxis yAxisId="left" orientation="left" stroke="#3b82f6" tick={{fontSize: 10}} />
+                        <YAxis yAxisId="right" orientation="right" stroke="#10b981" tick={{fontSize: 10}} />
                         <Tooltip />
                         <Legend />
-                        <Bar yAxisId="left" dataKey="users" name="Active Users" fill="#FF9500" radius={[4, 4, 0, 0]} />
-                        <Bar yAxisId="right" dataKey="amount" name="Min. Amount ($)" fill="#FFCB33" radius={[4, 4, 0, 0]} />
+                        <Bar yAxisId="left" dataKey="users" name="Active Users" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                        <Bar yAxisId="right" dataKey="amount" name="Min. Amount ($)" fill="#10b981" radius={[4, 4, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
@@ -173,7 +173,7 @@ export default function Hero() {
 
               <div className="px-6 py-3 border-t border-gray-100 bg-gray-50">
                 <Link href="#plans">
-                  <div className="text-orange-600 flex items-center text-sm font-medium hover:text-orange-700 cursor-pointer">
+                  <div className="text-blue-600 flex items-center text-sm font-medium hover:text-blue-700 cursor-pointer">
                     View detailed investment analytics <ChevronRight className="ml-1 h-4 w-4" />
                   </div>
                 </Link>

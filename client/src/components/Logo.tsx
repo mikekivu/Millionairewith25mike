@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 interface LogoProps {
@@ -24,18 +23,18 @@ export default function Logo({ className = '', size = 'md' }: LogoProps) {
         {/* Background circle with gradient */}
         <defs>
           <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style={{ stopColor: '#8b5cf6', stopOpacity: 1 }} />
-            <stop offset="100%" style={{ stopColor: '#3b82f6', stopOpacity: 1 }} />
+            <stop offset="0%" style={{ stopColor: '#3b82f6', stopOpacity: 1 }} />
+            <stop offset="100%" style={{ stopColor: '#10b981', stopOpacity: 1 }} />
           </linearGradient>
           <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" style={{ stopColor: '#ffffff', stopOpacity: 1 }} />
-            <stop offset="100%" style={{ stopColor: '#e0e7ff', stopOpacity: 1 }} />
+            <stop offset="100%" style={{ stopColor: '#e0f2fe', stopOpacity: 1 }} />
           </linearGradient>
         </defs>
-        
+
         {/* Main circle */}
-        <circle cx="50" cy="50" r="45" fill="url(#logoGradient)" stroke="#6366f1" strokeWidth="2"/>
-        
+        <circle cx="50" cy="50" r="45" fill="url(#logoGradient)" stroke="#06b6d4" strokeWidth="2"/>
+
         {/* Dollar sign */}
         <path
           d="M50 15 L50 25 M50 75 L50 85 M42 30 Q42 25 47 25 L53 25 Q58 25 58 30 Q58 35 53 35 L47 35 M47 35 L53 35 Q58 35 58 40 Q58 45 53 45 L47 45 Q42 45 42 50 Q42 55 47 55 L53 55 Q58 55 58 60 Q58 65 53 65 L47 65 Q42 65 42 70"
@@ -45,7 +44,7 @@ export default function Logo({ className = '', size = 'md' }: LogoProps) {
           strokeLinejoin="round"
           fill="none"
         />
-        
+
         {/* Number 25 */}
         <text
           x="50"
@@ -58,7 +57,7 @@ export default function Logo({ className = '', size = 'md' }: LogoProps) {
         >
           25
         </text>
-        
+
         {/* Decorative stars */}
         <g fill="url(#textGradient)">
           <polygon points="20,20 22,26 28,26 23,30 25,36 20,32 15,36 17,30 12,26 18,26" />
