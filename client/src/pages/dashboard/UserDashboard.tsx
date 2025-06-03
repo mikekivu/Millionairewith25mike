@@ -1,180 +1,216 @@
-import React, { useEffect, useState } from 'react';
+
+import React from 'react';
 import { Helmet } from 'react-helmet';
 import { useQuery } from '@tanstack/react-query';
-import DashboardLayout from '@/components/layout/DashboardLayout';
-import { UserStatsCards } from '@/components/dashboard/StatsCards';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import UserSidebar from '@/components/dashboard/UserSidebar';
+import StatsCards from '@/components/dashboard/StatsCards';
 import InvestmentPerformance from '@/components/dashboard/InvestmentPerformance';
 import ReferralTools from '@/components/dashboard/ReferralTools';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { formatCurrency, formatDate, getTransactionStatusColor, getTransactionTypeIcon } from '@/lib/utils';
+import { formatCurrency, formatDate } from '@/lib/utils';
 import { useAuth } from '@/lib/auth';
-import { ArrowUpRight, ArrowDownRight, TrendingUp, Users } from 'lucide-react';
+import { TrendingUp, Users, DollarSign, Clock, Share2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 export default function UserDashboard() {
   const { user } = useAuth();
-  const [performanceData, setPerformanceData] = useState<Array<{name: string; investment: number; profit: number}>>([]);
+  const { toast } = useToast();
 
-  interface UserStats {
-    walletBalance: string;
-    totalInvested: string;
-    totalEarnings: string;
-    referralEarnings: string;
-    activeInvestments: number;
-    referralCount: number;
-  }
-
-  interface Transaction {
-    id: number;
-    type: string;
-    amount: string;
-    currency: string;
-    status: string;
-    createdAt: string;
-  }
-
-  const { data: dashboardStats, isLoading: isLoadingStats } = useQuery<UserStats>({
+  const { data: dashboardStats, isLoading: isLoadingStats } = useQuery({
     queryKey: ['/api/user/dashboard'],
     staleTime: 60000, // 1 minute
   });
 
-  const { data: transactions, isLoading: isLoadingTransactions } = useQuery<Transaction[]>({
+  const { data: recentTransactions } = useQuery({
     queryKey: ['/api/user/transactions'],
     staleTime: 60000, // 1 minute
-    select: (data) => data.slice(0, 5), // Get only the first 5 transactions
   });
 
-  // Generate sample performance data
-  useEffect(() => {
-    if (dashboardStats) {
-      const generateData = () => {
-        const today = new Date();
-        const data = [];
-        const totalInvested = parseFloat(dashboardStats.totalInvested);
-        const totalEarnings = parseFloat(dashboardStats.totalEarnings);
-        
-        // Generate data for the last 30 days
-        for (let i = 29; i >= 0; i--) {
-          const date = new Date(today);
-          date.setDate(date.getDate() - i);
-          
-          // Calculate a growing investment amount and profit
-          const dayFactor = (30 - i) / 30;
-          const investment = totalInvested * dayFactor;
-          const profit = totalEarnings * dayFactor;
-          
-          data.push({
-            name: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-            investment: parseFloat(investment.toFixed(2)),
-            profit: parseFloat(profit.toFixed(2)),
-          });
-        }
-        
-        return data;
-      };
-      
-      setPerformanceData(generateData());
-    }
-  }, [dashboardStats]);
+  const { data: referrals } = useQuery({
+    queryKey: ['/api/user/referrals'],
+    staleTime: 60000, // 1 minute
+  });
 
-  // Generate referral link based on user info
+  // Calculate referral stats
+  const totalReferrals = referrals && referrals['1'] ? referrals['1'].length : 0;
+  const referralEarnings = totalReferrals * 20; // $20 per referral
+
   const referralLink = user ? `${window.location.origin}/register?ref=${user.referralCode}` : '';
 
-  return (
-    <DashboardLayout>
-      <Helmet>
-        <title>Dashboard - ProsperityGroups</title>
-        <meta name="description" content="Manage your investments, track your earnings, and monitor your referrals from your ProsperityGroups dashboard." />
-      </Helmet>
+  const handleCopyReferralLink = () => {
+    if (referralLink) {
+      navigator.clipboard.writeText(referralLink);
+      toast({
+        title: "Copied!",
+        description: "Referral link copied to clipboard",
+      });
+    }
+  };
 
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-2xl md:text-3xl font-bold mb-6">Dashboard Overview</h1>
-        
-        <UserStatsCards stats={dashboardStats || {}} isLoading={isLoadingStats} />
-        
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
-          <div className="lg:col-span-2">
-            <InvestmentPerformance 
-              data={performanceData} 
-              isLoading={isLoadingStats}
-            />
-          </div>
-          
-          <div className="lg:col-span-1">
-            <ReferralTools 
-              referralCode={user?.referralCode || ''} 
-              referralLink={referralLink}
-            />
-          </div>
+  if (isLoadingStats) {
+    return (
+      <div className="min-h-screen flex flex-col md:flex-row">
+        <div className="w-full md:w-64 lg:w-72">
+          <UserSidebar />
         </div>
-        
-        <div className="mt-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Transactions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoadingTransactions ? (
-                <div className="space-y-3">
-                  {[...Array(3)].map((_, i) => (
-                    <div key={i} className="flex items-center p-3 bg-gray-50 rounded-md animate-pulse">
-                      <div className="h-10 w-10 rounded-full bg-gray-200 mr-3"></div>
-                      <div className="flex-1">
-                        <div className="h-4 bg-gray-200 rounded w-1/4 mb-2"></div>
-                        <div className="h-3 bg-gray-200 rounded w-1/3"></div>
-                      </div>
-                      <div className="h-5 bg-gray-200 rounded w-16"></div>
-                    </div>
-                  ))}
-                </div>
-              ) : transactions && transactions.length > 0 ? (
-                <div className="space-y-3">
-                  {transactions.map((transaction) => {
-                    const IconComponent = 
-                      transaction.type === 'deposit' ? ArrowDownRight :
-                      transaction.type === 'withdrawal' ? ArrowUpRight :
-                      transaction.type === 'investment' ? TrendingUp :
-                      transaction.type === 'referral' ? Users :
-                      ArrowDownRight;
-                    
-                    const isPositive = ['deposit', 'referral'].includes(transaction.type);
-                    const amountColor = isPositive ? 'text-green-600' : 'text-red-600';
-                    const amountPrefix = isPositive ? '+' : '-';
-                    
-                    return (
-                      <div key={transaction.id} className="flex items-center p-3 hover:bg-gray-50 rounded-md transition-colors">
-                        <div className={`flex items-center justify-center h-10 w-10 rounded-full mr-3 ${
-                          transaction.type === 'deposit' ? 'bg-green-100 text-green-600' :
-                          transaction.type === 'withdrawal' ? 'bg-red-100 text-red-600' :
-                          transaction.type === 'investment' ? 'bg-blue-100 text-blue-600' :
-                          'bg-yellow-100 text-yellow-600'
-                        }`}>
-                          <IconComponent className="h-5 w-5" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-medium capitalize">{transaction.type}</p>
-                          <p className="text-sm text-gray-500">{formatDate(transaction.createdAt)}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className={`font-medium ${amountColor}`}>
-                            {amountPrefix}{formatCurrency(transaction.amount, transaction.currency)}
-                          </p>
-                          <span className={`inline-flex text-xs px-2 py-0.5 rounded-full ${getTransactionStatusColor(transaction.status)}`}>
-                            {transaction.status}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <p className="text-center py-6 text-gray-500">
-                  No transactions yet. Start by making a deposit!
-                </p>
-              )}
-            </CardContent>
-          </Card>
+        <div className="flex-1 bg-gray-50 p-4 md:p-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="animate-pulse">
+              <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="h-32 bg-gray-200 rounded-lg"></div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </DashboardLayout>
+    );
+  }
+
+  return (
+    <>
+      <Helmet>
+        <title>Dashboard - ProsperityGroups</title>
+        <meta name="description" content="Manage your ProsperityGroups investments and track your portfolio performance." />
+      </Helmet>
+
+      <div className="min-h-screen flex flex-col md:flex-row">
+        <div className="w-full md:w-64 lg:w-72">
+          <UserSidebar />
+        </div>
+        
+        <div className="flex-1 bg-gray-50 p-4 md:p-8 overflow-auto">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-2xl md:text-3xl font-bold">
+                Welcome back, {user?.firstName || user?.username || 'User'}!
+              </h1>
+            </div>
+
+            <StatsCards stats={dashboardStats} />
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+              <div className="lg:col-span-2 space-y-6">
+                <InvestmentPerformance />
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <Clock className="h-5 w-5 mr-2" />
+                      Recent Activity
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {recentTransactions && recentTransactions.length > 0 ? (
+                      <div className="space-y-4">
+                        {recentTransactions.slice(0, 5).map((transaction: any) => (
+                          <div key={transaction.id} className="flex items-center justify-between border-b border-gray-100 pb-2 last:border-0">
+                            <div>
+                              <p className="font-medium">{transaction.type}</p>
+                              <p className="text-sm text-gray-500">{formatDate(transaction.createdAt)}</p>
+                            </div>
+                            <div className={`font-medium ${
+                              transaction.type === 'deposit' || transaction.type === 'referral_bonus' 
+                                ? 'text-green-600' 
+                                : 'text-red-600'
+                            }`}>
+                              {transaction.type === 'deposit' || transaction.type === 'referral_bonus' ? '+' : '-'}
+                              {formatCurrency(transaction.amount, transaction.currency || 'USDT')}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-gray-500 text-center py-4">No recent transactions</p>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <Users className="h-5 w-5 mr-2" />
+                      Referral Program
+                    </CardTitle>
+                    <CardDescription>
+                      Earn $20 for every successful referral
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-4">
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-green-600">${referralEarnings}</div>
+                          <div className="text-sm text-green-600">Total Earned</div>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4 text-center">
+                        <div>
+                          <div className="text-lg font-bold">{totalReferrals}</div>
+                          <div className="text-xs text-gray-500">Referrals</div>
+                        </div>
+                        <div>
+                          <div className="text-lg font-bold">$20</div>
+                          <div className="text-xs text-gray-500">Per Referral</div>
+                        </div>
+                      </div>
+
+                      <Button 
+                        onClick={handleCopyReferralLink}
+                        className="w-full"
+                        size="sm"
+                      >
+                        <Share2 className="h-4 w-4 mr-2" />
+                        Copy Referral Link
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <ReferralTools 
+                  referralCode={user?.referralCode || ''} 
+                  referralLink={referralLink}
+                />
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <TrendingUp className="h-5 w-5 mr-2" />
+                      Quick Stats
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-500">Total Invested:</span>
+                        <span className="font-medium">{formatCurrency(dashboardStats?.totalInvested || '0', 'USDT')}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-500">Total Earnings:</span>
+                        <span className="font-medium text-green-600">{formatCurrency(dashboardStats?.totalEarnings || '0', 'USDT')}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-500">Referral Bonus:</span>
+                        <span className="font-medium text-blue-600">${referralEarnings}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-500">Wallet Balance:</span>
+                        <span className="font-medium">{formatCurrency(dashboardStats?.walletBalance || '0', 'USDT')}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import UserSidebar from '@/components/dashboard/UserSidebar';
@@ -11,7 +10,7 @@ import ReferralTools from '@/components/dashboard/ReferralTools';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { ColumnDef } from '@tanstack/react-table';
 import { useAuth } from '@/lib/auth';
-import { Users, Share2, BadgeCheck, BadgeX, User } from 'lucide-react';
+import { Users, Share2, BadgeCheck, BadgeX, User, DollarSign } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 interface Referral {
@@ -38,7 +37,6 @@ interface Referral {
 export default function UserReferrals() {
   const { toast } = useToast();
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('1');
 
   const { data: referrals, isLoading: isLoadingReferrals } = useQuery<Record<string, Referral[]>>({
     queryKey: ['/api/user/referrals'],
@@ -53,22 +51,16 @@ export default function UserReferrals() {
   // Generate referral link based on user info
   const referralLink = user ? `${window.location.origin}/register?ref=${user.referralCode}` : '';
 
-  // Calculate total number of referrals
+  // Calculate total number of direct referrals (level 1 only)
   const calculateTotalReferrals = () => {
-    if (!referrals) return 0;
-    
-    return Object.values(referrals).reduce((total, levelReferrals) => {
-      return total + levelReferrals.length;
-    }, 0);
+    if (!referrals || !referrals['1']) return 0;
+    return referrals['1'].length;
   };
 
-  // Calculate total earnings from each level
-  const calculateLevelEarnings = (level: number) => {
-    if (!referrals || !referrals[level.toString()]) return 0;
-    
-    return referrals[level.toString()].reduce((total, referral) => {
-      return total + parseFloat(referral.commissionAmount);
-    }, 0);
+  // Calculate total earnings from direct referrals
+  const calculateTotalEarnings = () => {
+    if (!referrals || !referrals['1']) return 0;
+    return referrals['1'].length * 20; // $20 per referral
   };
 
   const columns: ColumnDef<Referral>[] = [
@@ -80,11 +72,11 @@ export default function UserReferrals() {
         if (!referredUser) {
           return <div>No user data</div>;
         }
-        
+
         const firstName = referredUser.firstName || '';
         const lastName = referredUser.lastName || '';
         const initials = (firstName ? firstName[0] : '') + (lastName ? lastName[0] : '');
-        
+
         return (
           <div className="flex items-center">
             <div className="h-8 w-8 rounded-full bg-primary-100 text-primary-800 flex items-center justify-center mr-2 font-medium">
@@ -117,9 +109,9 @@ export default function UserReferrals() {
             </Badge>
           );
         }
-        
+
         const isActive = row.original.referredUser.active;
-        
+
         return isActive ? (
           <Badge variant="outline" className="bg-green-100 text-green-800 flex items-center w-fit">
             <BadgeCheck className="h-3 w-3 mr-1" />
@@ -134,19 +126,11 @@ export default function UserReferrals() {
       },
     },
     {
-      accessorKey: 'commissionRate',
-      header: 'Commission Rate',
-      cell: ({ row }) => {
-        return `${row.getValue('commissionRate')}%`;
-      },
-    },
-    {
-      accessorKey: 'commissionAmount',
-      header: 'Earnings',
-      cell: ({ row }) => {
+      header: 'Reward',
+      cell: () => {
         return (
           <span className="text-green-600 font-medium">
-            {formatCurrency(row.getValue('commissionAmount'), 'USDT')}
+            $20.00
           </span>
         );
       },
@@ -164,18 +148,18 @@ export default function UserReferrals() {
     <>
       <Helmet>
         <title>Referrals - ProsperityGroups</title>
-        <meta name="description" content="Manage your ProsperityGroups referrals and track your commissions." />
+        <meta name="description" content="Manage your ProsperityGroups referrals and earn $20 for each successful referral." />
       </Helmet>
 
       <div className="min-h-screen flex flex-col md:flex-row">
         <div className="w-full md:w-64 lg:w-72">
           <UserSidebar />
         </div>
-        
+
         <div className="flex-1 bg-gray-50 p-4 md:p-8 overflow-auto">
           <div className="max-w-7xl mx-auto">
             <h1 className="text-2xl md:text-3xl font-bold mb-6">My Referrals</h1>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               <Card>
                 <CardContent className="p-6">
@@ -195,16 +179,16 @@ export default function UserReferrals() {
                   </div>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardContent className="p-6">
                   <div className="flex justify-between items-center">
                     <div>
-                      <p className="text-sm text-gray-500">Level 1 Referrals</p>
+                      <p className="text-sm text-gray-500">Active Referrals</p>
                       <p className="text-2xl font-bold">
                         {isLoadingReferrals 
                           ? <span className="animate-pulse">Loading...</span>
-                          : referrals && referrals['1'] ? referrals['1'].length : 0
+                          : referrals && referrals['1'] ? referrals['1'].filter(r => r.referredUser.active).length : 0
                         }
                       </p>
                     </div>
@@ -214,112 +198,90 @@ export default function UserReferrals() {
                   </div>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardContent className="p-6">
                   <div className="flex justify-between items-center">
                     <div>
-                      <p className="text-sm text-gray-500">Referral Earnings</p>
+                      <p className="text-sm text-gray-500">Total Earnings</p>
                       <p className="text-2xl font-bold">
-                        {formatCurrency(dashboardStats?.referralEarnings || '0', 'USDT')}
+                        ${calculateTotalEarnings()}
                       </p>
                     </div>
                     <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center text-green-800">
+                      <DollarSign className="h-5 w-5" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="text-sm text-gray-500">Reward Per Referral</p>
+                      <p className="text-2xl font-bold">
+                        $20
+                      </p>
+                    </div>
+                    <div className="h-10 w-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-800">
                       <Share2 className="h-5 w-5" />
                     </div>
                   </div>
                 </CardContent>
               </Card>
-              
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="text-sm text-gray-500">Commission Rate</p>
-                      <p className="text-2xl font-bold">
-                        5 Levels
-                      </p>
-                    </div>
-                    <div className="h-10 w-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-800">
-                      <Users className="h-5 w-5" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
-            
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
               <div className="lg:col-span-2">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Commission Structure</CardTitle>
+                    <CardTitle>Referral Program</CardTitle>
                     <CardDescription>
-                      Earn commissions from up to 5 levels in your network
+                      Earn $20 for every friend who joins and makes their first investment
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between pb-2 border-b">
-                        <span className="font-medium">Level</span>
-                        <span className="font-medium">Commission Rate</span>
-                        <span className="font-medium">Your Referrals</span>
-                        <span className="font-medium">Total Earned</span>
+                    <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-6">
+                      <div className="text-center">
+                        <div className="text-4xl font-bold text-green-600 mb-2">$20</div>
+                        <div className="text-lg font-medium text-green-800">Per Successful Referral</div>
+                        <div className="text-sm text-green-600 mt-2">Paid instantly to your account</div>
                       </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <span className="flex items-center">
-                          <Badge variant="outline" className="bg-primary-100 text-primary-800 mr-2">1</Badge>
-                          Level 1 (Direct)
-                        </span>
-                        <span>10%</span>
-                        <span>{isLoadingReferrals ? "-" : referrals && referrals['1'] ? referrals['1'].length : 0}</span>
-                        <span className="text-green-600">{formatCurrency(calculateLevelEarnings(1), 'USDT')}</span>
+
+                      <div className="mt-6 grid grid-cols-2 gap-4 text-center">
+                        <div>
+                          <div className="text-2xl font-bold text-green-700">{calculateTotalReferrals()}</div>
+                          <div className="text-sm text-green-600">Total Referrals</div>
+                        </div>
+                        <div>
+                          <div className="text-2xl font-bold text-green-700">${calculateTotalEarnings()}</div>
+                          <div className="text-sm text-green-600">Total Earned</div>
+                        </div>
                       </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <span className="flex items-center">
-                          <Badge variant="outline" className="bg-primary-50 text-primary-800 mr-2">2</Badge>
-                          Level 2
-                        </span>
-                        <span>5%</span>
-                        <span>{isLoadingReferrals ? "-" : referrals && referrals['2'] ? referrals['2'].length : 0}</span>
-                        <span className="text-green-600">{formatCurrency(calculateLevelEarnings(2), 'USDT')}</span>
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <span className="flex items-center">
-                          <Badge variant="outline" className="bg-primary-50 text-primary-800 mr-2">3</Badge>
-                          Level 3
-                        </span>
-                        <span>3%</span>
-                        <span>{isLoadingReferrals ? "-" : referrals && referrals['3'] ? referrals['3'].length : 0}</span>
-                        <span className="text-green-600">{formatCurrency(calculateLevelEarnings(3), 'USDT')}</span>
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <span className="flex items-center">
-                          <Badge variant="outline" className="bg-primary-50 text-primary-800 mr-2">4</Badge>
-                          Level 4
-                        </span>
-                        <span>2%</span>
-                        <span>{isLoadingReferrals ? "-" : referrals && referrals['4'] ? referrals['4'].length : 0}</span>
-                        <span className="text-green-600">{formatCurrency(calculateLevelEarnings(4), 'USDT')}</span>
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <span className="flex items-center">
-                          <Badge variant="outline" className="bg-primary-50 text-primary-800 mr-2">5</Badge>
-                          Level 5
-                        </span>
-                        <span>1%</span>
-                        <span>{isLoadingReferrals ? "-" : referrals && referrals['5'] ? referrals['5'].length : 0}</span>
-                        <span className="text-green-600">{formatCurrency(calculateLevelEarnings(5), 'USDT')}</span>
+                    </div>
+
+                    <div className="mt-6 space-y-4">
+                      <h4 className="font-semibold">How it works:</h4>
+                      <div className="space-y-2 text-sm text-gray-600">
+                        <div className="flex items-center">
+                          <span className="w-6 h-6 rounded-full bg-primary-500 text-white text-xs flex items-center justify-center mr-3">1</span>
+                          Share your referral link with friends
+                        </div>
+                        <div className="flex items-center">
+                          <span className="w-6 h-6 rounded-full bg-primary-500 text-white text-xs flex items-center justify-center mr-3">2</span>
+                          Friend registers and makes their first investment
+                        </div>
+                        <div className="flex items-center">
+                          <span className="w-6 h-6 rounded-full bg-primary-500 text-white text-xs flex items-center justify-center mr-3">3</span>
+                          You receive $20 in your account instantly
+                        </div>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
               </div>
-              
+
               <div>
                 <ReferralTools 
                   referralCode={user?.referralCode || ''} 
@@ -327,67 +289,51 @@ export default function UserReferrals() {
                 />
               </div>
             </div>
-            
+
             <Card>
               <CardHeader>
-                <CardTitle>Referral Details</CardTitle>
+                <CardTitle>My Referrals</CardTitle>
                 <CardDescription>
-                  View detailed information about your referrals at each level
+                  View all your successful referrals and earnings
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Tabs value={activeTab} onValueChange={setActiveTab}>
-                  <TabsList className="mb-4">
-                    <TabsTrigger value="1">Level 1</TabsTrigger>
-                    <TabsTrigger value="2">Level 2</TabsTrigger>
-                    <TabsTrigger value="3">Level 3</TabsTrigger>
-                    <TabsTrigger value="4">Level 4</TabsTrigger>
-                    <TabsTrigger value="5">Level 5</TabsTrigger>
-                  </TabsList>
-                  
-                  {[1, 2, 3, 4, 5].map(level => (
-                    <TabsContent key={level} value={level.toString()}>
-                      {isLoadingReferrals ? (
-                        <div className="py-8 text-center">
-                          <p>Loading referrals...</p>
-                        </div>
-                      ) : referrals && referrals[level.toString()] && referrals[level.toString()].length > 0 ? (
-                        <DataTable 
-                          columns={columns} 
-                          data={referrals[level.toString()]} 
-                          searchColumn="commissionRate"
-                          searchPlaceholder="Search referrals..."
-                        />
-                      ) : (
-                        <div className="py-8 text-center">
-                          <p className="text-muted-foreground">No level {level} referrals found</p>
-                          {level === 1 && (
-                            <Button 
-                              variant="outline" 
-                              className="mt-4"
-                              onClick={() => {
-                                if (referralLink) {
-                                  navigator.clipboard.writeText(referralLink);
-                                  toast({
-                                    title: "Copied!",
-                                    description: "Referral link copied to clipboard",
-                                  });
-                                }
-                              }}
-                            >
-                              <Share2 className="mr-2 h-4 w-4" />
-                              Share Referral Link
-                            </Button>
-                          )}
-                        </div>
-                      )}
-                    </TabsContent>
-                  ))}
-                </Tabs>
+                {isLoadingReferrals ? (
+                  <div className="py-8 text-center">
+                    <p>Loading referrals...</p>
+                  </div>
+                ) : referrals && referrals['1'] && referrals['1'].length > 0 ? (
+                  <DataTable 
+                    columns={columns} 
+                    data={referrals['1']} 
+                    searchColumn="referredUser.firstName"
+                    searchPlaceholder="Search referrals..."
+                  />
+                ) : (
+                  <div className="py-8 text-center">
+                    <Users className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                    <p className="text-muted-foreground mb-4">No referrals yet</p>
+                    <Button 
+                      variant="outline"
+                      onClick={() => {
+                        if (referralLink) {
+                          navigator.clipboard.writeText(referralLink);
+                          toast({
+                            title: "Copied!",
+                            description: "Referral link copied to clipboard",
+                          });
+                        }
+                      }}
+                    >
+                      <Share2 className="mr-2 h-4 w-4" />
+                      Share Referral Link
+                    </Button>
+                  </div>
+                )}
               </CardContent>
               <CardFooter className="border-t pt-6">
                 <p className="text-sm text-muted-foreground">
-                  The more people you refer, the more you earn! Share your referral link and build your network.
+                  Start sharing your referral link to earn $20 for every friend who joins and invests!
                 </p>
               </CardFooter>
             </Card>

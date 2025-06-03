@@ -16,6 +16,11 @@ import {
   insertNotificationSchema,
 } from "@shared/schema";
 import { createPaypalOrder, capturePaypalOrder, loadPaypalDefault } from "./paypal";
+import express from 'express';
+import { nanoid } from 'nanoid';
+import { authenticateToken } from './db-compatibility.js';
+import PayPal from './paypal.js';
+import { Decimal } from 'decimal.js';
 
 // Define session interface
 declare module "express-session" {
@@ -172,120 +177,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Authentication Routes
-  app.post("/api/auth/register", async (req, res) => {
+  // const router = express.Router(); //Router moved above
+  const router = express.Router();
+  const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+
+  // Auth routes
+  router.post('/api/auth/register', async (req, res) => {
     try {
-      const validatedData = registerSchema.parse(req.body);
-      
-      // Check if username or email already exists
-      const existingUser = await storage.getUserByEmail(validatedData.email) || 
-                           await storage.getUserByUsername(validatedData.username);
-      
+      const { 
+        email, 
+        password, 
+        firstName, 
+        lastName, 
+        phone, 
+        country, 
+        referralCode 
+      } = req.body;
+
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(email);
       if (existingUser) {
-        return res.status(400).json({ message: "Username or email already exists" });
+        return res.status(400).json({ message: 'User already exists with this email' });
       }
-      
+
       // Hash password
       const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(validatedData.password, salt);
-      
-      // Handle referral code
+      const hashedPassword = await bcrypt.hash(password, salt);
+
+      // Generate username and referral code
+      const username = `${firstName.toLowerCase()}${Math.random().toString(36).substr(2, 9)}`;
+      const userReferralCode = nanoid(8);
+
+      // Find referrer if referral code provided
       let referredBy = undefined;
-      if (validatedData.referralCode) {
-        const referrer = await storage.getUserByReferralCode(validatedData.referralCode);
+      if (referralCode) {
+        const referrer = await storage.getUserByReferralCode(referralCode);
         if (referrer) {
           referredBy = referrer.id;
         }
       }
-      
+
       // Create user
       const newUser = await storage.createUser({
-        username: validatedData.username,
+        username,
         password: hashedPassword,
-        email: validatedData.email,
-        firstName: validatedData.firstName,
-        lastName: validatedData.lastName,
-        country: validatedData.country || null,
-        phoneNumber: validatedData.phoneNumber || null,
-        referralCode: validatedData.username.toUpperCase() + Math.random().toString(36).substring(2, 8),
+        email,
+        firstName,
+        lastName,
+        country: country || null,
+        phoneNumber: phone || null,
+        referralCode: userReferralCode,
         referredBy,
         role: "user",
-        active: true
+        active: true,
       });
-      
+
       // Create referral entries if user was referred
       if (referredBy) {
         try {
-          console.log(`Creating referral record for new user ${newUser.id} referred by ${referredBy}`);
-          
-          // Create direct (level 1) referral
           await storage.createReferral({
             referrerId: referredBy,
             referredId: newUser.id,
             level: 1,
-            commissionRate: "10"
+            commissionRate: "20",
+            commissionAmount: '20',
+            status: 'completed'
           });
-          
-          // Check if the referrer has their own referrer (for level 2)
-          const referrer = await storage.getUser(referredBy);
-          if (referrer && referrer.referredBy) {
-            console.log(`Creating level 2 referral: ${referrer.referredBy} -> ${newUser.id}`);
-            await storage.createReferral({
-              referrerId: referrer.referredBy,
-              referredId: newUser.id,
-              level: 2,
-              commissionRate: "5"
-            });
-            
-            // Check for level 3 referrer
-            const level2Referrer = await storage.getUser(referrer.referredBy);
-            if (level2Referrer && level2Referrer.referredBy) {
-              console.log(`Creating level 3 referral: ${level2Referrer.referredBy} -> ${newUser.id}`);
-              await storage.createReferral({
-                referrerId: level2Referrer.referredBy,
-                referredId: newUser.id,
-                level: 3,
-                commissionRate: "3"
-              });
-              
-              // Check for level 4 referrer
-              const level3Referrer = await storage.getUser(level2Referrer.referredBy);
-              if (level3Referrer && level3Referrer.referredBy) {
-                console.log(`Creating level 4 referral: ${level3Referrer.referredBy} -> ${newUser.id}`);
-                await storage.createReferral({
-                  referrerId: level3Referrer.referredBy,
-                  referredId: newUser.id,
-                  level: 4,
-                  commissionRate: "2"
-                });
-                
-                // Check for level 5 referrer
-                const level4Referrer = await storage.getUser(level3Referrer.referredBy);
-                if (level4Referrer && level4Referrer.referredBy) {
-                  console.log(`Creating level 5 referral: ${level4Referrer.referredBy} -> ${newUser.id}`);
-                  await storage.createReferral({
-                    referrerId: level4Referrer.referredBy,
-                    referredId: newUser.id,
-                    level: 5,
-                    commissionRate: "1"
-                  });
-                }
-              }
-            }
-          }
+
+          // Add $20 bonus to referrer's wallet
+          await storage.updateUserWallet(referredBy, '20', 'add');
+
+          await storage.createTransaction({
+            userId: referredBy,
+            type: 'referral_bonus',
+            amount: '20',
+            currency: 'USD',
+            status: 'completed',
+            description: `Referral bonus for inviting ${firstName} ${lastName}`
+          });
         } catch (err) {
           console.error("Error creating referral entries:", err);
-          // Continue registration process even if referral creation fails
         }
       }
-      
+
       // Generate JWT token
       const token = jwt.sign({ userId: newUser.id }, JWT_SECRET, { expiresIn: "1d" });
-      
+
       // Set user in session
       req.session.userId = newUser.id;
-      
+
       // Return user without password
-      const { password, ...userWithoutPassword } = newUser;
+      const { password: userPassword, ...userWithoutPassword } = newUser;
       res.status(201).json({ 
         message: "User registered successfully", 
         user: userWithoutPassword,
@@ -303,35 +285,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/auth/login", async (req, res) => {
+  router.post('/api/auth/login', async (req, res) => {
     try {
-      const validatedData = loginSchema.parse(req.body);
-      
-      // Find user by email
-      const user = await storage.getUserByEmail(validatedData.email);
+      const { email, password } = req.body;
+
+      const user = await storage.getUserByEmail(email);
       if (!user) {
         return res.status(400).json({ message: "Invalid email or password" });
       }
-      
+
       // Check if user is active
       if (!user.active) {
         return res.status(403).json({ message: "Account is deactivated" });
       }
-      
+
       // Verify password
-      const isPasswordValid = await bcrypt.compare(validatedData.password, user.password);
+      const isPasswordValid = await bcrypt.compare(password, user.password);
       if (!isPasswordValid) {
         return res.status(400).json({ message: "Invalid email or password" });
       }
-      
+
       // Generate JWT token
       const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "1d" });
-      
+
       // Set user in session
       req.session.userId = user.id;
-      
+
       // Return user without password
-      const { password, ...userWithoutPassword } = user;
+      const { password: userPassword, ...userWithoutPassword } = user;
       res.status(200).json({ 
         message: "Login successful", 
         user: userWithoutPassword,
@@ -349,26 +330,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/auth/logout", (req, res) => {
-    req.session.destroy((err) => {
-      if (err) {
-        return res.status(500).json({ message: "Logout failed" });
-      }
-      res.status(200).json({ message: "Logout successful" });
-    });
-  });
-
-  app.get("/api/auth/me", authMiddleware, async (req, res) => {
+  router.get('/api/auth/me', authMiddleware, async (req, res) => {
     try {
       const userId = req.session.userId;
       const user = await storage.getUser(userId);
-      
+
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-      
+
       // Return user without password
-      const { password, ...userWithoutPassword } = user;
+      const { password: userPassword, ...userWithoutPassword } = user;
       res.status(200).json(userWithoutPassword);
     } catch (error) {
       console.error(error);
@@ -376,50 +348,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Public Routes
-  app.get("/api/plans", async (req, res) => {
-    try {
-      const plans = await storage.getActivePlans();
-      res.status(200).json(plans);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Server error" });
-    }
-  });
-
-  app.post("/api/contact", async (req, res) => {
-    try {
-      const validatedData = insertContactMessageSchema.parse(req.body);
-      const contactMessage = await storage.createContactMessage(validatedData);
-      res.status(201).json({ 
-        message: "Message sent successfully", 
-        id: contactMessage.id 
-      });
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ 
-          message: "Validation error", 
-          errors: error.errors 
-        });
-      }
-      console.error(error);
-      res.status(500).json({ message: "Server error" });
-    }
-  });
-
-  // User Dashboard Routes
-  app.get("/api/user/dashboard", authMiddleware, async (req, res) => {
+  // User dashboard
+  router.get('/api/user/dashboard', authMiddleware, async (req, res) => {
     try {
       const userId = req.session.userId;
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Get referral count and earnings
+      const referrals = await storage.getUserReferrals(userId);
+      const directReferrals = referrals['1'] || [];
+      const referralEarnings = directReferrals.length * 20; // $20 per referral
+
       const stats = await storage.getUserDashboardStats(userId);
       res.status(200).json(stats);
+
     } catch (error) {
-      console.error(error);
+      console.error('Dashboard error:', error);
+      res.status(500).json({ error: 'Failed to get dashboard data' });
+    }
+  });
+  
+  // User referrals
+  router.get('/api/user/referrals', authMiddleware, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      const referrals = await storage.getAllUserReferrals(userId);
+      
+      // Group by level - referrals now already include referred user details
+      const referralsByLevel = {};
+      for (const referral of referrals) {
+        if (!referralsByLevel[referral.level]) {
+          referralsByLevel[referral.level] = [];
+        }
+        referralsByLevel[referral.level].push(referral);
+      }
+      
+      res.status(200).json(referralsByLevel);
+    } catch (error) {
+      console.error("Error fetching referrals:", error);
       res.status(500).json({ message: "Server error" });
     }
   });
 
-  app.get("/api/user/investments", authMiddleware, async (req, res) => {
+  // User investments
+  router.get('/api/user/investments', authMiddleware, async (req, res) => {
     try {
       const userId = req.session.userId;
       const investments = await storage.getUserInvestments(userId);
@@ -439,7 +414,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/user/investments", authMiddleware, async (req, res) => {
+  // User transactions
+  router.get('/api/user/transactions', authMiddleware, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      const transactions = await storage.getUserTransactions(userId);
+      res.status(200).json(transactions);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Plans
+  router.get('/api/plans', async (req, res) => {
+    try {
+      const plans = await storage.getActivePlans();
+      res.status(200).json(plans);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Investments
+  router.post('/api/user/investments', authMiddleware, async (req, res) => {
     try {
       const userId = req.session.userId;
       const validatedData = insertInvestmentSchema.parse({
@@ -502,18 +501,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/user/transactions", authMiddleware, async (req, res) => {
-    try {
-      const userId = req.session.userId;
-      const transactions = await storage.getUserTransactions(userId);
-      res.status(200).json(transactions);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Server error" });
-    }
-  });
-
-  app.post("/api/user/deposits", authMiddleware, async (req, res) => {
+  // Wallet operations
+  router.post('/api/user/deposits', authMiddleware, async (req, res) => {
     try {
       const userId = req.session.userId;
       const validatedData = insertTransactionSchema.parse({
@@ -539,8 +528,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Server error" });
     }
   });
-
-  app.post("/api/user/withdrawals", authMiddleware, async (req, res) => {
+  
+  router.post('/api/user/withdrawals', authMiddleware, async (req, res) => {
     try {
       const userId = req.session.userId;
       const { amount, currency, paymentMethod, transactionDetails } = req.body;
@@ -582,62 +571,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/user/referrals", authMiddleware, async (req, res) => {
-    try {
-      const userId = req.session.userId;
-      console.log(`Fetching referrals for user ID: ${userId}`);
-      const referrals = await storage.getAllUserReferrals(userId);
-      
-      // Group by level - referrals now already include referred user details
-      const referralsByLevel = {};
-      for (const referral of referrals) {
-        if (!referralsByLevel[referral.level]) {
-          referralsByLevel[referral.level] = [];
-        }
-        referralsByLevel[referral.level].push(referral);
-      }
-      
-      console.log(`Grouped referrals by level: ${Object.keys(referralsByLevel).join(', ')}`);
-      console.log(`Total referrals found: ${referrals.length}`);
-      
-      res.status(200).json(referralsByLevel);
-    } catch (error) {
-      console.error("Error fetching referrals:", error);
-      res.status(500).json({ message: "Server error" });
-    }
-  });
-  
-  // Network performance heatmap data endpoint
-  app.get("/api/user/network-performance", authMiddleware, async (req, res) => {
-    try {
-      const userId = req.session.userId;
-      console.log(`Fetching network performance data for user ID: ${userId}`);
-      
-      const performanceData = await storage.getNetworkPerformance(userId);
-      
-      res.status(200).json(performanceData);
-    } catch (error) {
-      console.error("Error fetching network performance data:", error);
-      res.status(500).json({ message: "Server error" });
-    }
-  });
+  // Public Routes
+  // const router = express.Router(); //Router moved above
 
-  app.get("/api/user/referral-code", authMiddleware, async (req, res) => {
+  // Contact Route
+  app.post("/api/contact", async (req, res) => {
     try {
-      const userId = req.session.userId;
-      const user = await storage.getUser(userId);
-      
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-      
-      res.status(200).json({ referralCode: user.referralCode });
+      const validatedData = insertContactMessageSchema.parse(req.body);
+      const contactMessage = await storage.createContactMessage(validatedData);
+      res.status(201).json({ 
+        message: "Message sent successfully", 
+        id: contactMessage.id 
+      });
     } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
       console.error(error);
       res.status(500).json({ message: "Server error" });
     }
   });
-  
+
   // User Messages Routes
   app.get("/api/user/messages/sent", authMiddleware, async (req, res) => {
     try {
@@ -970,7 +927,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!deleted) {
         return res.status(404).json({ message: "User not found" });
       }
-      
       res.status(200).json({ message: "User deleted successfully" });
     } catch (error) {
       console.error(error);
@@ -1525,6 +1481,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Server error" });
     }
   });
+  app.use('/api', router);
 
   const httpServer = createServer(app);
 
