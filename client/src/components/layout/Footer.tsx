@@ -1,5 +1,5 @@
 import { Link } from 'wouter';
-import logoImage from '@/assets/logoo.png';
+import Logo from '@/components/Logo';
 import { Facebook, Twitter, Instagram, Linkedin, Mail, Send, CreditCard, Bitcoin } from 'lucide-react';
 
 export default function Footer() {
@@ -9,7 +9,7 @@ export default function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center mb-4">
-              <img src={logoImage} alt="MillionaireWith$25 Logo" className="h-10 w-auto mr-2" />
+              <Logo size="md" className="mr-3" />
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-yellow-500 font-heading font-bold text-xl">MW$25</span>
             </div>
             <p className="mt-2 text-base text-gray-300">
