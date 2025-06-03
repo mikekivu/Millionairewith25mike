@@ -35,27 +35,41 @@ export default function Logo({ className = '', size = 'md' }: LogoProps) {
         {/* Main circle */}
         <circle cx="50" cy="50" r="45" fill="url(#logoGradient)" stroke="#06b6d4" strokeWidth="2"/>
 
-        {/* Dollar sign */}
-        <path
-          d="M50 15 L50 25 M50 75 L50 85 M42 30 Q42 25 47 25 L53 25 Q58 25 58 30 Q58 35 53 35 L47 35 M47 35 L53 35 Q58 35 58 40 Q58 45 53 45 L47 45 Q42 45 42 50 Q42 55 47 55 L53 55 Q58 55 58 60 Q58 65 53 65 L47 65 Q42 65 42 70"
-          stroke="url(#textGradient)"
-          strokeWidth="3"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fill="none"
-        />
+        {/* PG Letters */}
+        <text
+          x="35"
+          y="58"
+          textAnchor="middle"
+          fill="url(#textGradient)"
+          fontSize="20"
+          fontWeight="bold"
+          fontFamily="Arial, sans-serif"
+        >
+          P
+        </text>
+        <text
+          x="65"
+          y="58"
+          textAnchor="middle"
+          fill="url(#textGradient)"
+          fontSize="20"
+          fontWeight="bold"
+          fontFamily="Arial, sans-serif"
+        >
+          G
+        </text>
 
-        {/* Number 25 */}
+        {/* Prosperity Groups text */}
         <text
           x="50"
           y="78"
           textAnchor="middle"
           fill="url(#textGradient)"
-          fontSize="12"
+          fontSize="8"
           fontWeight="bold"
           fontFamily="Arial, sans-serif"
         >
-          25
+          Groups
         </text>
 
         {/* Decorative stars */}
