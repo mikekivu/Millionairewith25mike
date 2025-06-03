@@ -100,7 +100,7 @@ export default function AdminSidebar() {
           {/* Logo and Brand */}
           <div className="flex items-center justify-center mb-8">
             <Logo size="lg" className="shadow-lg" />
-            <div className="ml-2"></div>
+            <div className="ml-2">
               <h1 className="text-xl font-bold text-white">
                 <span className="text-orange-500">Millionare</span>
                 <span className="text-yellow-400">With$25</span>
