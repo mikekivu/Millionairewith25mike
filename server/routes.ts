@@ -132,11 +132,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Authentication Routes
-  // const router = express.Router(); //Router moved above
   const router = express.Router();
 
   // Auth routes
-  router.post('/api/auth/register', async (req, res) => {
+  router.post('/auth/register', async (req, res) => {
     try {
       const { 
         email, 
@@ -239,7 +238,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  router.post('/api/auth/login', async (req, res) => {
+  router.post('/auth/login', async (req, res) => {
     try {
       const { email, password } = req.body;
 
@@ -297,7 +296,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  router.get('/api/auth/me', authMiddleware, async (req, res) => {
+  router.get('/auth/me', authMiddleware, async (req, res) => {
     try {
       const userId = req.session.userId;
       const user = await storage.getUser(userId);
@@ -316,7 +315,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // User dashboard
-  router.get('/api/user/dashboard', authMiddleware, async (req, res) => {
+  router.get('/user/dashboard', authMiddleware, async (req, res) => {
     try {
       const userId = req.session.userId;
       const user = await storage.getUser(userId);
@@ -339,7 +338,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // User referrals
-  router.get('/api/user/referrals', authMiddleware, async (req, res) => {
+  router.get('/user/referrals', authMiddleware, async (req, res) => {
     try {
       const userId = req.session.userId;
       const referrals = await storage.getAllUserReferrals(userId);
@@ -361,7 +360,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // User investments
-  router.get('/api/user/investments', authMiddleware, async (req, res) => {
+  router.get('/user/investments', authMiddleware, async (req, res) => {
     try {
       const userId = req.session.userId;
       const investments = await storage.getUserInvestments(userId);
@@ -382,7 +381,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // User transactions
-  router.get('/api/user/transactions', authMiddleware, async (req, res) => {
+  router.get('/user/transactions', authMiddleware, async (req, res) => {
     try {
       const userId = req.session.userId;
       const transactions = await storage.getUserTransactions(userId);
@@ -394,7 +393,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Plans
-  router.get('/api/plans', async (req, res) => {
+  router.get('/plans', async (req, res) => {
     try {
       const plans = await storage.getActivePlans();
       res.status(200).json(plans);
@@ -405,7 +404,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Investments
-  router.post('/api/user/investments', authMiddleware, async (req, res) => {
+  router.post('/user/investments', authMiddleware, async (req, res) => {
     try {
       const userId = req.session.userId;
       const validatedData = insertInvestmentSchema.parse({
@@ -469,7 +468,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Wallet operations
-  router.post('/api/user/deposits', authMiddleware, async (req, res) => {
+  router.post('/user/deposits', authMiddleware, async (req, res) => {
     try {
       const userId = req.session.userId;
       const validatedData = insertTransactionSchema.parse({
@@ -496,7 +495,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  router.post('/api/user/withdrawals', authMiddleware, async (req, res) => {
+  router.post('/user/withdrawals', authMiddleware, async (req, res) => {
     try {
       const userId = req.session.userId;
       const { amount, currency, paymentMethod, transactionDetails } = req.body;
@@ -538,8 +537,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Mount the API router
+  app.use('/api', router);
+
   // Public Routes
-  // const router = express.Router(); //Router moved above
 
   // Contact Route
   app.post("/api/contact", async (req, res) => {
@@ -1499,8 +1500,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Server error" });
     }
   });
-  app.use('/api', router);
-
   const httpServer = createServer(app);
 
   return httpServer;
