@@ -82,12 +82,8 @@ export function useAuth() {
         throw new Error('Invalid response format from server');
       }
 
-      if (!data.success) {
-          throw new Error(data.message || 'Login failed');
-      }
-
       if (!data.token) {
-        throw new Error('No authentication token received');
+        throw new Error(data.message || 'No authentication token received');
       }
 
       // Store token in localStorage
@@ -143,12 +139,8 @@ export function useAuth() {
         throw new Error('Invalid response format from server');
       }
 
-       if (!data.success) {
-          throw new Error(data.message || 'Registration failed');
-      }
-
-      if (!data.token) {
-        throw new Error('No authentication token received');
+       if (!data.token) {
+        throw new Error(data.message || 'No authentication token received');
       }
 
       // Store token in localStorage
