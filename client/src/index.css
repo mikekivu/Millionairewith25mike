@@ -3,48 +3,48 @@
 @tailwind utilities;
 
 :root {
-  --background: 210 20% 98%;
-  --foreground: 222 84% 4.9%;
-  --muted: 210 40% 96%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-  --popover: 210 20% 98%;
-  --popover-foreground: 222 84% 4.9%;
-  --card: 210 20% 98%;
-  --card-foreground: 222 84% 4.9%;
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
-  --primary: 221 83% 53%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 210 40% 96%;
-  --secondary-foreground: 222.2 84% 4.9%;
-  --accent: 210 40% 96%;
-  --accent-foreground: 222.2 84% 4.9%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
-  --ring: 221 83% 53%;
+  --background: 220 100% 97%;
+  --foreground: 220 85% 6%;
+  --muted: 220 14% 91%;
+  --muted-foreground: 220 8% 46%;
+  --popover: 220 100% 98%;
+  --popover-foreground: 220 85% 6%;
+  --card: 220 100% 98%;
+  --card-foreground: 220 85% 6%;
+  --border: 220 13% 91%;
+  --input: 220 13% 91%;
+  --primary: 211 100% 50%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 220 14% 91%;
+  --secondary-foreground: 220 85% 6%;
+  --accent: 25 95% 53%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --ring: 211 100% 50%;
   --radius: 0.75rem;
 }
 
 .dark {
-  --background: 222.2 84% 4.9%;
-  --foreground: 210 40% 98%;
-  --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%;
-  --popover: 222.2 84% 4.9%;
-  --popover-foreground: 210 40% 98%;
-  --card: 222.2 84% 4.9%;
-  --card-foreground: 210 40% 98%;
-  --border: 217.2 32.6% 17.5%;
-  --input: 217.2 32.6% 17.5%;
-  --primary: 217.2 91.2% 59.8%;
-  --primary-foreground: 222.2 84% 4.9%;
-  --secondary: 217.2 32.6% 17.5%;
-  --secondary-foreground: 210 40% 98%;
-  --accent: 217.2 32.6% 17.5%;
-  --accent-foreground: 210 40% 98%;
-  --destructive: 0 72.2% 50.6%;
-  --destructive-foreground: 210 40% 98%;
-  --ring: 217.2 91.2% 59.8%;
+  --background: 220 84% 4%;
+  --foreground: 220 40% 98%;
+  --muted: 220 32% 17%;
+  --muted-foreground: 220 20% 65%;
+  --popover: 220 84% 4%;
+  --popover-foreground: 220 40% 98%;
+  --card: 220 84% 4%;
+  --card-foreground: 220 40% 98%;
+  --border: 220 32% 17%;
+  --input: 220 32% 17%;
+  --primary: 211 100% 60%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 220 32% 17%;
+  --secondary-foreground: 220 40% 98%;
+  --accent: 25 95% 60%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --ring: 211 100% 60%;
   --radius: 0.75rem;
 }
 
@@ -60,24 +60,24 @@
 
 /* Custom styling for the logo and branding */
 .logo-img {
-  filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.5));
+  filter: drop-shadow(0 0 8px rgba(0, 102, 255, 0.5));
   transition: transform 0.3s ease, filter 0.3s ease;
 }
 
 .logo-img:hover {
   transform: scale(1.05);
-  filter: drop-shadow(0 0 12px rgba(59, 130, 246, 0.7));
+  filter: drop-shadow(0 0 12px rgba(0, 102, 255, 0.7));
 }
 
 .gradient-text {
-  background: linear-gradient(to right, #3b82f6, #06b6d4, #10b981);
+  background: linear-gradient(to right, #0066ff, #0099ff, #ff6600);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .gold-gradient-text {
-  background: linear-gradient(to right, #06b6d4, #3b82f6, #8b5cf6);
+  background: linear-gradient(to right, #ff6600, #ff8833, #0066ff);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -85,7 +85,7 @@
 
 /* Enhanced UI Components */
 .dashboard-card {
-  @apply bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden transition-all duration-300 hover:shadow-xl;
+  @apply bg-card dark:bg-card rounded-xl shadow-lg border border-border dark:border-border overflow-hidden transition-all duration-300 hover:shadow-xl;
 }
 
 .sidebar-link-active {
@@ -94,7 +94,7 @@
 
 .sidebar-link-active::after {
   content: '';
-  @apply absolute right-0 top-1/2 transform -translate-y-1/2 h-8 w-1 bg-blue-500 rounded-l;
+  @apply absolute right-0 top-1/2 transform -translate-y-1/2 h-8 w-1 bg-primary rounded-l;
 }
 
 /* Fix for nested anchor tag issues */
@@ -163,7 +163,7 @@ button:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
-  outline: 2px solid #f97316;
+  outline: 2px solid hsl(var(--accent));
   outline-offset: 2px;
 }
 
