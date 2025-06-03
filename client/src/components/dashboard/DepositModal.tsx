@@ -395,7 +395,7 @@ export default function DepositModal({ open, onOpenChange }: DepositModalProps) 
               </Button>
             </DialogFooter>
           </>
-        )}
+        ) : null}
       </DialogContent>
     </Dialog>
   );
