@@ -1,7 +1,5 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
-const API_BASE_URL = '';
-
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
@@ -25,7 +23,7 @@ export async function apiRequest(method: string, endpoint: string, data?: any) {
     config.body = JSON.stringify(data);
   }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+  const response = await fetch(endpoint, config);
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({ 
