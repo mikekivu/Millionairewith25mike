@@ -40,31 +40,31 @@ export default function Hero() {
                 <TrendingUp className="h-4 w-4 mr-2" />
                 Start with just $25 and grow your wealth
               </div>
-              
+
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold font-heading leading-tight">
                 <span className="block bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-yellow-500">Grow your wealth</span>
                 <span className="block text-gray-900">with intelligent investing</span>
               </h1>
-              
+
               <p className="mt-5 text-lg text-gray-600 max-w-2xl">
                 Join our exclusive platform combining strategic investments with multi-level network marketing. Build your team, earn referral commissions, and achieve financial freedom.
               </p>
             </div>
-            
+
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href="/register">
-                <div className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 shadow-lg shadow-orange-500/20 cursor-pointer">
+                <div className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 shadow-lg shadow-purple-500/20 cursor-pointer">
                   Get started now <ArrowRight className="ml-2 h-5 w-5" />
                 </div>
               </Link>
-              
+
               <Link href="#plans">
                 <div className="inline-flex items-center justify-center px-6 py-3 border border-orange-300 text-base font-medium rounded-md text-orange-600 bg-white hover:bg-orange-50 cursor-pointer">
                   View investment plans
                 </div>
               </Link>
             </div>
-            
+
             <div className="grid grid-cols-3 gap-4">
               <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-lg">
                 <div className="flex gap-2 items-center text-orange-600 font-semibold mb-1">
@@ -73,7 +73,7 @@ export default function Hero() {
                 </div>
                 <p className="text-sm text-gray-600">Minimum deposit to start</p>
               </div>
-              
+
               <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 p-4 rounded-lg">
                 <div className="flex gap-2 items-center text-orange-600 font-semibold mb-1">
                   <TrendingUp className="h-4 w-4" />
@@ -81,7 +81,7 @@ export default function Hero() {
                 </div>
                 <p className="text-sm text-gray-600">Monthly ROI</p>
               </div>
-              
+
               <div className="bg-gradient-to-br from-amber-50 to-amber-100 p-4 rounded-lg">
                 <div className="flex gap-2 items-center text-orange-600 font-semibold mb-1">
                   <Users className="h-4 w-4" />
@@ -91,17 +91,17 @@ export default function Hero() {
               </div>
             </div>
           </div>
-          
+
           {/* Visualizations */}
           <div className="relative">
             <div className="absolute -top-10 -right-10 w-64 h-64 bg-yellow-300 rounded-full mix-blend-multiply filter blur-2xl opacity-20"></div>
             <div className="absolute -bottom-8 -left-8 w-64 h-64 bg-orange-300 rounded-full mix-blend-multiply filter blur-2xl opacity-20"></div>
-            
+
             <div className="relative bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
               <div className="bg-gradient-to-r from-orange-500 to-yellow-500 py-4 px-6">
                 <h3 className="text-white font-semibold text-lg">Platform Analytics</h3>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
                 <div className="p-4 border-b md:border-b-0 md:border-r border-gray-100">
                   <h4 className="text-gray-600 font-medium mb-2">Profit Growth</h4>
@@ -122,7 +122,7 @@ export default function Hero() {
                     </ResponsiveContainer>
                   </div>
                 </div>
-                
+
                 <div className="p-4">
                   <h4 className="text-gray-600 font-medium mb-2">Network Distribution</h4>
                   <div className="h-48 flex items-center justify-center">
@@ -148,7 +148,7 @@ export default function Hero() {
                     </ResponsiveContainer>
                   </div>
                 </div>
-                
+
                 <div className="p-4 col-span-1 md:col-span-2 border-t border-gray-100">
                   <h4 className="text-gray-600 font-medium mb-2">Investment Plans</h4>
                   <div className="h-48">
@@ -170,7 +170,7 @@ export default function Hero() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="px-6 py-3 border-t border-gray-100 bg-gray-50">
                 <Link href="#plans">
                   <div className="text-orange-600 flex items-center text-sm font-medium hover:text-orange-700 cursor-pointer">

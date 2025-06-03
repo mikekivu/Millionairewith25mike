@@ -24,17 +24,17 @@ export default function Logo({ className = '', size = 'md' }: LogoProps) {
         {/* Background circle with gradient */}
         <defs>
           <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style={{ stopColor: '#f97316', stopOpacity: 1 }} />
-            <stop offset="100%" style={{ stopColor: '#eab308', stopOpacity: 1 }} />
+            <stop offset="0%" style={{ stopColor: '#8b5cf6', stopOpacity: 1 }} />
+            <stop offset="100%" style={{ stopColor: '#3b82f6', stopOpacity: 1 }} />
           </linearGradient>
           <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" style={{ stopColor: '#ffffff', stopOpacity: 1 }} />
-            <stop offset="100%" style={{ stopColor: '#fef3c7', stopOpacity: 1 }} />
+            <stop offset="100%" style={{ stopColor: '#e0e7ff', stopOpacity: 1 }} />
           </linearGradient>
         </defs>
         
         {/* Main circle */}
-        <circle cx="50" cy="50" r="45" fill="url(#logoGradient)" stroke="#f59e0b" strokeWidth="2"/>
+        <circle cx="50" cy="50" r="45" fill="url(#logoGradient)" stroke="#6366f1" strokeWidth="2"/>
         
         {/* Dollar sign */}
         <path

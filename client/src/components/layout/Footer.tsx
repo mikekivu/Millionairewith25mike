@@ -10,7 +10,7 @@ export default function Footer() {
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center mb-4">
               <Logo size="md" className="mr-3" />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-yellow-500 font-heading font-bold text-xl">PG</span>
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-blue-500 font-heading font-bold text-xl">PG</span>
             </div>
             <p className="mt-2 text-base text-gray-300">
               A leading investment platform combining strategic investments with innovative multi-level network marketing.
