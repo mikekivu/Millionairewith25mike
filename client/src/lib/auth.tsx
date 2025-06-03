@@ -82,7 +82,7 @@ export function useAuth() {
       const data = await response.json();
       console.log('Login response data:', data);
 
-      if (!data.token) {
+      if (!data.success || !data.token) {
         throw new Error(data.message || 'No authentication token received');
       }
 

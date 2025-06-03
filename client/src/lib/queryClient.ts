@@ -7,23 +7,18 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
-export async function apiRequest(
-  method: string,
-  url: string,
-  data?: any,
-  timeout = 30000
-): Promise<Response> {
+export async function apiRequest(method: string, url: string, data?: any, timeout = 30000): Promise<Response> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
 
   try {
+    const token = localStorage.getItem('token');
+
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
     };
 
-    // Add auth token if available
-    const token = localStorage.getItem('token');
     if (token) {
       headers.Authorization = `Bearer ${token}`;
     }
