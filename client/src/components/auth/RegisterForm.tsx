@@ -266,21 +266,19 @@ export default function RegisterForm() {
                   <div className="space-y-1 leading-none">
                     <FormLabel>
                       I agree to the{' '}
-                      <button
-                        type="button"
+                      <span
                         onClick={() => navigate('/terms')}
-                        className="text-primary-600 hover:text-primary-500 underline bg-transparent border-none cursor-pointer"
+                        className="text-primary-600 hover:text-primary-500 underline cursor-pointer"
                       >
                         Terms of Service
-                      </button>
+                      </span>
                       {' '}and{' '}
-                      <button
-                        type="button"
+                      <span
                         onClick={() => navigate('/terms')}
-                        className="text-primary-600 hover:text-primary-500 underline bg-transparent border-none cursor-pointer"
+                        className="text-primary-600 hover:text-primary-500 underline cursor-pointer"
                       >
                         Privacy Policy
-                      </button>
+                      </span>
                     </FormLabel>
                     <FormMessage />
                   </div>
@@ -301,13 +299,12 @@ export default function RegisterForm() {
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
             Already have an account?{' '}
-            <button
-              type="button"
+            <span
               onClick={() => navigate('/login')}
-              className="text-primary-600 hover:text-primary-500 font-medium underline bg-transparent border-none cursor-pointer"
+              className="text-primary-600 hover:text-primary-500 font-medium underline cursor-pointer"
             >
               Login
-            </button>
+            </span>
           </p>
         </div>
       </CardContent>

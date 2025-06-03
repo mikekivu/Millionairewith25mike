@@ -147,13 +147,12 @@ export default function LoginForm() {
                 )}
               />
 
-              <button
-                type="button"
+              <span
                 onClick={() => navigate('/forgot-password')}
-                className="text-sm text-primary-600 hover:text-primary-500 underline bg-transparent border-none cursor-pointer"
+                className="text-sm text-primary-600 hover:text-primary-500 underline cursor-pointer"
               >
                 Forgot password?
-              </button>
+              </span>
             </div>
 
             <Button 
@@ -169,13 +168,12 @@ export default function LoginForm() {
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
             Don't have an account?{' '}
-            <button
-              type="button"
+            <span
               onClick={() => navigate('/register')}
-              className="text-primary-600 hover:text-primary-500 font-medium underline bg-transparent border-none cursor-pointer"
+              className="text-primary-600 hover:text-primary-500 font-medium underline cursor-pointer"
             >
               Register now
-            </button>
+            </span>
           </p>
         </div>
       </CardContent>

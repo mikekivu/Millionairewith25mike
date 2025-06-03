@@ -48,6 +48,12 @@ export function useAuth() {
   const login = async (credentials: LoginData) => {
     try {
       const response = await apiRequest('POST', '/api/auth/login', credentials);
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Network error' }));
+        throw new Error(errorData.message || `Login failed with status ${response.status}`);
+      }
+
       const data = await response.json();
 
       if (!data.success || !data.token) {
@@ -63,13 +69,22 @@ export function useAuth() {
       return data;
     } catch (error) {
       console.error('Login error:', error);
-      throw error;
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('An unexpected error occurred during login');
     }
   };
 
   const register = async (userData: RegisterData) => {
     try {
       const response = await apiRequest('POST', '/api/auth/register', userData);
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Network error' }));
+        throw new Error(errorData.message || `Registration failed with status ${response.status}`);
+      }
+
       const data = await response.json();
 
       if (!data.token) {
@@ -85,7 +100,10 @@ export function useAuth() {
       return data;
     } catch (error) {
       console.error('Register error:', error);
-      throw error;
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('An unexpected error occurred during registration');
     }
   };
 
