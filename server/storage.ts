@@ -844,7 +844,9 @@ export class MemStorage implements IStorage {
       activeInvestments,
       referralCount
     };
-    async getNetworkPerformance(userId: number): Promise<any> {
+  }
+
+  async getNetworkPerformance(userId: number): Promise<any> {
     const user = await this.getUser(userId);
     if (!user) {
       throw new Error(`User with id ${userId} not found`);
