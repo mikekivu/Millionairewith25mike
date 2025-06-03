@@ -48,6 +48,7 @@ export interface IStorage {
   getAllTransactions(): Promise<Transaction[]>;
   getTransactionsByType(type: string): Promise<Transaction[]>;
   updateTransaction(id: number, transaction: Partial<Transaction>): Promise<Transaction | undefined>;
+  getTransactionByReference(reference: string): Promise<Transaction | undefined>;
 
   // Referral Management
   createReferral(referral: InsertReferral): Promise<Referral>;

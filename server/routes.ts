@@ -537,6 +537,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // PayPal Routes
+  app.get("/api/paypal/client-token", async (req, res) => {
+    try {
+      const clientToken = await import('./paypal').then(m => m.getClientToken());
+      res.json({ clientToken });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Failed to get client token" });
+    }
+  });
+
+  app.post("/api/paypal/create-order", async (req, res) => {
+    const { createPaypalOrder } = await import('./paypal');
+    await createPaypalOrder(req, res);
+  });
+
+  app.post("/api/paypal/capture-order/:orderID", async (req, res) => {
+    const { capturePaypalOrder } = await import('./paypal');
+    await capturePaypalOrder(req, res);
+  });
+
+  // Pesapal Routes
+  app.post("/api/pesapal/create-order", async (req, res) => {
+    const { createPesapalOrder } = await import('./pesapal');
+    await createPesapalOrder(req, res);
+  });
+
+  app.get("/api/pesapal/callback", async (req, res) => {
+    const { handlePesapalCallback } = await import('./pesapal');
+    await handlePesapalCallback(req, res);
+  });
+
+  app.post("/api/pesapal/ipn", async (req, res) => {
+    const { handlePesapalIPN } = await import('./pesapal');
+    await handlePesapalIPN(req, res);
+  });
+
+  app.get("/api/pesapal/transaction-status/:orderTrackingId", async (req, res) => {
+    const { getPesapalTransactionStatus } = await import('./pesapal');
+    await getPesapalTransactionStatus(req, res);
+  });
+
   // Mount the API router
   app.use('/api', router);
 

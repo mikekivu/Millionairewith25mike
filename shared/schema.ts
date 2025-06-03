@@ -66,6 +66,7 @@ export const transactions = pgTable("transactions", {
   receiptUrl: text("receipt_url"), // URL to download the receipt
   investmentId: integer("investment_id").references(() => investments.id),
   referralId: integer("referral_id").references(() => referrals.id),
+  paymentReference: text("payment_reference"),
 });
 
 // Referrals
@@ -296,3 +297,15 @@ export const registerSchema = insertUserSchema
 
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
+
+export const insertTransactionSchemaZod = z.object({
+  userId: z.number(),
+  type: z.enum(["deposit", "withdrawal", "investment", "profit", "referral_bonus"]),
+  amount: z.string(),
+  currency: z.string().default("USD"),
+  status: z.enum(["pending", "completed", "failed"]).default("pending"),
+  paymentMethod: z.string().optional(),
+  transactionDetails: z.string().optional(),
+  description: z.string().optional(),
+  paymentReference: z.string().optional(),
+});

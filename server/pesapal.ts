@@ -1,8 +1,17 @@
+
 import { Request, Response } from 'express';
+import { storage } from './storage';
+
+// Pesapal API configuration
+const PESAPAL_CONSUMER_KEY = process.env.PESAPAL_CONSUMER_KEY;
+const PESAPAL_CONSUMER_SECRET = process.env.PESAPAL_CONSUMER_SECRET;
+const PESAPAL_BASE_URL = process.env.NODE_ENV === 'production' 
+  ? 'https://pay.pesapal.com/v3' 
+  : 'https://cybqa.pesapal.com/pesapalv3';
 
 export async function createPesapalOrder(req: Request, res: Response) {
   try {
-    const { amount, currency, email, description } = req.body;
+    const { amount, currency = 'KES', email, description, userId, type = 'deposit' } = req.body;
 
     if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
       return res.status(400).json({
@@ -14,15 +23,77 @@ export async function createPesapalOrder(req: Request, res: Response) {
       return res.status(400).json({ error: "Email is required." });
     }
 
-    // Simulate order creation
+    if (!userId) {
+      return res.status(400).json({ error: "User ID is required." });
+    }
+
+    // Verify user exists
+    const user = await storage.getUser(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    // For withdrawals, check if user has sufficient balance
+    if (type === 'withdrawal') {
+      const walletBalance = parseFloat(user.walletBalance);
+      if (walletBalance < parseFloat(amount)) {
+        return res.status(400).json({
+          error: "Insufficient wallet balance for withdrawal.",
+        });
+      }
+    }
+
+    // Generate order ID
     const orderId = `PESAPAL_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    if (!PESAPAL_CONSUMER_KEY || !PESAPAL_CONSUMER_SECRET) {
+      // Demo mode
+      await storage.createTransaction({
+        userId,
+        type,
+        amount,
+        currency,
+        status: "pending",
+        paymentMethod: "pesapal",
+        transactionDetails: `Pesapal ${type}: ${orderId}`,
+        paymentReference: orderId
+      });
+
+      return res.json({
+        order_tracking_id: orderId,
+        merchant_reference: orderId,
+        redirect_url: `${req.protocol}://${req.get('host')}/dashboard/wallet?payment=pesapal&status=pending&tracking_id=${orderId}`,
+        status: "pending",
+        orderId: orderId
+      });
+    }
+
+    // Real Pesapal integration would go here
+    // For now, we'll simulate the API call
+    
+    // Create pending transaction
+    await storage.createTransaction({
+      userId,
+      type,
+      amount,
+      currency,
+      status: "pending",
+      paymentMethod: "pesapal",
+      transactionDetails: `Pesapal ${type}: ${orderId}`,
+      paymentReference: orderId
+    });
+
+    const callbackUrl = `${req.protocol}://${req.get('host')}/api/pesapal/callback`;
+    const ipnUrl = `${req.protocol}://${req.get('host')}/api/pesapal/ipn`;
 
     res.json({
       order_tracking_id: orderId,
       merchant_reference: orderId,
-      redirect_url: `#`,
+      redirect_url: `${PESAPAL_BASE_URL}/api/Transactions/SubmitOrderRequest?tracking_id=${orderId}`,
       status: "pending",
-      orderId: orderId
+      orderId: orderId,
+      callback_url: callbackUrl,
+      ipn_url: ipnUrl
     });
   } catch (error) {
     console.error("Failed to create Pesapal order:", error);
@@ -32,10 +103,24 @@ export async function createPesapalOrder(req: Request, res: Response) {
 
 export async function handlePesapalCallback(req: Request, res: Response) {
   try {
-    const { OrderTrackingId } = req.query;
+    const { OrderTrackingId, OrderMerchantReference } = req.query;
 
     if (!OrderTrackingId) {
       return res.status(400).json({ error: "Missing OrderTrackingId" });
+    }
+
+    // In a real implementation, you would verify the transaction status with Pesapal
+    // For demo purposes, we'll mark it as completed
+    const transaction = await storage.getTransactionByReference(OrderTrackingId as string);
+    
+    if (transaction) {
+      await storage.updateTransaction(transaction.id, { status: "completed" });
+      
+      if (transaction.type === 'deposit') {
+        await storage.updateUserWallet(transaction.userId, transaction.amount, 'add');
+      } else if (transaction.type === 'withdrawal') {
+        await storage.updateUserWallet(transaction.userId, transaction.amount, 'subtract');
+      }
     }
 
     const frontendUrl = `${req.protocol}://${req.get('host')}`;
@@ -44,12 +129,30 @@ export async function handlePesapalCallback(req: Request, res: Response) {
     res.redirect(redirectUrl);
   } catch (error) {
     console.error("Failed to handle Pesapal callback:", error);
-    res.status(500).json({ error: "Failed to process callback." });
+    const frontendUrl = `${req.protocol}://${req.get('host')}`;
+    const redirectUrl = `${frontendUrl}/dashboard/wallet?payment=pesapal&status=failed`;
+    res.redirect(redirectUrl);
   }
 }
 
 export async function handlePesapalIPN(req: Request, res: Response) {
   try {
+    const { OrderTrackingId, OrderNotificationType } = req.body;
+
+    if (OrderTrackingId && OrderNotificationType === 'COMPLETED') {
+      const transaction = await storage.getTransactionByReference(OrderTrackingId);
+      
+      if (transaction && transaction.status === 'pending') {
+        await storage.updateTransaction(transaction.id, { status: "completed" });
+        
+        if (transaction.type === 'deposit') {
+          await storage.updateUserWallet(transaction.userId, transaction.amount, 'add');
+        } else if (transaction.type === 'withdrawal') {
+          await storage.updateUserWallet(transaction.userId, transaction.amount, 'subtract');
+        }
+      }
+    }
+
     res.status(200).json({ status: "OK" });
   } catch (error) {
     console.error("Failed to handle Pesapal IPN:", error);
@@ -65,11 +168,26 @@ export async function getPesapalTransactionStatus(req: Request, res: Response) {
       return res.status(400).json({ error: "Order tracking ID is required" });
     }
 
+    // In a real implementation, you would query Pesapal API for the actual status
+    const transaction = await storage.getTransactionByReference(orderTrackingId);
+    
+    if (!transaction) {
+      return res.status(404).json({ error: "Transaction not found" });
+    }
+
+    let status = 0; // Failed
+    if (transaction.status === 'completed') {
+      status = 1; // Completed
+    } else if (transaction.status === 'pending') {
+      status = 2; // Pending
+    }
+
     res.json({
-      status: 1, // Completed
+      status,
       payment_method: "pesapal",
-      amount: "100.00",
-      currency: "KES"
+      amount: transaction.amount,
+      currency: transaction.currency,
+      transaction_status: transaction.status
     });
   } catch (error) {
     console.error("Failed to get Pesapal transaction status:", error);

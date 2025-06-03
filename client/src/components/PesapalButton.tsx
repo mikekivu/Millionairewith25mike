@@ -1,6 +1,8 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { CreditCard } from 'lucide-react';
+import { CreditCard, Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface PesapalButtonProps {
   amount: string;
@@ -10,6 +12,8 @@ interface PesapalButtonProps {
   userPhone?: string;
   userFirstName?: string;
   userLastName?: string;
+  userId: number;
+  type?: 'deposit' | 'withdrawal';
   onSuccess?: (data: any) => void;
   onError?: (error: string) => void;
   disabled?: boolean;
@@ -18,20 +22,87 @@ interface PesapalButtonProps {
 export default function PesapalButton({
   amount,
   currency,
+  description,
+  userEmail,
+  userId,
+  type = 'deposit',
+  onSuccess,
+  onError,
   disabled
 }: PesapalButtonProps) {
-  const handlePesapalClick = () => {
-    alert(`Pesapal payment of ${amount} ${currency} would be processed here.`);
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+
+  const handlePesapalClick = async () => {
+    try {
+      setLoading(true);
+
+      // Create Pesapal order
+      const response = await fetch('/api/pesapal/create-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount,
+          currency,
+          email: userEmail,
+          description: description || `${type === 'deposit' ? 'Wallet Deposit' : 'Wallet Withdrawal'}`,
+          userId,
+          type
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create Pesapal order');
+      }
+
+      if (data.redirect_url && !data.redirect_url.includes('#')) {
+        // Redirect to Pesapal for real payments
+        window.location.href = data.redirect_url;
+      } else {
+        // Demo mode
+        toast({
+          title: "Demo Mode",
+          description: `Pesapal ${type} of ${currency} ${amount} would be processed here.`,
+        });
+
+        // Simulate successful payment after 2 seconds
+        setTimeout(() => {
+          toast({
+            title: "Payment Successful",
+            description: `${type === 'deposit' ? 'Deposit' : 'Withdrawal'} of ${currency} ${amount} completed successfully.`,
+          });
+          onSuccess?.(data);
+        }, 2000);
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Payment failed';
+      toast({
+        title: "Payment Failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      onError?.(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <Button
       onClick={handlePesapalClick}
-      disabled={disabled}
+      disabled={disabled || loading}
       className="w-full bg-green-600 hover:bg-green-700 text-white"
     >
-      <CreditCard className="mr-2 h-4 w-4" />
-      Pay with Pesapal - {currency} {amount}
+      {loading ? (
+        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+      ) : (
+        <CreditCard className="mr-2 h-4 w-4" />
+      )}
+      {loading ? 'Processing...' : `Pay with Pesapal - ${currency} ${amount}`}
     </Button>
   );
 }

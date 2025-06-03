@@ -308,61 +308,27 @@ export class DatabaseStorage implements IStorage {
     }).from(transactions).where(eq(transactions.type, type));
   }
 
-  async updateTransaction(id: number, transactionData: Partial<Transaction>): Promise<Transaction | undefined> {
-    const existingTransaction = await this.getTransaction(id);
-    if (!existingTransaction) {
-      return undefined;
-    }
-
-    // If we're changing status from pending to completed
-    if (
-      existingTransaction.status === "pending" && 
-      transactionData.status === "completed" &&
-      !existingTransaction.investmentId // Not investment-related transactions as they're handled differently
-    ) {
-      // Handle deposit completion
-      if (existingTransaction.type === "deposit") {
-        const user = await this.getUser(existingTransaction.userId);
-        if (user) {
-          const newBalance = parseFloat(user.walletBalance) + parseFloat(existingTransaction.amount);
-          await this.updateUser(user.id, { walletBalance: newBalance.toString() });
-        }
-      }
-
-      // Handle withdrawal completion
-      if (existingTransaction.type === "withdrawal") {
-        const user = await this.getUser(existingTransaction.userId);
-        if (user) {
-          const newBalance = parseFloat(user.walletBalance) - parseFloat(existingTransaction.amount);
-          await this.updateUser(user.id, { walletBalance: Math.max(0, newBalance).toString() });
-        }
-      }
-
-      // Handle referral completion
-      if (existingTransaction.type === "referral" && existingTransaction.referralId) {
-        const referral = await this.getReferral(existingTransaction.referralId);
-        if (referral) {
-          const referrer = await this.getUser(referral.referrerId);
-          if (referrer) {
-            const newBalance = parseFloat(referrer.walletBalance) + parseFloat(existingTransaction.amount);
-            await this.updateUser(referrer.id, { walletBalance: newBalance.toString() });
-
-            // Update referral commission amount
-            await this.updateReferral(referral.id, { 
-              commissionAmount: (parseFloat(referral.commissionAmount) + parseFloat(existingTransaction.amount)).toString() 
-            });
-          }
-        }
-      }
-    }
-
-    const [updatedTransaction] = await db
+  async updateTransaction(id: number, updates: Partial<Transaction>): Promise<Transaction | undefined> {
+    const [updated] = await db
       .update(transactions)
-      .set(transactionData)
+      .set({
+        ...updates,
+        updatedAt: new Date(),
+      })
       .where(eq(transactions.id, id))
       .returning();
 
-    return updatedTransaction;
+    return updated || undefined;
+  }
+
+  async getTransactionByReference(reference: string): Promise<Transaction | null> {
+    const [transaction] = await db
+      .select()
+      .from(transactions)
+      .where(eq(transactions.paymentReference, reference))
+      .limit(1);
+
+    return transaction || null;
   }
 
   // Referral Management
@@ -602,8 +568,6 @@ export class DatabaseStorage implements IStorage {
       .set({ replied: true })
       .where(eq(userMessages.id, id))
       .returning();
-
-    return updatedMessage;
   }
 
   // Notifications Management
