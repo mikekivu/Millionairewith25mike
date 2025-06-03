@@ -117,7 +117,7 @@ export default function UserSidebar() {
               </h1>
             </div>
           </div>
-          
+
           {/* User Info */}
           <div className="flex items-center space-x-3 mb-8 bg-blue-800/50 p-3 rounded-lg border border-blue-700">
             <Avatar className="h-12 w-12 ring-2 ring-blue-500">

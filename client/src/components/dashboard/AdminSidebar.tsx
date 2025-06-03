@@ -106,7 +106,7 @@ export default function AdminSidebar() {
               </h1>
             </div>
           </div>
-          
+
           {/* Admin Info */}
           <div className="flex items-center space-x-3 mb-8 bg-gray-800/50 p-3 rounded-lg border border-gray-700">
             <Avatar className="h-12 w-12 ring-2 ring-red-500">
