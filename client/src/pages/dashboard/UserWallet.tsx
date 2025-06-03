@@ -117,6 +117,16 @@ export default function UserWallet() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                <h4 className="font-semibold text-green-800 mb-2">Deposit Information</h4>
+                <ul className="text-sm text-green-700 space-y-1">
+                  <li>• Minimum deposit: $5.00</li>
+                  <li>• Maximum deposit: $10,000.00 per transaction</li>
+                  <li>• Instant processing for most payment methods</li>
+                  <li>• All deposits are secured with 256-bit SSL encryption</li>
+                </ul>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="deposit-amount">Amount</Label>
@@ -126,9 +136,13 @@ export default function UserWallet() {
                     placeholder="100.00"
                     value={depositAmount}
                     onChange={(e) => setDepositAmount(e.target.value)}
-                    min="1"
+                    min="5"
+                    max="10000"
                     step="0.01"
                   />
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Min: $5.00 | Max: $10,000.00
+                  </p>
                 </div>
                 <div>
                   <Label htmlFor="deposit-currency">Currency</Label>
@@ -137,43 +151,86 @@ export default function UserWallet() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="USD">USD</SelectItem>
-                      <SelectItem value="KES">KES</SelectItem>
-                      <SelectItem value="EUR">EUR</SelectItem>
+                      <SelectItem value="USD">USD ($)</SelectItem>
+                      <SelectItem value="KES">KES (KSh)</SelectItem>
+                      <SelectItem value="EUR">EUR (€)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
 
-              {isValidDepositAmount && (
-                <div className="space-y-3">
-                  <h4 className="font-medium">Select Payment Method</h4>
-                  
-                  <PayPalButton
-                    amount={depositAmount}
-                    currency={selectedCurrency}
-                    intent="CAPTURE"
-                    userId={user?.id || 0}
-                    type="deposit"
-                    onSuccess={handlePaymentSuccess}
-                    onError={handlePaymentError}
-                  />
-
-                  <PesapalButton
-                    amount={depositAmount}
-                    currency={selectedCurrency}
-                    userEmail={user?.email || ''}
-                    userFirstName={user?.firstName || ''}
-                    userLastName={user?.lastName || ''}
-                    userId={user?.id || 0}
-                    type="deposit"
-                    onSuccess={handlePaymentSuccess}
-                    onError={handlePaymentError}
-                  />
+              {depositAmount && parseFloat(depositAmount) < 5 && (
+                <div className="text-sm text-orange-600 bg-orange-50 border border-orange-200 rounded p-3">
+                  Minimum deposit amount is $5.00
                 </div>
               )}
 
-              {!isValidDepositAmount && (
+              {depositAmount && parseFloat(depositAmount) > 10000 && (
+                <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded p-3">
+                  Maximum deposit amount is $10,000.00 per transaction
+                </div>
+              )}
+
+              {isValidDepositAmount && parseFloat(depositAmount) >= 5 && parseFloat(depositAmount) <= 10000 && (
+                <div className="space-y-3">
+                  <div className="border-t pt-4">
+                    <h4 className="font-medium mb-3">Select Payment Method</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="border rounded-lg p-4 hover:border-blue-300 transition-colors">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                              <CreditCard className="h-4 w-4 text-blue-600" />
+                            </div>
+                            <span className="font-medium">PayPal</span>
+                          </div>
+                          <span className="text-sm text-green-600 font-medium">Instant</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Secure payment through PayPal. Accepted worldwide.
+                        </p>
+                        <PayPalButton
+                          amount={depositAmount}
+                          currency={selectedCurrency}
+                          intent="CAPTURE"
+                          userId={user?.id || 0}
+                          type="deposit"
+                          onSuccess={handlePaymentSuccess}
+                          onError={handlePaymentError}
+                        />
+                      </div>
+
+                      <div className="border rounded-lg p-4 hover:border-green-300 transition-colors">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                              <CreditCard className="h-4 w-4 text-green-600" />
+                            </div>
+                            <span className="font-medium">Pesapal</span>
+                          </div>
+                          <span className="text-sm text-green-600 font-medium">Instant</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Popular in Africa. Supports mobile money and cards.
+                        </p>
+                        <PesapalButton
+                          amount={depositAmount}
+                          currency={selectedCurrency}
+                          userEmail={user?.email || ''}
+                          userFirstName={user?.firstName || ''}
+                          userLastName={user?.lastName || ''}
+                          userId={user?.id || 0}
+                          type="deposit"
+                          onSuccess={handlePaymentSuccess}
+                          onError={handlePaymentError}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {!depositAmount && (
                 <div className="text-center py-8 text-muted-foreground">
                   <CreditCard className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>Enter an amount to see payment options</p>
@@ -195,6 +252,16 @@ export default function UserWallet() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <h4 className="font-semibold text-blue-800 mb-2">Withdrawal Information</h4>
+                <ul className="text-sm text-blue-700 space-y-1">
+                  <li>• Minimum withdrawal: $10.00</li>
+                  <li>• Processing time: 1-3 business days</li>
+                  <li>• Withdrawal fees may apply based on payment method</li>
+                  <li>• Ensure your payment account details are correct</li>
+                </ul>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="withdraw-amount">Amount</Label>
@@ -204,12 +271,12 @@ export default function UserWallet() {
                     placeholder="50.00"
                     value={withdrawAmount}
                     onChange={(e) => setWithdrawAmount(e.target.value)}
-                    min="1"
+                    min="10"
                     max={walletBalance}
                     step="0.01"
                   />
                   <p className="text-sm text-muted-foreground mt-1">
-                    Available: {formatCurrency(walletBalance, 'USD')}
+                    Available: {formatCurrency(walletBalance, 'USD')} | Min: $10.00
                   </p>
                 </div>
                 <div>
@@ -219,49 +286,70 @@ export default function UserWallet() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="USD">USD</SelectItem>
-                      <SelectItem value="KES">KES</SelectItem>
-                      <SelectItem value="EUR">EUR</SelectItem>
+                      <SelectItem value="USD">USD ($)</SelectItem>
+                      <SelectItem value="KES">KES (KSh)</SelectItem>
+                      <SelectItem value="EUR">EUR (€)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
 
+              {withdrawAmount && parseFloat(withdrawAmount) < 10 && (
+                <div className="text-sm text-orange-600 bg-orange-50 border border-orange-200 rounded p-3">
+                  Minimum withdrawal amount is $10.00
+                </div>
+              )}
+
               {!isValidWithdrawAmount && withdrawAmount && parseFloat(withdrawAmount) > walletBalance && (
-                <div className="text-sm text-red-600">
+                <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded p-3">
                   Insufficient balance. Maximum withdrawal: {formatCurrency(walletBalance, 'USD')}
                 </div>
               )}
 
-              {isValidWithdrawAmount && (
+              {isValidWithdrawAmount && parseFloat(withdrawAmount) >= 10 && (
                 <div className="space-y-3">
-                  <h4 className="font-medium">Select Withdrawal Method</h4>
-                  
-                  <PayPalButton
-                    amount={withdrawAmount}
-                    currency={selectedCurrency}
-                    intent="CAPTURE"
-                    userId={user?.id || 0}
-                    type="withdrawal"
-                    onSuccess={handlePaymentSuccess}
-                    onError={handlePaymentError}
-                  />
+                  <div className="border-t pt-4">
+                    <h4 className="font-medium mb-3">Select Withdrawal Method</h4>
+                    <div className="space-y-3">
+                      <div className="border rounded-lg p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-medium">PayPal</span>
+                          <span className="text-sm text-muted-foreground">Fee: 2.9%</span>
+                        </div>
+                        <PayPalButton
+                          amount={withdrawAmount}
+                          currency={selectedCurrency}
+                          intent="CAPTURE"
+                          userId={user?.id || 0}
+                          type="withdrawal"
+                          onSuccess={handlePaymentSuccess}
+                          onError={handlePaymentError}
+                        />
+                      </div>
 
-                  <PesapalButton
-                    amount={withdrawAmount}
-                    currency={selectedCurrency}
-                    userEmail={user?.email || ''}
-                    userFirstName={user?.firstName || ''}
-                    userLastName={user?.lastName || ''}
-                    userId={user?.id || 0}
-                    type="withdrawal"
-                    onSuccess={handlePaymentSuccess}
-                    onError={handlePaymentError}
-                  />
+                      <div className="border rounded-lg p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-medium">Pesapal</span>
+                          <span className="text-sm text-muted-foreground">Fee: 3.5%</span>
+                        </div>
+                        <PesapalButton
+                          amount={withdrawAmount}
+                          currency={selectedCurrency}
+                          userEmail={user?.email || ''}
+                          userFirstName={user?.firstName || ''}
+                          userLastName={user?.lastName || ''}
+                          userId={user?.id || 0}
+                          type="withdrawal"
+                          onSuccess={handlePaymentSuccess}
+                          onError={handlePaymentError}
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
 
-              {!isValidWithdrawAmount && !withdrawAmount && (
+              {!withdrawAmount && (
                 <div className="text-center py-8 text-muted-foreground">
                   <CreditCard className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>Enter an amount to see withdrawal options</p>

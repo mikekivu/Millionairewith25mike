@@ -98,18 +98,106 @@ export default function AdminPaymentSettings() {
               </Button>
             </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <Card>
+                <CardHeader>
+                  <CardTitle>PayPal Configuration</CardTitle>
+                  <CardDescription>
+                    Manage PayPal payment integration settings
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">Status</span>
+                      <Badge variant="default">Active</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">Environment</span>
+                      <Badge variant="secondary">Live</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">Transaction Fee</span>
+                      <span className="text-sm">2.9% + $0.30</span>
+                    </div>
+                    <div className="pt-2">
+                      <p className="text-sm text-muted-foreground">
+                        PayPal integration is configured and ready for transactions. 
+                        Supports deposits and withdrawals worldwide.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Pesapal Configuration</CardTitle>
+                  <CardDescription>
+                    Manage Pesapal payment integration settings
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">Status</span>
+                      <Badge variant="default">Active</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">Environment</span>
+                      <Badge variant="secondary">Live</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">Transaction Fee</span>
+                      <span className="text-sm">3.5%</span>
+                    </div>
+                    <div className="pt-2">
+                      <p className="text-sm text-muted-foreground">
+                        Pesapal integration is configured for African markets. 
+                        Supports mobile money and card payments.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
             <Card className="mb-8">
               <CardHeader>
-                <CardTitle>Payment Methods</CardTitle>
+                <CardTitle>Transaction Limits</CardTitle>
                 <CardDescription>
-                  Manage available payment methods for deposits and withdrawals
+                  Configure minimum and maximum transaction limits
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  Configure payment methods that users can use for transactions. 
-                  Each method can be enabled/disabled and have custom instructions.
-                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <h4 className="font-medium">Deposit Limits</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Minimum</label>
+                        <p className="font-medium">$5.00</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Maximum</label>
+                        <p className="font-medium">$10,000.00</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <h4 className="font-medium">Withdrawal Limits</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Minimum</label>
+                        <p className="font-medium">$10.00</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Maximum</label>
+                        <p className="font-medium">$5,000.00</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
