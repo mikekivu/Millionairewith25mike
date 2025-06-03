@@ -15,11 +15,11 @@ interface Plan {
   id: number;
   name: string;
   description: string;
+  returnPercentage: string;
   minDeposit: string;
   maxDeposit: string;
-  dailyReturn: string;
-  durationDays: number;
-  totalReturn: string;
+  durationHours: number;
+  features: string[];
   active: boolean;
 }
 
@@ -127,10 +127,10 @@ export default function Plans() {
                           <div className="text-center p-3 bg-green-50 rounded-lg">
                             <div className="flex items-center justify-center mb-1">
                               <TrendingUp className="h-4 w-4 text-green-600 mr-1" />
-                              <span className="text-xs text-gray-600">Daily Return</span>
+                              <span className="text-xs text-gray-600">Return</span>
                             </div>
                             <div className="text-lg font-bold text-green-600">
-                              {plan.dailyReturn}%
+                              {plan.returnPercentage}%
                             </div>
                           </div>
                           
@@ -140,7 +140,7 @@ export default function Plans() {
                               <span className="text-xs text-gray-600">Duration</span>
                             </div>
                             <div className="text-lg font-bold text-blue-600">
-                              {plan.durationDays} days
+                              {plan.durationHours} hours
                             </div>
                           </div>
                         </div>
@@ -149,28 +149,39 @@ export default function Plans() {
                         <div className="text-center p-4 bg-gradient-to-r from-purple-100 to-blue-100 rounded-lg">
                           <div className="text-sm text-gray-600 mb-1">Total Return</div>
                           <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                            {plan.totalReturn}%
+                            {plan.returnPercentage}%
                           </div>
                         </div>
 
                         {/* Features */}
                         <div className="space-y-2">
-                          <div className="flex items-center text-sm text-gray-600">
-                            <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                            Instant activation
-                          </div>
-                          <div className="flex items-center text-sm text-gray-600">
-                            <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                            Daily profit accrual
-                          </div>
-                          <div className="flex items-center text-sm text-gray-600">
-                            <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                            Principal + profit return
-                          </div>
-                          <div className="flex items-center text-sm text-gray-600">
-                            <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                            Referral bonuses eligible
-                          </div>
+                          {plan.features && plan.features.length > 0 ? (
+                            plan.features.slice(0, 4).map((feature, idx) => (
+                              <div key={idx} className="flex items-center text-sm text-gray-600">
+                                <CheckCircle className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                                <span>{feature}</span>
+                              </div>
+                            ))
+                          ) : (
+                            <>
+                              <div className="flex items-center text-sm text-gray-600">
+                                <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                                Instant activation
+                              </div>
+                              <div className="flex items-center text-sm text-gray-600">
+                                <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                                Guaranteed returns
+                              </div>
+                              <div className="flex items-center text-sm text-gray-600">
+                                <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                                Principal + profit return
+                              </div>
+                              <div className="flex items-center text-sm text-gray-600">
+                                <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                                Referral bonuses eligible
+                              </div>
+                            </>
+                          )}
                         </div>
 
                         {/* Action Button */}

@@ -1,50 +1,52 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'wouter';
-import { Check, Gift, Smartphone, Tablet, Laptop, Monitor, Plane } from 'lucide-react';
+import { Check, DollarSign, TrendingUp, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/lib/auth';
+import { useLocation } from 'wouter';
 
 interface Plan {
   id: number;
   name: string;
-  description?: string;
-  joinAmount: string;
-  requiredReferrals: number;
-  totalIncome: string;
-  reEntryAmount: string;
-  totalIncomeAfterReEntry: string;
-  rewardGift: string;
-  features?: string[];
+  description: string;
+  returnPercentage: string;
+  minDeposit: string;
+  maxDeposit: string;
+  durationHours: number;
+  features: string[];
   active: boolean;
 }
 
-// Icons for each plan gift
-const giftIcons = {
-  'Health Product': <Gift className="h-5 w-5" />,
-  'Mobile phone': <Smartphone className="h-5 w-5" />,
-  'Tablet': <Tablet className="h-5 w-5" />,
-  'IPad': <Tablet className="h-5 w-5" />,
-  'Laptop': <Laptop className="h-5 w-5" />,
-  'Holiday treatment vocation': <Plane className="h-5 w-5" />
-};
-
 export default function InvestmentPlans() {
-  const { data: plansFromApi = [], isLoading, error } = useQuery<any[]>({
+  const [, navigate] = useLocation();
+  const { isAuthenticated } = useAuth();
+
+  const { data: plans = [], isLoading, error } = useQuery<Plan[]>({
     queryKey: ['/api/plans'],
+    staleTime: 300000, // 5 minutes
   });
+
+  const handleGetStarted = (plan: Plan) => {
+    if (isAuthenticated) {
+      navigate('/dashboard/investments');
+    } else {
+      navigate('/register');
+    }
+  };
 
   if (isLoading) {
     return (
-      <section id="plans" className="py-16 bg-white">
+      <section id="plans" className="py-16 bg-gradient-to-b from-white to-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h2 className="text-3xl font-extrabold text-dark-900 sm:text-4xl font-heading">
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-yellow-500">
-                Matrix Board Plans
+            <h2 className="text-3xl font-extrabold sm:text-4xl font-heading">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600">
+                Investment Plans
               </span>
             </h2>
-            <p className="mt-3 max-w-2xl mx-auto text-xl text-dark-500 sm:mt-4">
+            <p className="mt-3 max-w-2xl mx-auto text-xl text-slate-600 sm:mt-4">
               Loading investment plans...
             </p>
           </div>
@@ -55,12 +57,12 @@ export default function InvestmentPlans() {
 
   if (error) {
     return (
-      <section id="plans" className="py-16 bg-white">
+      <section id="plans" className="py-16 bg-gradient-to-b from-white to-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h2 className="text-3xl font-extrabold text-dark-900 sm:text-4xl font-heading">
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-yellow-500">
-                Matrix Board Plans
+            <h2 className="text-3xl font-extrabold sm:text-4xl font-heading">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600">
+                Investment Plans
               </span>
             </h2>
             <p className="mt-3 max-w-2xl mx-auto text-xl text-red-500 sm:mt-4">
@@ -72,189 +74,156 @@ export default function InvestmentPlans() {
     );
   }
 
-  // Matrix Board Plans
-  const matrixBoardPlans: Plan[] = [
-    {
-      id: 1,
-      name: 'Matrix Board 1',
-      joinAmount: '25',
-      requiredReferrals: 15,
-      totalIncome: '200',
-      reEntryAmount: '25',
-      totalIncomeAfterReEntry: '200',
-      rewardGift: 'Health Product',
-      active: true
-    },
-    {
-      id: 2,
-      name: 'Matrix Board 2',
-      joinAmount: '100',
-      requiredReferrals: 15,
-      totalIncome: '800',
-      reEntryAmount: '100',
-      totalIncomeAfterReEntry: '700',
-      rewardGift: 'Mobile phone',
-      active: true
-    },
-    {
-      id: 3,
-      name: 'Matrix Board 3',
-      joinAmount: '500',
-      requiredReferrals: 15,
-      totalIncome: '4000',
-      reEntryAmount: '500',
-      totalIncomeAfterReEntry: '3500',
-      rewardGift: 'Tablet',
-      active: true
-    },
-    {
-      id: 4,
-      name: 'Matrix Board 4',
-      joinAmount: '1000',
-      requiredReferrals: 15,
-      totalIncome: '8000',
-      reEntryAmount: '1000',
-      totalIncomeAfterReEntry: '7000',
-      rewardGift: 'IPad',
-      active: true
-    },
-    {
-      id: 5,
-      name: 'Matrix Board 5',
-      joinAmount: '4000',
-      requiredReferrals: 15,
-      totalIncome: '32000',
-      reEntryAmount: '4000',
-      totalIncomeAfterReEntry: '28000',
-      rewardGift: 'Laptop',
-      active: true
-    },
-    {
-      id: 6,
-      name: 'Matrix Board 6',
-      joinAmount: '8000',
-      requiredReferrals: 15,
-      totalIncome: '64000',
-      reEntryAmount: '8000',
-      totalIncomeAfterReEntry: '56000',
-      rewardGift: 'Holiday treatment vocation',
-      active: true
-    }
-  ];
+  // Filter only active plans
+  const activePlans = plans.filter(plan => plan.active);
 
   return (
     <section id="plans" className="py-16 bg-gradient-to-b from-white to-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <h2 className="text-3xl font-extrabold sm:text-4xl font-heading">
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-yellow-500">
-              Matrix Board Plans
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600">
+              Investment Plans
             </span>
           </h2>
           <p className="mt-3 max-w-2xl mx-auto text-xl text-slate-600 sm:mt-4">
-            Choose a Matrix Board level that matches your financial goals and unlock exclusive rewards.
+            Choose the perfect investment plan that suits your financial goals and risk appetite.
           </p>
+          <div className="flex flex-wrap justify-center gap-4 text-sm mt-6">
+            <div className="flex items-center">
+              <Check className="h-5 w-5 mr-2 text-green-400" />
+              <span>Guaranteed Returns</span>
+            </div>
+            <div className="flex items-center">
+              <Check className="h-5 w-5 mr-2 text-green-400" />
+              <span>Secure Investments</span>
+            </div>
+            <div className="flex items-center">
+              <Check className="h-5 w-5 mr-2 text-green-400" />
+              <span>24/7 Support</span>
+            </div>
+          </div>
         </div>
 
-        <div className="mt-12 space-y-4 sm:mt-16 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 lg:max-w-5xl lg:mx-auto xl:max-w-none xl:mx-0">
-          {matrixBoardPlans.map((plan) => {
-            const giftIcon = giftIcons[plan.rewardGift as keyof typeof giftIcons] || <Gift className="h-5 w-5" />;
-            const isPopular = plan.name === 'Matrix Board 3';
-            
-            return (
-              <Card 
-                key={plan.id} 
-                className={`flex flex-col relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:scale-105 ${
-                  isPopular ? 'border-2 border-orange-500 shadow-lg bg-gradient-to-br from-orange-50 to-yellow-50' : 'hover:border-orange-300 bg-gradient-to-br from-slate-50 to-orange-50'
-                }`}
-              >
-                {isPopular && (
-                  <div className="absolute top-0 right-0">
-                    <Badge className="bg-gradient-to-r from-orange-500 to-yellow-500 text-white m-2 shadow-lg">
-                      POPULAR
-                    </Badge>
-                  </div>
-                )}
-                <CardHeader className={`pb-0 ${isPopular ? 'bg-gradient-to-r from-orange-100 to-yellow-100' : 'bg-gradient-to-r from-slate-100 to-orange-100'}`}>
-                  <h3 className="text-xl font-bold text-slate-800 font-heading">
-                    {plan.name}
-                  </h3>
-                </CardHeader>
-                <CardContent className="pt-4 pb-2 flex-1 flex flex-col">
-                  <div className="flex items-center justify-center">
-                    <p className="text-center">
-                      <span className="text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-yellow-500">
-                        {plan.joinAmount}
-                      </span>
-                      <span className="text-base font-medium text-slate-600 ml-1">USDT</span>
-                    </p>
-                  </div>
-                  
-                  <div className="mt-6 mb-4 px-4 py-3 bg-gradient-to-r from-orange-100 to-yellow-100 rounded-lg border border-orange-200">
-                    <div className="flex items-center">
-                      <div className="mr-3 bg-white p-2 rounded-full shadow-md">
-                        <div className="text-orange-600">
-                          {giftIcon}
+        {activePlans.length > 0 ? (
+          <div className="mt-12 space-y-4 sm:mt-16 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 lg:max-w-5xl lg:mx-auto xl:max-w-none xl:mx-0">
+            {activePlans.map((plan, index) => {
+              const isPopular = index === 1; // Make the second plan popular
+              
+              return (
+                <Card 
+                  key={plan.id} 
+                  className={`flex flex-col relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:scale-105 ${
+                    isPopular ? 'border-2 border-blue-500 shadow-lg bg-gradient-to-br from-blue-50 to-purple-50' : 'hover:border-blue-300 bg-gradient-to-br from-slate-50 to-blue-50'
+                  }`}
+                >
+                  {isPopular && (
+                    <div className="absolute top-0 right-0">
+                      <Badge className="bg-gradient-to-r from-blue-500 to-purple-600 text-white m-2 shadow-lg">
+                        POPULAR
+                      </Badge>
+                    </div>
+                  )}
+                  <CardHeader className={`pb-0 ${isPopular ? 'bg-gradient-to-r from-blue-100 to-purple-100' : 'bg-gradient-to-r from-slate-100 to-blue-100'}`}>
+                    <h3 className="text-xl font-bold text-slate-800 font-heading">
+                      {plan.name}
+                    </h3>
+                    <p className="text-slate-600 text-sm">{plan.description}</p>
+                  </CardHeader>
+                  <CardContent className="pt-4 pb-2 flex-1 flex flex-col">
+                    {/* Investment Range */}
+                    <div className="text-center mb-6">
+                      <div className="flex items-center justify-center mb-2">
+                        <DollarSign className="h-5 w-5 text-green-600 mr-1" />
+                        <span className="text-sm text-gray-600">Investment Range</span>
+                      </div>
+                      <div className="text-2xl font-bold text-gray-800">
+                        ${plan.minDeposit} - ${plan.maxDeposit}
+                      </div>
+                    </div>
+
+                    {/* Returns */}
+                    <div className="grid grid-cols-2 gap-4 mb-6">
+                      <div className="text-center p-3 bg-green-50 rounded-lg">
+                        <div className="flex items-center justify-center mb-1">
+                          <TrendingUp className="h-4 w-4 text-green-600 mr-1" />
+                          <span className="text-xs text-gray-600">Return</span>
+                        </div>
+                        <div className="text-lg font-bold text-green-600">
+                          {plan.returnPercentage}%
                         </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-medium text-slate-800">Reward: {plan.rewardGift}</p>
-                        <p className="text-xs text-slate-600">After referring 15 people</p>
+                      
+                      <div className="text-center p-3 bg-blue-50 rounded-lg">
+                        <div className="flex items-center justify-center mb-1">
+                          <Clock className="h-4 w-4 text-blue-600 mr-1" />
+                          <span className="text-xs text-gray-600">Duration</span>
+                        </div>
+                        <div className="text-lg font-bold text-blue-600">
+                          {plan.durationHours}h
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  
-                  <div className="mt-4 space-y-3 flex-1">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 text-emerald-500">
-                        <Check className="h-5 w-5" />
-                      </div>
-                      <p className="ml-3 text-sm text-slate-700 font-medium">Total Income: <span className="text-orange-600 font-semibold">{plan.totalIncome} USDT</span></p>
+
+                    {/* Features */}
+                    <div className="space-y-2 flex-1">
+                      {plan.features && plan.features.length > 0 ? (
+                        plan.features.slice(0, 4).map((feature, idx) => (
+                          <div key={idx} className="flex items-center text-sm text-gray-600">
+                            <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                            <span>{feature}</span>
+                          </div>
+                        ))
+                      ) : (
+                        <>
+                          <div className="flex items-center text-sm text-gray-600">
+                            <Check className="h-4 w-4 text-green-500 mr-2" />
+                            Instant activation
+                          </div>
+                          <div className="flex items-center text-sm text-gray-600">
+                            <Check className="h-4 w-4 text-green-500 mr-2" />
+                            Guaranteed returns
+                          </div>
+                          <div className="flex items-center text-sm text-gray-600">
+                            <Check className="h-4 w-4 text-green-500 mr-2" />
+                            Referral bonuses eligible
+                          </div>
+                          <div className="flex items-center text-sm text-gray-600">
+                            <Check className="h-4 w-4 text-green-500 mr-2" />
+                            24/7 Support
+                          </div>
+                        </>
+                      )}
                     </div>
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 text-emerald-500">
-                        <Check className="h-5 w-5" />
-                      </div>
-                      <p className="ml-3 text-sm text-slate-700 font-medium">Re-Entry: <span className="text-orange-600 font-semibold">{plan.reEntryAmount} USDT</span></p>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 text-emerald-500">
-                        <Check className="h-5 w-5" />
-                      </div>
-                      <p className="ml-3 text-sm text-slate-700 font-medium">After Re-Entry: <span className="text-orange-600 font-semibold">{plan.totalIncomeAfterReEntry} USDT</span></p>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 text-emerald-500">
-                        <Check className="h-5 w-5" />
-                      </div>
-                      <p className="ml-3 text-sm text-slate-700 font-medium">Required Referrals: <span className="text-orange-600 font-semibold">{plan.requiredReferrals}</span></p>
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="pb-6 pt-2">
-                  <Link href="/register">
+                  </CardContent>
+                  <CardFooter className="pb-6 pt-2">
                     <Button
-                      variant={isPopular ? "default" : "outline"}
-                      className={`w-full transition-all duration-300 shadow-md hover:shadow-lg ${
-                        isPopular
-                          ? "bg-gradient-to-r from-[#2B97CA] to-[#1E7BA8] hover:from-[#1E7BA8] hover:to-[#155F86] text-white shadow-lg shadow-[#2B97CA]/20"
-                          : "border-2 border-[#2B97CA] text-[#2B97CA] hover:bg-gradient-to-r hover:from-[#2B97CA]/10 hover:to-[#1E7BA8]/10 hover:border-[#1E7BA8]"
+                      onClick={() => handleGetStarted(plan)}
+                      className={`w-full py-3 font-semibold transition-all duration-300 ${
+                        isPopular 
+                          ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700' 
+                          : 'bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-900 hover:to-black'
                       }`}
                     >
-                      Join Now
+                      {isAuthenticated ? 'Invest Now' : 'Get Started'}
                     </Button>
-                  </Link>
-                </CardFooter>
-              </Card>
-            );
-          })}
-        </div>
+                  </CardFooter>
+                </Card>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="text-center py-12 mt-12">
+            <h3 className="text-2xl font-semibold text-gray-800 mb-4">No Plans Available</h3>
+            <p className="text-gray-600">Investment plans are currently being updated. Please check back soon.</p>
+          </div>
+        )}
         
         <div className="mt-10 text-center">
           <p className="text-sm text-slate-600 leading-relaxed">
-            All plans include a multi-level referral system with exciting reward gifts.
+            All our investment plans come with guaranteed returns and competitive rates.
             <br />
-            <span className="text-orange-600 font-medium">Start with any Matrix Board level</span> and level up your earnings as you grow your network.
+            <span className="text-blue-600 font-medium">Start your investment journey today</span> and achieve your financial goals.
           </p>
         </div>
       </div>
