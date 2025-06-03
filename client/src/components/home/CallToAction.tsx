@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 
 export default function CallToAction() {
   return (
-    <section className="bg-primary-800">
+    <section className="bg-gradient-to-r from-[#1E3A8A] via-[#1E40AF] to-[#2563EB]">
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:py-16 lg:px-8 lg:flex lg:items-center lg:justify-between">
         <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl font-heading">
           <span className="block">Ready to get started?</span>
