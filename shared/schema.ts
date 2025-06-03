@@ -58,7 +58,7 @@ export const transactions = pgTable("transactions", {
   userId: integer("user_id").notNull().references(() => users.id),
   type: text("type").notNull(), // deposit, withdrawal, investment, referral
   amount: numeric("amount", { precision: 18, scale: 8 }).notNull(),
-  currency: text("currency").notNull().default("USDT"),
+  currency: text("currency").notNull().default("USD"),
   status: text("status").notNull(), // pending, completed, failed
   createdAt: timestamp("created_at").notNull().defaultNow(),
   paymentMethod: text("payment_method"), // paypal, coinbase, bank_transfer, etc.

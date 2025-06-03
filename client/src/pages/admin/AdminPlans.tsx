@@ -107,7 +107,7 @@ export default function AdminPlans() {
   const [selectedPlanId, setSelectedPlanId] = useState<number | null>(null);
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
   const [newStatus, setNewStatus] = useState<boolean>(false);
-  const [isSuperAdmin, setIsSuperAdmin] = useState<boolean>(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState<boolean(false);
 
   // Check if current user is super admin
   const { data: currentUser } = useQuery({
@@ -307,7 +307,7 @@ export default function AdminPlans() {
       header: 'Name',
       cell: ({ row }) => {
         const name = row.getValue('name') as string;
-        
+
         return (
           <div className="font-medium">{name}</div>
         );
@@ -355,7 +355,7 @@ export default function AdminPlans() {
       header: 'Status',
       cell: ({ row }) => {
         const active = row.getValue('active') as boolean;
-        
+
         return (
           <div className={`px-2 py-1 inline-flex items-center text-xs leading-5 font-semibold rounded-full ${
             active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
@@ -370,7 +370,7 @@ export default function AdminPlans() {
       id: 'actions',
       cell: ({ row }) => {
         const plan = row.original;
-        
+
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -430,7 +430,7 @@ export default function AdminPlans() {
         <div className="w-full md:w-64 lg:w-72">
           <AdminSidebar />
         </div>
-        
+
         <div className="flex-1 bg-gray-50 p-4 md:p-8 overflow-auto">
           <div className="max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-6">
@@ -446,7 +446,7 @@ export default function AdminPlans() {
                 <Plus className="h-4 w-4 mr-2" /> Add New Plan
               </Button>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
               <Card>
                 <CardContent className="p-6">
@@ -463,7 +463,7 @@ export default function AdminPlans() {
                   </div>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardContent className="p-6">
                   <div className="flex justify-between items-center">
@@ -480,7 +480,7 @@ export default function AdminPlans() {
                 </CardContent>
               </Card>
             </div>
-            
+
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
@@ -524,7 +524,7 @@ export default function AdminPlans() {
                     Super Admin Only
                   </span>
                 </div>
-                
+
                 <Card className="mb-6">
                   <CardHeader>
                     <CardTitle>Plan Performance Analytics</CardTitle>
@@ -544,7 +544,7 @@ export default function AdminPlans() {
                         <p className="text-2xl font-bold mt-1">8.45%</p>
                       </div>
                     </div>
-                    
+
                     <div className="mt-6">
                       <p className="text-sm text-muted-foreground mb-3">Top Performing Plans (by total investment)</p>
                       <div className="space-y-3">
@@ -579,7 +579,7 @@ export default function AdminPlans() {
                     </div>
                   </CardContent>
                 </Card>
-                
+
                 <Card>
                   <CardHeader>
                     <CardTitle>Plan Configuration Controls</CardTitle>
@@ -595,7 +595,7 @@ export default function AdminPlans() {
                       <li>Adjust referral commission rates across all tiers</li>
                       <li>Configure automated ROI distribution schedules</li>
                     </ul>
-                    
+
                     <div className="flex flex-wrap gap-2">
                       <Button>
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
@@ -629,7 +629,7 @@ export default function AdminPlans() {
                 : 'Create a new investment plan for users to invest in'}
             </DialogDescription>
           </DialogHeader>
-          
+
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
@@ -645,7 +645,7 @@ export default function AdminPlans() {
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="description"
@@ -664,14 +664,14 @@ export default function AdminPlans() {
                   </FormItem>
                 )}
               />
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="minDeposit"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Minimum Deposit (USDT)</FormLabel>
+                      <FormLabel>Minimum Deposit (USD)</FormLabel>
                       <FormControl>
                         <Input type="number" {...field} />
                       </FormControl>
@@ -679,13 +679,13 @@ export default function AdminPlans() {
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="maxDeposit"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Maximum Deposit (USDT)</FormLabel>
+                      <FormLabel>Maximum Deposit (USD)</FormLabel>
                       <FormControl>
                         <Input type="number" {...field} />
                       </FormControl>
@@ -694,7 +694,7 @@ export default function AdminPlans() {
                   )}
                 />
               </div>
-              
+
               <div className="grid grid-cols-3 gap-4">
                 <FormField
                   control={form.control}
@@ -709,7 +709,7 @@ export default function AdminPlans() {
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="durationDays"
@@ -723,7 +723,7 @@ export default function AdminPlans() {
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="referralBonus"
@@ -738,11 +738,11 @@ export default function AdminPlans() {
                   )}
                 />
               </div>
-              
+
               {/* Matrix Board specific fields */}
               <div className="mt-4 p-4 border border-dashed border-amber-300 bg-amber-50 rounded-md">
                 <h3 className="font-semibold text-amber-800 mb-3">Matrix Board Settings</h3>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <FormField
                     control={form.control}
@@ -757,7 +757,7 @@ export default function AdminPlans() {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={form.control}
                     name="rewardGift"
@@ -772,7 +772,7 @@ export default function AdminPlans() {
                     )}
                   />
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <FormField
                     control={form.control}
@@ -787,7 +787,7 @@ export default function AdminPlans() {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={form.control}
                     name="reEntryAmount"
@@ -801,7 +801,7 @@ export default function AdminPlans() {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={form.control}
                     name="totalIncomeAfterReEntry"
@@ -817,7 +817,7 @@ export default function AdminPlans() {
                   />
                 </div>
               </div>
-              
+
               <DialogFooter>
                 <Button type="submit" disabled={createPlanMutation.isPending || updatePlanMutation.isPending}>
                   {createPlanMutation.isPending || updatePlanMutation.isPending ? (

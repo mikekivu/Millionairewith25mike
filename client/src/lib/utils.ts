@@ -5,23 +5,23 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatCurrency(amount: string | number | null | undefined, currency = 'USDT'): string {
+export function formatCurrency(amount: string | number | null | undefined, currency = 'USD'): string {
   if (amount === null || amount === undefined) {
-    return `0.00 ${currency}`;
+    return `$0.00`;
   }
-  
+
   const num = typeof amount === 'string' ? parseFloat(amount) : amount;
   // Handle NaN values
   if (isNaN(num)) {
-    return `0.00 ${currency}`;
+    return `$0.00`;
   }
-  
-  return `${num.toFixed(2)} ${currency}`;
+
+  return `$${num.toFixed(2)}`;
 }
 
 export function formatDate(date: Date | string): string {
   if (!date) return '';
-  
+
   const d = typeof date === 'string' ? new Date(date) : date;
   return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }

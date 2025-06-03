@@ -103,7 +103,7 @@ export default function InvestModal({ open, onOpenChange, plans, currentBalance 
     if (isOverBalance) {
       toast({
         title: "Insufficient balance",
-        description: `Your investment amount exceeds your available balance of ${formatCurrency(currentBalance, 'USDT')}`,
+        description: `Your investment amount exceeds your available balance of ${formatCurrency(currentBalance, 'USD')}`,
         variant: "destructive",
       });
       return;
@@ -116,7 +116,7 @@ export default function InvestModal({ open, onOpenChange, plans, currentBalance 
       if (selectedAmount < minDeposit) {
         toast({
           title: "Invalid amount",
-          description: `Minimum investment for this plan is ${formatCurrency(minDeposit, 'USDT')}`,
+          description: `Minimum investment for this plan is ${formatCurrency(minDeposit, 'USD')}`,
           variant: "destructive",
         });
         return;
@@ -125,7 +125,7 @@ export default function InvestModal({ open, onOpenChange, plans, currentBalance 
       if (selectedAmount > maxDeposit) {
         toast({
           title: "Invalid amount",
-          description: `Maximum investment for this plan is ${formatCurrency(maxDeposit, 'USDT')}`,
+          description: `Maximum investment for this plan is ${formatCurrency(maxDeposit, 'USD')}`,
           variant: "destructive",
         });
         return;
@@ -188,11 +188,11 @@ export default function InvestModal({ open, onOpenChange, plans, currentBalance 
               <ul className="space-y-1 text-sm">
                 <li className="flex items-center">
                   <DollarSign className="h-4 w-4 mr-2 text-muted-foreground" />
-                  <span>Min: {formatCurrency(parseFloat(plan.minDeposit), 'USDT')}</span>
+                  <span>Min: {formatCurrency(parseFloat(plan.minDeposit), 'USD')}</span>
                 </li>
                 <li className="flex items-center">
                   <TrendingUp className="h-4 w-4 mr-2 text-muted-foreground" />
-                  <span>Max: {formatCurrency(parseFloat(plan.maxDeposit), 'USDT')}</span>
+                  <span>Max: {formatCurrency(parseFloat(plan.maxDeposit), 'USD')}</span>
                 </li>
                 <li className="flex items-center">
                   <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
@@ -242,7 +242,7 @@ export default function InvestModal({ open, onOpenChange, plans, currentBalance 
         
         <div className="flex justify-between items-center p-3 bg-gray-50 rounded-md mb-4">
           <p className="text-sm">Available Balance:</p>
-          <p className="font-bold">{formatCurrency(currentBalance, 'USDT')}</p>
+          <p className="font-bold">{formatCurrency(currentBalance, 'USD')}</p>
         </div>
         
         <Form {...form}>
@@ -252,7 +252,7 @@ export default function InvestModal({ open, onOpenChange, plans, currentBalance 
               name="amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Investment Amount (USDT)</FormLabel>
+                  <FormLabel>Investment Amount (USD)</FormLabel>
                   <FormControl>
                     <div className="relative">
                       <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
@@ -273,8 +273,8 @@ export default function InvestModal({ open, onOpenChange, plans, currentBalance 
                     </p>
                   )}
                   <FormDescription className="flex justify-between text-xs">
-                    <span>Min: {formatCurrency(parseFloat(selectedPlan?.minDeposit || '0'), 'USDT')}</span>
-                    <span>Max: {formatCurrency(parseFloat(selectedPlan?.maxDeposit || '0'), 'USDT')}</span>
+                    <span>Min: {formatCurrency(parseFloat(selectedPlan?.minDeposit || '0'), 'USD')}</span>
+                    <span>Max: {formatCurrency(parseFloat(selectedPlan?.maxDeposit || '0'), 'USD')}</span>
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -287,15 +287,15 @@ export default function InvestModal({ open, onOpenChange, plans, currentBalance 
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div className="text-muted-foreground">Daily Profit:</div>
                   <div className="font-medium text-right text-green-600">
-                    {formatCurrency((selectedAmount * (parseFloat(selectedPlan.roi || selectedPlan.monthlyRate || '0') / 100) / 30), 'USDT')}
+                    {formatCurrency((selectedAmount * (parseFloat(selectedPlan.roi || selectedPlan.monthlyRate || '0') / 100) / 30), 'USD')}
                   </div>
                   <div className="text-muted-foreground">Monthly Profit:</div>
                   <div className="font-medium text-right text-green-600">
-                    {formatCurrency((selectedAmount * (parseFloat(selectedPlan.roi || selectedPlan.monthlyRate || '0') / 100)), 'USDT')}
+                    {formatCurrency((selectedAmount * (parseFloat(selectedPlan.roi || selectedPlan.monthlyRate || '0') / 100)), 'USD')}
                   </div>
                   <div className="text-muted-foreground">Total Return:</div>
                   <div className="font-medium text-right text-green-600">
-                    {formatCurrency((selectedAmount * (parseFloat(selectedPlan.roi || selectedPlan.monthlyRate || '0') / 100) / 30 * selectedPlan.durationDays), 'USDT')}
+                    {formatCurrency((selectedAmount * (parseFloat(selectedPlan.roi || selectedPlan.monthlyRate || '0') / 100) / 30 * selectedPlan.durationDays), 'USD')}
                   </div>
                   <div className="text-muted-foreground">End Date:</div>
                   <div className="font-medium text-right">
@@ -351,19 +351,19 @@ export default function InvestModal({ open, onOpenChange, plans, currentBalance 
           
           <div className="grid grid-cols-2 gap-y-2">
             <div className="text-muted-foreground">Investment Amount:</div>
-            <div className="font-bold text-right">{formatCurrency(selectedAmount, 'USDT')}</div>
+            <div className="font-bold text-right">{formatCurrency(selectedAmount, 'USD')}</div>
             
             <div className="text-muted-foreground">Plan Duration:</div>
             <div className="text-right">{selectedPlan?.durationDays} days</div>
             
             <div className="text-muted-foreground">Daily Profit:</div>
             <div className="text-green-600 font-medium text-right">
-              {formatCurrency((selectedAmount * (parseFloat(selectedPlan?.roi || selectedPlan?.monthlyRate || '0') / 100) / 30), 'USDT')}
+              {formatCurrency((selectedAmount * (parseFloat(selectedPlan?.roi || selectedPlan?.monthlyRate || '0') / 100) / 30), 'USD')}
             </div>
             
             <div className="text-muted-foreground">Total Expected Return:</div>
             <div className="text-green-600 font-medium text-right">
-              {formatCurrency((selectedAmount * (parseFloat(selectedPlan?.roi || selectedPlan?.monthlyRate || '0') / 100) / 30 * selectedPlan!.durationDays), 'USDT')}
+              {formatCurrency((selectedAmount * (parseFloat(selectedPlan?.roi || selectedPlan?.monthlyRate || '0') / 100) / 30 * selectedPlan!.durationDays), 'USD')}
             </div>
             
             <div className="text-muted-foreground">Start Date:</div>
@@ -424,7 +424,7 @@ export default function InvestModal({ open, onOpenChange, plans, currentBalance 
         
         <h3 className="text-lg font-semibold">Congratulations!</h3>
         <p className="text-center text-gray-500 mt-2">
-          Your investment of {formatCurrency(selectedAmount, 'USDT')} has been successfully created.
+          Your investment of {formatCurrency(selectedAmount, 'USD')} has been successfully created.
         </p>
         
         <div className="w-full p-4 bg-gray-50 rounded-md mt-4">
@@ -435,13 +435,13 @@ export default function InvestModal({ open, onOpenChange, plans, currentBalance 
           <Separator />
           <div className="flex justify-between py-2">
             <span className="text-gray-500">Investment Amount:</span>
-            <span className="font-medium">{formatCurrency(selectedAmount, 'USDT')}</span>
+            <span className="font-medium">{formatCurrency(selectedAmount, 'USD')}</span>
           </div>
           <Separator />
           <div className="flex justify-between py-2">
             <span className="text-gray-500">Expected Daily Profit:</span>
             <span className="font-medium text-green-600">
-              {formatCurrency((selectedAmount * (parseFloat(selectedPlan?.roi || selectedPlan?.monthlyRate || '0') / 100) / 30), 'USDT')}
+              {formatCurrency((selectedAmount * (parseFloat(selectedPlan?.roi || selectedPlan?.monthlyRate || '0') / 100) / 30), 'USD')}
             </span>
           </div>
           <Separator />

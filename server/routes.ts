@@ -160,7 +160,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           userId,
           type: "deposit",
           amount,
-          currency: "USDT",
+          currency: "USD",
           status: "completed",
           paymentMethod: "coinbase",
           transactionDetails: `Coinbase deposit: ${data.code}`
@@ -460,7 +460,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (amount < minDeposit || amount > maxDeposit) {
         return res.status(400).json({ 
-          message: `Investment amount must be between ${minDeposit} and ${maxDeposit} USDT` 
+          message: `Investment amount must be between ${minDeposit} and ${maxDeposit} USD` 
         });
       }
       
@@ -560,7 +560,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId,
         type: "withdrawal",
         amount,
-        currency: currency || "USDT",
+        currency: currency || "USD",
         status: "pending",
         paymentMethod,
         transactionDetails
