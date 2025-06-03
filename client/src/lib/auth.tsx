@@ -70,17 +70,8 @@ export function useAuth() {
         throw new Error(errorMessage);
       }
 
-      let data;
-      try {
-        const responseText = await response.text();
-        if (!responseText) {
-          throw new Error('Empty response from server');
-        }
-        data = JSON.parse(responseText);
-      } catch (parseError) {
-        console.error('JSON parse error:', parseError);
-        throw new Error('Invalid response format from server');
-      }
+      const data = await response.json();
+      console.log('Login response data:', data);
 
       if (!data.token) {
         throw new Error(data.message || 'No authentication token received');
@@ -127,17 +118,8 @@ export function useAuth() {
         throw new Error(errorMessage);
       }
 
-      let data;
-      try {
-        const responseText = await response.text();
-        if (!responseText) {
-          throw new Error('Empty response from server');
-        }
-        data = JSON.parse(responseText);
-      } catch (parseError) {
-        console.error('JSON parse error:', parseError);
-        throw new Error('Invalid response format from server');
-      }
+      const data = await response.json();
+      console.log('Register response data:', data);
 
        if (!data.token) {
         throw new Error(data.message || 'No authentication token received');
