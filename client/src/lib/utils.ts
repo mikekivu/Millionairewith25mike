@@ -5,18 +5,20 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatCurrency(amount: string | number | null | undefined, currency = 'USD'): string {
-  if (amount === null || amount === undefined) {
-    return `$0.00`;
+export function formatCurrency(amount: number | string, currency: string = 'USD'): string {
+  const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+
+  if (isNaN(numericAmount)) {
+    return '$0.00';
   }
 
-  const num = typeof amount === 'string' ? parseFloat(amount) : amount;
-  // Handle NaN values
-  if (isNaN(num)) {
-    return `$0.00`;
-  }
-
-  return `$${num.toFixed(2)}`;
+  // For USD (default currency)
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(numericAmount);
 }
 
 export function formatDate(date: Date | string): string {

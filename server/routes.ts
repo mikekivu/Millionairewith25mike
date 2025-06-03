@@ -475,9 +475,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Insufficient wallet balance" });
       }
       
-      // Calculate end date
+      // Calculate end date based on hours
       const endDate = new Date();
-      endDate.setDate(endDate.getDate() + plan.durationDays);
+      endDate.setHours(endDate.getHours() + plan.durationHours);
       
       // Create investment
       const investment = await storage.createInvestment({

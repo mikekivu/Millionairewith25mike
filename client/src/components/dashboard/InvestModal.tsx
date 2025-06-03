@@ -179,7 +179,7 @@ export default function InvestModal({ open, onOpenChange, plans, currentBalance 
               <div className="flex justify-between items-start">
                 <CardTitle className="text-lg">{plan.name}</CardTitle>
                 <Badge variant="outline" className="bg-primary-50 text-primary-800">
-                  {plan.roi || plan.monthlyRate}% ROI
+                  {plan.returnPercentage}% Return
                 </Badge>
               </div>
               <CardDescription>{plan.description}</CardDescription>
@@ -189,6 +189,10 @@ export default function InvestModal({ open, onOpenChange, plans, currentBalance 
                 <li className="flex items-center">
                   <DollarSign className="h-4 w-4 mr-2 text-muted-foreground" />
                   <span>Min: {formatCurrency(parseFloat(plan.minDeposit), 'USD')}</span>
+                </li>
+                <li className="flex items-center">
+                  <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <span>Duration: {plan.durationHours} hours</span>
                 </li>
                 <li className="flex items-center">
                   <TrendingUp className="h-4 w-4 mr-2 text-muted-foreground" />

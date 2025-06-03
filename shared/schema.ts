@@ -26,18 +26,12 @@ export const plans = pgTable("plans", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   description: text("description").notNull(),
-  monthlyRate: numeric("monthly_rate", { precision: 5, scale: 2 }).notNull(),
+  returnPercentage: numeric("return_percentage", { precision: 5, scale: 2 }).notNull(), // 400% return
   minDeposit: numeric("min_deposit", { precision: 18, scale: 8 }).notNull(),
   maxDeposit: numeric("max_deposit", { precision: 18, scale: 8 }).notNull(),
-  durationDays: integer("duration_days").notNull(),
+  durationHours: integer("duration_hours").notNull(), // 12 hours
   features: text("features").array(),
   active: boolean("active").notNull().default(true),
-  // Matrix Board specific fields
-  requiredReferrals: integer("required_referrals").default(15),
-  totalIncome: numeric("total_income", { precision: 18, scale: 8 }),
-  reEntryAmount: numeric("re_entry_amount", { precision: 18, scale: 8 }),
-  totalIncomeAfterReEntry: numeric("total_income_after_reentry", { precision: 18, scale: 8 }),
-  rewardGift: text("reward_gift"),
 });
 
 // Investments
