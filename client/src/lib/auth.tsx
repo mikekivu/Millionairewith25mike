@@ -52,22 +52,26 @@ export function useAuth() {
       if (!response.ok) {
         let errorMessage = 'Login failed';
         try {
-          const responseText = await response.text();
-          if (responseText) {
-            try {
-              const errorData = JSON.parse(responseText);
-              errorMessage = errorData.message || errorMessage;
-            } catch {
-              // If response is not JSON, use status-based message
-              errorMessage = response.status === 404 ? 'Login endpoint not found' : 
-                           response.status >= 500 ? 'Server error occurred' : 
-                           'Login failed';
-            }
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const errorData = await response.json();
+            errorMessage = errorData.message || errorMessage;
+          } else {
+            // Server returned HTML or other non-JSON content
+            errorMessage = response.status === 404 ? 'Login endpoint not found' : 
+                         response.status >= 500 ? 'Server error occurred' : 
+                         'Login failed';
           }
         } catch {
           errorMessage = 'Network error';
         }
         throw new Error(errorMessage);
+      }
+
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Server returned invalid response format');
       }
 
       const data = await response.json();
@@ -83,7 +87,7 @@ export function useAuth() {
       // Refetch user data
       await refetch();
 
-      return data; // Return the entire data object
+      return data;
     } catch (error) {
       console.error('Login error:', error);
       if (error instanceof Error) {
@@ -100,17 +104,15 @@ export function useAuth() {
       if (!response.ok) {
         let errorMessage = 'Registration failed';
         try {
-          const responseText = await response.text();
-          if (responseText) {
-            try {
-              const errorData = JSON.parse(responseText);
-              errorMessage = errorData.message || errorMessage;
-            } catch {
-              // If response is not JSON, use status-based message
-              errorMessage = response.status === 404 ? 'Registration endpoint not found' : 
-                           response.status >= 500 ? 'Server error occurred' : 
-                           'Registration failed';
-            }
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const errorData = await response.json();
+            errorMessage = errorData.message || errorMessage;
+          } else {
+            // Server returned HTML or other non-JSON content
+            errorMessage = response.status === 404 ? 'Registration endpoint not found' : 
+                         response.status >= 500 ? 'Server error occurred' : 
+                         'Registration failed';
           }
         } catch {
           errorMessage = 'Network error';
@@ -118,10 +120,16 @@ export function useAuth() {
         throw new Error(errorMessage);
       }
 
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Server returned invalid response format');
+      }
+
       const data = await response.json();
       console.log('Register response data:', data);
 
-       if (!data.token) {
+      if (!data.token) {
         throw new Error(data.message || 'No authentication token received');
       }
 
@@ -131,7 +139,7 @@ export function useAuth() {
       // Refetch user data
       await refetch();
 
-      return data; // Return the entire data object
+      return data;
     } catch (error) {
       console.error('Register error:', error);
       if (error instanceof Error) {
