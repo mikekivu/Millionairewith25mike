@@ -29,6 +29,13 @@ declare module "express-session" {
 const JWT_SECRET = process.env.JWT_SECRET || "richlance-secret-key";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Add timeout middleware
+  app.use((req, res, next) => {
+    req.setTimeout(30000); // 30 seconds
+    res.setTimeout(30000);
+    next();
+  });
+
   // Set up session middleware
   const SessionStore = MemoryStore(session);
   app.use(

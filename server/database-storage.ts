@@ -387,16 +387,22 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllUserReferrals(userId: number): Promise<Referral[]> {
-    // Fetch all referrals for this user and join with referred users' data
-    const referralData = await db
-      .select({
-        referral: referrals,
-        referredUser: users
-      })
-      .from(referrals)
-      .where(eq(referrals.referrerId, userId))
-      .leftJoin(users, eq(referrals.referredId, users.id))
-      .orderBy(referrals.level, referrals.createdAt);
+    try {
+      // Fetch all referrals for this user and join with referred users' data with timeout
+      const referralData = await Promise.race([
+        db
+          .select({
+            referral: referrals,
+            referredUser: users
+          })
+          .from(referrals)
+          .where(eq(referrals.referrerId, userId))
+          .leftJoin(users, eq(referrals.referredId, users.id))
+          .orderBy(referrals.level, referrals.createdAt),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Referrals query timeout')), 15000)
+        )
+      ]) as any[];
     
     console.log(`Found ${referralData.length} referrals for user ID ${userId}`);
     
@@ -739,30 +745,49 @@ export class DatabaseStorage implements IStorage {
   
   // Network performance heatmap data
   async getNetworkPerformance(userId: number): Promise<any> {
-    const user = await this.getUser(userId);
-    if (!user) {
-      throw new Error(`User with id ${userId} not found`);
-    }
-    
-    // Get user's direct referrals (level 1)
-    const directReferrals = await this.getUserReferralsByLevel(userId, 1);
-    
-    // If no referrals, return just the user
-    if (directReferrals.length === 0) {
+    try {
+      const user = await this.getUser(userId);
+      if (!user) {
+        throw new Error(`User with id ${userId} not found`);
+      }
+      
+      // Get user's direct referrals (level 1) with timeout
+      const directReferrals = await Promise.race([
+        this.getUserReferralsByLevel(userId, 1),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Query timeout')), 10000)
+        )
+      ]) as Referral[];
+      
+      // If no referrals, return just the user
+      if (directReferrals.length === 0) {
+        return {
+          id: userId,
+          name: `${user.firstName} ${user.lastName}`,
+          username: user.username,
+          level: 0,
+          performance: 100,
+          referrals: []
+        };
+      }
+      
+      // Build a simplified tree (max 3 levels to prevent timeout)
+      const referralTree = await this.buildReferralPerformanceTree(userId, 0, 3);
+      
+      return referralTree;
+    } catch (error) {
+      console.error('Network performance query error:', error);
+      // Return basic user info if query fails
+      const user = await this.getUser(userId);
       return {
         id: userId,
-        name: `${user.firstName} ${user.lastName}`,
-        username: user.username,
+        name: user ? `${user.firstName} ${user.lastName}` : 'User',
+        username: user?.username || 'unknown',
         level: 0,
-        performance: 100, // Root node is always 100%
+        performance: 100,
         referrals: []
       };
     }
-    
-    // Build the referral tree recursively
-    const referralTree = await this.buildReferralPerformanceTree(userId, 0, 5); // Max 5 levels deep
-    
-    return referralTree;
   }
   
   private async buildReferralPerformanceTree(userId: number, currentLevel: number, maxLevel: number): Promise<any> {
