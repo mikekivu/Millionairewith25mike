@@ -24,6 +24,7 @@ import AdminDeposits from "@/pages/admin/AdminDeposits";
 import AdminPlans from "@/pages/admin/AdminPlans";
 import AdminPaymentSettings from "@/pages/admin/AdminPaymentSettings";
 import AdminMessages from "@/pages/admin/AdminMessages";
+import Plans from "@/pages/Plans";
 import { ProtectedRoute, AdminRoute } from "@/lib/auth";
 import LiveChat from "@/components/LiveChat";
 
@@ -34,6 +35,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/about" component={About} />
       <Route path="/contact" component={Contact} />
+      <Route path="/plans" component={Plans} />
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
       <Route path="/terms" component={Terms} />
