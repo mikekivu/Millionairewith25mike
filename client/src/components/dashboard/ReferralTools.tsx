@@ -141,3 +141,83 @@ export default function ReferralTools({ referralCode, referralLink }: ReferralTo
     </Card>
   );
 }
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Share2, Copy } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+
+interface ReferralToolsProps {
+  referralCode: string;
+  referralLink: string;
+}
+
+export default function ReferralTools({ referralCode, referralLink }: ReferralToolsProps) {
+  const { toast } = useToast();
+
+  const handleCopyCode = () => {
+    navigator.clipboard.writeText(referralCode);
+    toast({
+      title: "Copied!",
+      description: "Referral code copied to clipboard",
+    });
+  };
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(referralLink);
+    toast({
+      title: "Copied!",
+      description: "Referral link copied to clipboard",
+    });
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center">
+          <Share2 className="h-5 w-5 mr-2" />
+          Referral Tools
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div>
+          <label className="text-sm font-medium">Your Referral Code</label>
+          <div className="flex mt-1">
+            <input
+              type="text"
+              value={referralCode}
+              readOnly
+              className="flex-1 px-3 py-2 border rounded-l-md bg-gray-50"
+            />
+            <Button
+              onClick={handleCopyCode}
+              size="sm"
+              className="rounded-l-none"
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+        
+        <div>
+          <label className="text-sm font-medium">Your Referral Link</label>
+          <div className="flex mt-1">
+            <input
+              type="text"
+              value={referralLink}
+              readOnly
+              className="flex-1 px-3 py-2 border rounded-l-md bg-gray-50 text-xs"
+            />
+            <Button
+              onClick={handleCopyLink}
+              size="sm"
+              className="rounded-l-none"
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

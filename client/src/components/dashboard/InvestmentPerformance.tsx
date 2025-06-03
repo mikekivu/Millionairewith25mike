@@ -105,3 +105,24 @@ export default function InvestmentPerformance({ data, isLoading = false }: Inves
     </Card>
   );
 }
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { TrendingUp } from 'lucide-react';
+
+export default function InvestmentPerformance() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center">
+          <TrendingUp className="h-5 w-5 mr-2" />
+          Investment Performance
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="text-center py-8">
+          <p className="text-gray-500">Investment performance chart will be displayed here</p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

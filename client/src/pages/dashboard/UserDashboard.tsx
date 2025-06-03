@@ -8,10 +8,10 @@ import { formatCurrency, formatDate } from '@/lib/utils';
 import { useAuth } from '@/lib/auth';
 import { TrendingUp, Users, DollarSign, Clock, Share2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import UserSidebar from '@/components/dashboard/UserSidebar';
-import StatsCards from '@/components/dashboard/StatsCards';
-import InvestmentPerformance from '@/components/dashboard/InvestmentPerformance';
-import ReferralTools from '@/components/dashboard/ReferralTools';
+import { default as UserSidebar } from '@/components/dashboard/UserSidebar';
+import { default as StatsCards } from '@/components/dashboard/StatsCards';
+import { default as InvestmentPerformance } from '@/components/dashboard/InvestmentPerformance';
+import { default as ReferralTools } from '@/components/dashboard/ReferralTools';
 
 export default function UserDashboard() {
   const { user } = useAuth();
