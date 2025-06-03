@@ -12,8 +12,9 @@ neonConfig.webSocketConstructor = ws;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL! });
 const db = drizzle(pool, { schema });
 
-// User data from MySQL export
-const usersToImport = [
+// Complete user data from all MySQL exports
+const allUsersToImport = [
+  // Original users
   {
     username: "musyoka",
     password: "$2b$10$.xZwkfo7xDPIYbFQJq7xsu./7docv3G.pbRoPDlUHAbBDPd8x1Uv2",
@@ -80,9 +81,10 @@ const usersToImport = [
     active: true,
     role: "user",
     referralCode: "TESTUSERhkjknm",
-    referredBy: 1, // This will need to be mapped
+    referredBy: null, // Will be updated after initial import
     country: null,
-    phoneNumber: null
+    phoneNumber: null,
+    oldId: 5
   },
   {
     username: "mikepaul",
@@ -92,11 +94,12 @@ const usersToImport = [
     lastName: "Paul",
     walletBalance: "0",
     active: true,
-    role: "user", // Changed from "member" to "user"
+    role: "user",
     referralCode: "MIKEPAUL1bpilc",
-    referredBy: 2, // This will need to be mapped
+    referredBy: null, // Will be updated after initial import
     country: null,
-    phoneNumber: null
+    phoneNumber: null,
+    oldId: 6
   },
   {
     username: "mikekivu3",
@@ -108,9 +111,10 @@ const usersToImport = [
     active: true,
     role: "user",
     referralCode: "MIKEKIVU37td72g",
-    referredBy: 3, // This will need to be mapped
+    referredBy: null, // Will be updated after initial import
     country: null,
-    phoneNumber: null
+    phoneNumber: null,
+    oldId: 7
   },
   {
     username: "webexpertkenya@gmail.com",
@@ -122,9 +126,10 @@ const usersToImport = [
     active: true,
     role: "user",
     referralCode: "WEBEXPERTKENYA@GMAIL.COM81ekjw",
-    referredBy: 3, // This will need to be mapped
+    referredBy: null, // Will be updated after initial import
     country: null,
-    phoneNumber: null
+    phoneNumber: null,
+    oldId: 8
   },
   {
     username: "mutuadoe@gmail.com",
@@ -138,7 +143,8 @@ const usersToImport = [
     referralCode: "MUTUADOE@GMAIL.COMu0gpoz",
     referredBy: null,
     country: null,
-    phoneNumber: null
+    phoneNumber: null,
+    oldId: 9
   },
   {
     username: "makoha",
@@ -152,7 +158,8 @@ const usersToImport = [
     referralCode: "MAKOHAfncfod",
     referredBy: null,
     country: "kenya",
-    phoneNumber: "0745536445"
+    phoneNumber: "0745536445",
+    oldId: 10
   },
   {
     username: "peter",
@@ -166,7 +173,8 @@ const usersToImport = [
     referralCode: "PETERmovnfn",
     referredBy: null,
     country: "kenya",
-    phoneNumber: "1234567"
+    phoneNumber: "1234567",
+    oldId: 11
   },
   {
     username: "mativo",
@@ -178,9 +186,10 @@ const usersToImport = [
     active: true,
     role: "user",
     referralCode: "MATIVO0k8x2w",
-    referredBy: 22, // This will need to be mapped
+    referredBy: null, // Will be updated after initial import
     country: "kenya",
-    phoneNumber: "07868645776"
+    phoneNumber: "07868645776",
+    oldId: 12
   },
   {
     username: "mainamaina",
@@ -192,9 +201,10 @@ const usersToImport = [
     active: true,
     role: "user",
     referralCode: "MAINAMAINAenmrb1",
-    referredBy: 3, // This will need to be mapped
+    referredBy: null, // Will be updated after initial import
     country: "Kenya",
-    phoneNumber: "7868645776"
+    phoneNumber: "7868645776",
+    oldId: 13
   },
   {
     username: "jacobjacob",
@@ -206,9 +216,10 @@ const usersToImport = [
     active: true,
     role: "user",
     referralCode: "JACOBJACOBfqhec0",
-    referredBy: 25, // This will need to be mapped
+    referredBy: null, // Will be updated after initial import
     country: "kenya",
-    phoneNumber: "5623784878"
+    phoneNumber: "5623784878",
+    oldId: 14
   },
   {
     username: "janetjanet@",
@@ -220,9 +231,10 @@ const usersToImport = [
     active: true,
     role: "user",
     referralCode: "JANETJANET@yailwt",
-    referredBy: 26, // This will need to be mapped
+    referredBy: null, // Will be updated after initial import
     country: "kenya",
-    phoneNumber: "5675283993"
+    phoneNumber: "5675283993",
+    oldId: 15
   },
   {
     username: "webexpertkenya",
@@ -236,18 +248,77 @@ const usersToImport = [
     referralCode: "WEBEXPERTefCiJV",
     referredBy: null,
     country: null,
-    phoneNumber: null
+    phoneNumber: null,
+    oldId: 16
+  },
+  // Additional users from MySQL exports
+  {
+    username: "musyokawa",
+    password: "$2b$10$7XAyKJXZJGRscIhWo/2kNuOpo8audgtQ8UmzBxREJe72HBhwUWfLW",
+    email: "musyoka@gmail.com",
+    firstName: "musyoka",
+    lastName: "mmm",
+    walletBalance: "0",
+    active: true,
+    role: "user",
+    referralCode: "MUSYOKAWAhjhtr4",
+    referredBy: null,
+    country: "kenya",
+    phoneNumber: "1435237717",
+    oldId: 18
+  },
+  {
+    username: "dkdenniskorir",
+    password: "$2b$10$AH614FOSpSQJWSff1EUft.PDiuqYtOtbeta6pZ8o45SZWq6B//X/W",
+    email: "dkdenniskorir66@gmail.com",
+    firstName: "michael",
+    lastName: "paul",
+    walletBalance: "0",
+    active: true,
+    role: "user",
+    referralCode: "DKDENNISKORIReo4e8u",
+    referredBy: null,
+    country: "Kenya",
+    phoneNumber: "0746942707",
+    oldId: 19
+  },
+  {
+    username: "mutetidavid45632",
+    password: "$2b$10$n.GxeNX/HxWXSHvFv3L71e9t5SxyLhMO8iXtvMFO.sgd7Ml2rKMCW",
+    email: "mutetidavid45632@gmail.com",
+    firstName: "muteti",
+    lastName: "david",
+    walletBalance: "0",
+    active: true,
+    role: "user",
+    referralCode: "MUTETIDAVID4563262t3h8",
+    referredBy: null,
+    country: "kenya",
+    phoneNumber: "564785656",
+    oldId: 20
   }
 ];
 
+// Referral mapping based on old MySQL IDs
+const referralMapping = {
+  5: 1,   // testuser referred by user with old ID 1
+  6: 2,   // mikepaul referred by user with old ID 2  
+  7: 3,   // mikekivu3 referred by user with old ID 3
+  8: 3,   // webexpertkenya@gmail.com referred by user with old ID 3
+  12: 22, // mativo referred by user with old ID 22 (not in our list)
+  13: 3,  // mainamaina referred by user with old ID 3
+  14: 25, // jacobjacob referred by user with old ID 25 (not in our list)  
+  15: 26, // janetjanet@ referred by user with old ID 26 (not in our list)
+};
+
 async function main() {
-  console.log('Importing users from MySQL export...');
+  console.log('Importing all users from MySQL exports...');
   
   // Create a mapping of old IDs to new IDs for referral relationships
   const idMapping: { [oldId: number]: number } = {};
   
   // First pass: Create all users without referral relationships
-  for (const userData of usersToImport) {
+  for (const userData of allUsersToImport) {
     try {
       // Check if user already exists
       const existingUser = await db.select().from(schema.users).where(
@@ -255,25 +326,76 @@ async function main() {
       );
       
       if (existingUser.length > 0) {
-        console.log(`User ${userData.username} already exists, skipping...`);
+        console.log(`User ${userData.username} already exists, storing ID mapping...`);
+        if (userData.oldId) {
+          idMapping[userData.oldId] = existingUser[0].id;
+        }
         continue;
       }
       
       // Create user without referredBy first
       const userToCreate = {
-        ...userData,
-        referredBy: null // We'll update this in the second pass
+        username: userData.username,
+        password: userData.password,
+        email: userData.email,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        walletBalance: userData.walletBalance,
+        active: userData.active,
+        role: userData.role as "user" | "admin",
+        referralCode: userData.referralCode,
+        referredBy: null, // We'll update this in the second pass
+        country: userData.country,
+        phoneNumber: userData.phoneNumber
       };
       
       const [newUser] = await db.insert(schema.users).values(userToCreate).returning();
       console.log(`Created user: ${newUser.username} with ID: ${newUser.id}`);
+      
+      // Store the mapping if this user had an old ID
+      if (userData.oldId) {
+        idMapping[userData.oldId] = newUser.id;
+      }
       
     } catch (error) {
       console.error(`Error creating user ${userData.username}:`, error);
     }
   }
   
-  console.log('User import completed!');
+  // Second pass: Update referral relationships
+  console.log('Updating referral relationships...');
+  for (const userData of allUsersToImport) {
+    if (userData.oldId && referralMapping[userData.oldId]) {
+      const referredByOldId = referralMapping[userData.oldId];
+      const referredByNewId = idMapping[referredByOldId];
+      
+      if (referredByNewId) {
+        try {
+          await db.update(schema.users)
+            .set({ referredBy: referredByNewId })
+            .where(eq(schema.users.email, userData.email));
+          
+          console.log(`Updated referral for ${userData.username}: referred by user ID ${referredByNewId}`);
+        } catch (error) {
+          console.error(`Error updating referral for ${userData.username}:`, error);
+        }
+      } else {
+        console.log(`Warning: Could not find referrer for ${userData.username} (old referrer ID: ${referredByOldId})`);
+      }
+    }
+  }
+  
+  console.log('All user import completed!');
+  
+  // Display final statistics
+  const totalUsers = await db.select().from(schema.users);
+  console.log(`Total users in database: ${totalUsers.length}`);
+  
+  const activeUsers = totalUsers.filter(user => user.active);
+  console.log(`Active users: ${activeUsers.length}`);
+  
+  const adminUsers = totalUsers.filter(user => user.role === 'admin');
+  console.log(`Admin users: ${adminUsers.length}`);
 }
 
 main()
