@@ -147,11 +147,11 @@ export default function InvestmentPlans() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <h2 className="text-3xl font-extrabold sm:text-4xl font-heading">
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-yellow-500">
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-blue-500 to-orange-500">
               Matrix Board Plans
             </span>
           </h2>
-          <p className="mt-3 max-w-2xl mx-auto text-xl text-gray-600 sm:mt-4">
+          <p className="mt-3 max-w-2xl mx-auto text-xl text-slate-600 sm:mt-4">
             Choose a Matrix Board level that matches your financial goals and unlock exclusive rewards.
           </p>
         </div>
@@ -164,68 +164,70 @@ export default function InvestmentPlans() {
             return (
               <Card 
                 key={plan.id} 
-                className={`flex flex-col relative overflow-hidden transition-all duration-300 hover:shadow-lg ${
-                  isPopular ? 'border-yellow-500 shadow-md' : 'hover:border-orange-300'
+                className={`flex flex-col relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:scale-105 ${
+                  isPopular ? 'border-2 border-blue-500 shadow-lg bg-gradient-to-br from-blue-50 to-orange-50' : 'hover:border-blue-300 bg-gradient-to-br from-slate-50 to-blue-50'
                 }`}
               >
                 {isPopular && (
                   <div className="absolute top-0 right-0">
-                    <Badge className="bg-gradient-to-r from-orange-500 to-yellow-500 text-white m-2">
+                    <Badge className="bg-gradient-to-r from-blue-600 to-orange-500 text-white m-2 shadow-lg">
                       POPULAR
                     </Badge>
                   </div>
                 )}
-                <CardHeader className={`pb-0 ${isPopular ? 'bg-gradient-to-r from-orange-50 to-yellow-50' : ''}`}>
-                  <h3 className="text-xl font-bold text-dark-900 font-heading">
+                <CardHeader className={`pb-0 ${isPopular ? 'bg-gradient-to-r from-blue-100 to-orange-100' : 'bg-gradient-to-r from-slate-100 to-blue-100'}`}>
+                  <h3 className="text-xl font-bold text-slate-800 font-heading">
                     {plan.name}
                   </h3>
                 </CardHeader>
                 <CardContent className="pt-4 pb-2 flex-1 flex flex-col">
                   <div className="flex items-center justify-center">
                     <p className="text-center">
-                      <span className="text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-yellow-500">
+                      <span className="text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-orange-500">
                         {plan.joinAmount}
                       </span>
-                      <span className="text-base font-medium text-gray-500 ml-1">USDT</span>
+                      <span className="text-base font-medium text-slate-600 ml-1">USDT</span>
                     </p>
                   </div>
                   
-                  <div className="mt-6 mb-4 px-4 py-3 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg">
+                  <div className="mt-6 mb-4 px-4 py-3 bg-gradient-to-r from-blue-100 to-orange-100 rounded-lg border border-blue-200">
                     <div className="flex items-center">
-                      <div className="mr-3 bg-white p-2 rounded-full">
-                        {giftIcon}
+                      <div className="mr-3 bg-white p-2 rounded-full shadow-md">
+                        <div className="text-blue-600">
+                          {giftIcon}
+                        </div>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-900">Reward: {plan.rewardGift}</p>
-                        <p className="text-xs text-gray-600">After referring 15 people</p>
+                        <p className="text-sm font-medium text-slate-800">Reward: {plan.rewardGift}</p>
+                        <p className="text-xs text-slate-600">After referring 15 people</p>
                       </div>
                     </div>
                   </div>
                   
                   <div className="mt-4 space-y-3 flex-1">
                     <div className="flex items-center">
-                      <div className="flex-shrink-0 text-green-500">
+                      <div className="flex-shrink-0 text-emerald-500">
                         <Check className="h-5 w-5" />
                       </div>
-                      <p className="ml-3 text-sm text-gray-700">Total Income: {plan.totalIncome} USDT</p>
+                      <p className="ml-3 text-sm text-slate-700 font-medium">Total Income: <span className="text-blue-600 font-semibold">{plan.totalIncome} USDT</span></p>
                     </div>
                     <div className="flex items-center">
-                      <div className="flex-shrink-0 text-green-500">
+                      <div className="flex-shrink-0 text-emerald-500">
                         <Check className="h-5 w-5" />
                       </div>
-                      <p className="ml-3 text-sm text-gray-700">Re-Entry: {plan.reEntryAmount} USDT</p>
+                      <p className="ml-3 text-sm text-slate-700 font-medium">Re-Entry: <span className="text-orange-600 font-semibold">{plan.reEntryAmount} USDT</span></p>
                     </div>
                     <div className="flex items-center">
-                      <div className="flex-shrink-0 text-green-500">
+                      <div className="flex-shrink-0 text-emerald-500">
                         <Check className="h-5 w-5" />
                       </div>
-                      <p className="ml-3 text-sm text-gray-700">After Re-Entry: {plan.totalIncomeAfterReEntry} USDT</p>
+                      <p className="ml-3 text-sm text-slate-700 font-medium">After Re-Entry: <span className="text-blue-600 font-semibold">{plan.totalIncomeAfterReEntry} USDT</span></p>
                     </div>
                     <div className="flex items-center">
-                      <div className="flex-shrink-0 text-green-500">
+                      <div className="flex-shrink-0 text-emerald-500">
                         <Check className="h-5 w-5" />
                       </div>
-                      <p className="ml-3 text-sm text-gray-700">Required Referrals: {plan.requiredReferrals}</p>
+                      <p className="ml-3 text-sm text-slate-700 font-medium">Required Referrals: <span className="text-orange-600 font-semibold">{plan.requiredReferrals}</span></p>
                     </div>
                   </div>
                 </CardContent>
@@ -233,10 +235,10 @@ export default function InvestmentPlans() {
                   <Link href="/register">
                     <Button
                       variant={isPopular ? "default" : "outline"}
-                      className={`w-full ${
+                      className={`w-full transition-all duration-300 shadow-md hover:shadow-lg ${
                         isPopular
-                          ? "bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600"
-                          : "border-orange-500 text-orange-600 hover:bg-orange-50"
+                          ? "bg-gradient-to-r from-blue-600 to-orange-500 hover:from-blue-700 hover:to-orange-600 text-white"
+                          : "border-2 border-blue-500 text-blue-600 hover:bg-gradient-to-r hover:from-blue-50 hover:to-orange-50 hover:border-orange-500"
                       }`}
                     >
                       Join Now
@@ -249,9 +251,10 @@ export default function InvestmentPlans() {
         </div>
         
         <div className="mt-10 text-center">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-slate-600 leading-relaxed">
             All plans include a multi-level referral system with exciting reward gifts.
-            <br />Start with any Matrix Board level and level up your earnings as you grow your network.
+            <br />
+            <span className="text-blue-600 font-medium">Start with any Matrix Board level</span> and level up your earnings as you grow your network.
           </p>
         </div>
       </div>
