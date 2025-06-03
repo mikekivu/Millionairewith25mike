@@ -93,11 +93,11 @@ export default function WhyChooseUs() {
         </div>
 
         {/* Features Grid */}
-        <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((feature, index) => (
             <div 
               key={index} 
-              className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 border border-gray-100"
+              className="bg-white p-4 sm:p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 border border-gray-100"
             >
               <div className="inline-flex items-center justify-center p-3 bg-gray-50 rounded-lg mb-4">
                 {feature.icon}

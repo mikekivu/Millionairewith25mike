@@ -59,13 +59,13 @@ export default function Header() {
   return (
     <header className="bg-gradient-to-r from-orange-50 to-yellow-50 shadow-md border-b border-orange-100">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-20">
+        <div className="flex justify-between h-16 sm:h-20">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
               <Link href="/">
-                <div className="flex items-center cursor-pointer">
-                  <Logo size="md" className="mr-3" />
-                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-emerald-500 font-heading font-bold text-xl md:text-2xl">ProsperityGroups</span>
+                <div className="flex items-center cursor-pointer py-2">
+                  <Logo size="md" className="mr-2 sm:mr-3" />
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-emerald-500 font-heading font-bold text-lg sm:text-xl md:text-2xl">ProsperityGroups</span>
                 </div>
               </Link>
             </div>
@@ -145,15 +145,15 @@ export default function Header() {
               </>
             )}
           </div>
-          <div className="-mr-2 flex items-center sm:hidden">
+          <div className="flex items-center sm:hidden">
             <Button 
               variant="ghost" 
               size="icon"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               aria-label="Toggle menu"
-              className="text-orange-500"
+              className="text-orange-500 h-12 w-12 -mr-3"
             >
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {isMenuOpen ? <X className="h-7 w-7" /> : <Menu className="h-7 w-7" />}
             </Button>
           </div>
         </div>
@@ -162,9 +162,9 @@ export default function Header() {
       {/* Mobile menu */}
       {isMenuOpen && (
         <div className="sm:hidden bg-white border-t border-orange-100 shadow-inner">
-          <div className="pt-2 pb-3 space-y-1">
+          <div className="pt-4 pb-4 space-y-2">
             <Link href="/">
-              <div className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+              <div className={`block pl-4 pr-4 py-4 border-l-4 text-lg font-medium min-h-[48px] flex items-center ${
                 isActive('/') 
                   ? 'border-purple-500 text-purple-700 bg-purple-50' 
                   : 'border-transparent text-gray-600 hover:bg-blue-50 hover:border-blue-300 hover:text-purple-600'
@@ -173,12 +173,12 @@ export default function Header() {
               </div>
             </Link>
             <Link href="/#plans">
-              <div className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-blue-50 hover:border-blue-300 hover:text-purple-600 cursor-pointer">
+              <div className="block pl-4 pr-4 py-4 border-l-4 border-transparent text-lg font-medium text-gray-600 hover:bg-blue-50 hover:border-blue-300 hover:text-purple-600 cursor-pointer min-h-[48px] flex items-center">
                 Investment Plans
               </div>
             </Link>
             <Link href="/about">
-              <div className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+              <div className={`block pl-4 pr-4 py-4 border-l-4 text-lg font-medium min-h-[48px] flex items-center ${
                 isActive('/about') 
                   ? 'border-purple-500 text-purple-700 bg-purple-50' 
                   : 'border-transparent text-gray-600 hover:bg-blue-50 hover:border-blue-300 hover:text-purple-600'
@@ -187,7 +187,7 @@ export default function Header() {
               </div>
             </Link>
             <Link href="/contact">
-              <div className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+              <div className={`block pl-4 pr-4 py-4 border-l-4 text-lg font-medium min-h-[48px] flex items-center ${
                 isActive('/contact') 
                   ? 'border-purple-500 text-purple-700 bg-purple-50' 
                   : 'border-transparent text-gray-600 hover:bg-blue-50 hover:border-blue-300 hover:text-purple-600'
@@ -196,30 +196,30 @@ export default function Header() {
               </div>
             </Link>
           </div>
-          <div className="pt-4 pb-3 border-t border-orange-100">
+          <div className="pt-4 pb-4 border-t border-orange-100">
             {user ? (
-              <div className="space-y-1">
+              <div className="space-y-2">
                 <Link href={user.role === 'admin' ? '/admin' : '/dashboard'}>
-                  <div className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-blue-50 hover:border-blue-300 hover:text-purple-600 cursor-pointer">
+                  <div className="block pl-4 pr-4 py-4 border-l-4 border-transparent text-lg font-medium text-gray-600 hover:bg-blue-50 hover:border-blue-300 hover:text-purple-600 cursor-pointer min-h-[48px] flex items-center">
                     Dashboard
                   </div>
                 </Link>
                 <div 
                   onClick={handleLogout}
-                  className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-blue-50 hover:border-blue-300 hover:text-purple-600 cursor-pointer"
+                  className="block pl-4 pr-4 py-4 border-l-4 border-transparent text-lg font-medium text-gray-600 hover:bg-blue-50 hover:border-blue-300 hover:text-purple-600 cursor-pointer min-h-[48px] flex items-center"
                 >
                   Logout
                 </div>
               </div>
             ) : (
-              <div className="space-y-1">
+              <div className="space-y-2">
                 <Link href="/login">
-                  <div className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-blue-50 hover:border-blue-300 hover:text-purple-600 cursor-pointer">
+                  <div className="block pl-4 pr-4 py-4 border-l-4 border-transparent text-lg font-medium text-gray-600 hover:bg-blue-50 hover:border-blue-300 hover:text-purple-600 cursor-pointer min-h-[48px] flex items-center">
                     Login
                   </div>
                 </Link>
                 <Link href="/register">
-                  <div className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-blue-50 hover:border-blue-300 hover:text-purple-600 cursor-pointer">
+                  <div className="block pl-4 pr-4 py-4 border-l-4 border-transparent text-lg font-medium text-gray-600 hover:bg-blue-50 hover:border-blue-300 hover:text-purple-600 cursor-pointer min-h-[48px] flex items-center">
                     Register
                   </div>
                 </Link>

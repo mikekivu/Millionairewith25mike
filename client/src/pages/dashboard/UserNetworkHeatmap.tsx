@@ -137,15 +137,15 @@ export default function UserNetworkHeatmap() {
             <CardContent>
               {renderContent()}
             </CardContent>
-            <CardFooter className="flex flex-wrap gap-4 justify-between border-t pt-4">
-              <div className="flex flex-wrap gap-4">
+            <CardFooter className="flex flex-col sm:flex-row flex-wrap gap-4 justify-between border-t pt-4">
+              <div className="flex flex-col sm:flex-row flex-wrap gap-4">
                 <div className="flex items-center space-x-2">
                   <Label htmlFor="colorScale">Color Theme:</Label>
                   <Select 
                     value={colorScale} 
                     onValueChange={(value) => setColorScale(value as "brand" | "traditional")}
                   >
-                    <SelectTrigger className="w-[180px]">
+                    <SelectTrigger className="w-full sm:w-[180px]">
                       <SelectValue placeholder="Select color theme" />
                     </SelectTrigger>
                     <SelectContent>

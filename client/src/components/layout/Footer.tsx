@@ -6,8 +6,8 @@ export default function Footer() {
   return (
     <footer className="bg-gradient-to-b from-gray-900 to-gray-950 border-t border-orange-900/20">
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:py-16 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          <div className="col-span-2 md:col-span-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
+          <div className="col-span-1 sm:col-span-2 md:col-span-1">
             <div className="flex items-center mb-4">
               <Logo size="md" className="mr-3" />
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-emerald-500 font-heading font-bold text-xl">PG</span>
@@ -162,8 +162,8 @@ export default function Footer() {
 
         <div className="mt-12 border-t border-orange-900/20 pt-8">
           <div className="flex flex-col md:flex-row items-center justify-between">
-            <div className="mb-4 md:mb-0">
-              <form className="sm:flex">
+            <div className="mb-6 md:mb-0 w-full md:w-auto">
+              <form className="flex flex-col sm:flex-row gap-3">
                 <label htmlFor="email-address" className="sr-only">Email address</label>
                 <input
                   id="email-address"
@@ -171,13 +171,13 @@ export default function Footer() {
                   type="email"
                   autoComplete="email"
                   required
-                  className="w-full px-4 py-2 placeholder-gray-500 focus:ring-orange-500 focus:border-orange-500 sm:max-w-xs border-gray-700 rounded-md bg-gray-800 text-gray-300"
+                  className="w-full px-4 py-3 placeholder-gray-500 focus:ring-orange-500 focus:border-orange-500 sm:max-w-xs border-gray-700 rounded-md bg-gray-800 text-gray-300 text-base"
                   placeholder="Enter your email"
                 />
-                <div className="mt-3 rounded-md sm:mt-0 sm:ml-3 sm:flex-shrink-0">
+                <div className="rounded-md sm:flex-shrink-0">
                   <button
                     type="submit"
-                    className="w-full flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600"
+                    className="w-full flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 min-h-[48px]"
                   >
                     <Send className="h-4 w-4 mr-2" />
                     Subscribe
@@ -188,19 +188,19 @@ export default function Footer() {
                 Get updates on investment opportunities and platform news.
               </p>
             </div>
-            <div className="flex space-x-6">
+            <div className="flex flex-wrap justify-center md:justify-end gap-4 sm:gap-6">
               <Link href="/terms">
-                <div className="text-sm text-gray-400 hover:text-orange-300 transition-colors duration-200 cursor-pointer">
+                <div className="text-sm text-gray-400 hover:text-orange-300 transition-colors duration-200 cursor-pointer py-2">
                   Privacy Policy
                 </div>
               </Link>
               <Link href="/terms">
-                <div className="text-sm text-gray-400 hover:text-orange-300 transition-colors duration-200 cursor-pointer">
+                <div className="text-sm text-gray-400 hover:text-orange-300 transition-colors duration-200 cursor-pointer py-2">
                   Terms of Service
                 </div>
               </Link>
               <Link href="/terms">
-                <div className="text-sm text-gray-400 hover:text-orange-300 transition-colors duration-200 cursor-pointer">
+                <div className="text-sm text-gray-400 hover:text-orange-300 transition-colors duration-200 cursor-pointer py-2">
                   Cookie Policy
                 </div>
               </Link>
