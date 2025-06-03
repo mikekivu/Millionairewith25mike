@@ -73,22 +73,22 @@ export default function Header() {
               <Link href="/">
                 <div className={`inline-flex items-center px-2 pt-1 pb-1 border-b-2 text-sm font-medium transition-colors duration-200 ${
                   isActive('/') 
-                    ? 'border-orange-500 text-orange-700 font-semibold' 
-                    : 'border-transparent text-gray-600 hover:border-yellow-300 hover:text-orange-600'
+                    ? 'border-purple-500 text-purple-700 font-semibold' 
+                    : 'border-transparent text-gray-600 hover:border-blue-300 hover:text-purple-600'
                 } cursor-pointer`}>
                   Home
                 </div>
               </Link>
               <Link href="/#plans">
-                <div className="border-transparent text-gray-600 hover:border-yellow-300 hover:text-orange-600 inline-flex items-center px-2 pt-1 pb-1 border-b-2 text-sm font-medium transition-colors duration-200 cursor-pointer">
+                <div className="border-transparent text-gray-600 hover:border-blue-300 hover:text-purple-600 inline-flex items-center px-2 pt-1 pb-1 border-b-2 text-sm font-medium transition-colors duration-200 cursor-pointer">
                   Investment Plans
                 </div>
               </Link>
               <Link href="/about">
                 <div className={`inline-flex items-center px-2 pt-1 pb-1 border-b-2 text-sm font-medium transition-colors duration-200 ${
                   isActive('/about') 
-                    ? 'border-orange-500 text-orange-700 font-semibold' 
-                    : 'border-transparent text-gray-600 hover:border-yellow-300 hover:text-orange-600'
+                    ? 'border-purple-500 text-purple-700 font-semibold' 
+                    : 'border-transparent text-gray-600 hover:border-blue-300 hover:text-purple-600'
                 } cursor-pointer`}>
                   About Us
                 </div>
@@ -96,8 +96,8 @@ export default function Header() {
               <Link href="/contact">
                 <div className={`inline-flex items-center px-2 pt-1 pb-1 border-b-2 text-sm font-medium transition-colors duration-200 ${
                   isActive('/contact') 
-                    ? 'border-orange-500 text-orange-700 font-semibold' 
-                    : 'border-transparent text-gray-600 hover:border-yellow-300 hover:text-orange-600'
+                    ? 'border-purple-500 text-purple-700 font-semibold' 
+                    : 'border-transparent text-gray-600 hover:border-blue-300 hover:text-purple-600'
                 } cursor-pointer`}>
                   Contact
                 </div>
@@ -166,22 +166,22 @@ export default function Header() {
             <Link href="/">
               <div className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
                 isActive('/') 
-                  ? 'border-orange-500 text-orange-700 bg-orange-50' 
-                  : 'border-transparent text-gray-600 hover:bg-yellow-50 hover:border-yellow-300 hover:text-orange-600'
+                  ? 'border-purple-500 text-purple-700 bg-purple-50' 
+                  : 'border-transparent text-gray-600 hover:bg-blue-50 hover:border-blue-300 hover:text-purple-600'
               } cursor-pointer`}>
                 Home
               </div>
             </Link>
             <Link href="/#plans">
-              <div className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-yellow-50 hover:border-yellow-300 hover:text-orange-600 cursor-pointer">
+              <div className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-blue-50 hover:border-blue-300 hover:text-purple-600 cursor-pointer">
                 Investment Plans
               </div>
             </Link>
             <Link href="/about">
               <div className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
                 isActive('/about') 
-                  ? 'border-orange-500 text-orange-700 bg-orange-50' 
-                  : 'border-transparent text-gray-600 hover:bg-yellow-50 hover:border-yellow-300 hover:text-orange-600'
+                  ? 'border-purple-500 text-purple-700 bg-purple-50' 
+                  : 'border-transparent text-gray-600 hover:bg-blue-50 hover:border-blue-300 hover:text-purple-600'
               } cursor-pointer`}>
                 About Us
               </div>
@@ -189,8 +189,8 @@ export default function Header() {
             <Link href="/contact">
               <div className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
                 isActive('/contact') 
-                  ? 'border-orange-500 text-orange-700 bg-orange-50' 
-                  : 'border-transparent text-gray-600 hover:bg-yellow-50 hover:border-yellow-300 hover:text-orange-600'
+                  ? 'border-purple-500 text-purple-700 bg-purple-50' 
+                  : 'border-transparent text-gray-600 hover:bg-blue-50 hover:border-blue-300 hover:text-purple-600'
               } cursor-pointer`}>
                 Contact
               </div>
@@ -200,13 +200,13 @@ export default function Header() {
             {user ? (
               <div className="space-y-1">
                 <Link href={user.role === 'admin' ? '/admin' : '/dashboard'}>
-                  <div className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-yellow-50 hover:border-yellow-300 hover:text-orange-600 cursor-pointer">
+                  <div className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-blue-50 hover:border-blue-300 hover:text-purple-600 cursor-pointer">
                     Dashboard
                   </div>
                 </Link>
                 <div 
                   onClick={handleLogout}
-                  className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-yellow-50 hover:border-yellow-300 hover:text-orange-600 cursor-pointer"
+                  className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-blue-50 hover:border-blue-300 hover:text-purple-600 cursor-pointer"
                 >
                   Logout
                 </div>
@@ -214,12 +214,12 @@ export default function Header() {
             ) : (
               <div className="space-y-1">
                 <Link href="/login">
-                  <div className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-yellow-50 hover:border-yellow-300 hover:text-orange-600 cursor-pointer">
+                  <div className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-blue-50 hover:border-blue-300 hover:text-purple-600 cursor-pointer">
                     Login
                   </div>
                 </Link>
                 <Link href="/register">
-                  <div className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-yellow-50 hover:border-yellow-300 hover:text-orange-600 cursor-pointer">
+                  <div className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-blue-50 hover:border-blue-300 hover:text-purple-600 cursor-pointer">
                     Register
                   </div>
                 </Link>
