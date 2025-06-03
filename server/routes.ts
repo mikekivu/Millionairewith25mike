@@ -179,7 +179,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication Routes
   // const router = express.Router(); //Router moved above
   const router = express.Router();
-  const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
   // Auth routes
   router.post('/api/auth/register', async (req, res) => {
