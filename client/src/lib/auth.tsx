@@ -48,7 +48,7 @@ export function useAuth() {
   const login = async (credentials: LoginData) => {
     try {
       const response = await apiRequest('POST', '/api/auth/login', credentials);
-      
+
       if (!response.ok) {
         let errorMessage = 'Login failed';
         try {
@@ -82,8 +82,12 @@ export function useAuth() {
         throw new Error('Invalid response format from server');
       }
 
+      if (!data.success) {
+          throw new Error(data.message || 'Login failed');
+      }
+
       if (!data.token) {
-        throw new Error(data.message || 'No authentication token received');
+        throw new Error('No authentication token received');
       }
 
       // Store token in localStorage
@@ -92,7 +96,7 @@ export function useAuth() {
       // Refetch user data
       await refetch();
 
-      return data;
+      return data; // Return the entire data object
     } catch (error) {
       console.error('Login error:', error);
       if (error instanceof Error) {
@@ -105,7 +109,7 @@ export function useAuth() {
   const register = async (userData: RegisterData) => {
     try {
       const response = await apiRequest('POST', '/api/auth/register', userData);
-      
+
       if (!response.ok) {
         let errorMessage = 'Registration failed';
         try {
@@ -139,8 +143,12 @@ export function useAuth() {
         throw new Error('Invalid response format from server');
       }
 
+       if (!data.success) {
+          throw new Error(data.message || 'Registration failed');
+      }
+
       if (!data.token) {
-        throw new Error(data.message || 'No authentication token received');
+        throw new Error('No authentication token received');
       }
 
       // Store token in localStorage
@@ -149,7 +157,7 @@ export function useAuth() {
       // Refetch user data
       await refetch();
 
-      return data;
+      return data; // Return the entire data object
     } catch (error) {
       console.error('Register error:', error);
       if (error instanceof Error) {

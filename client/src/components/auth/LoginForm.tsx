@@ -55,25 +55,20 @@ export default function LoginForm() {
       const response = await login(loginData);
       console.log('Login response:', response);
       
-      if (response && response.success && response.user) {
-        toast({
-          title: "Login Successful",
-          description: "Welcome back to ProsperityGroups!",
-        });
-        
-        // Small delay to ensure state is updated
-        setTimeout(() => {
-          // Redirect to dashboard based on role
-          if (response.user.role === 'admin') {
-            navigate('/admin');
-          } else {
-            navigate('/dashboard/wallet');
-          }
-        }, 100);
+      // The login function in auth.tsx handles the response and stores the token
+      // If we reach this point, login was successful
+      toast({
+        title: "Login Successful",
+        description: "Welcome back to ProsperityGroups!",
+      });
+      
+      // Navigate based on user role (get from response)
+      if (response && response.user && response.user.role === 'admin') {
+        navigate('/admin');
       } else {
-        console.error('Invalid response structure:', response);
-        throw new Error(response?.message || 'Invalid response from server');
+        navigate('/dashboard/wallet');
       }
+      
     } catch (error) {
       console.error('Login error:', error);
       const errorMessage = error instanceof Error ? error.message : "Invalid email or password. Please try again.";

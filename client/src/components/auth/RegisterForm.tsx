@@ -87,14 +87,20 @@ export default function RegisterForm() {
         registerData.phoneNumber = data.phoneNumber;
       }
       
-      await register(registerData);
+      const response = await register(registerData);
       
       toast({
         title: "Registration Successful",
-        description: "Welcome to MillionaireWith$25! Your account has been created.",
+        description: "Welcome to ProsperityGroups! Your account has been created.",
       });
       
-      navigate('/dashboard/wallet');
+      // Navigate based on user role (should be 'user' for new registrations)
+      if (response && response.user && response.user.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard/wallet');
+      }
+      
     } catch (error) {
       console.error('Register error:', error);
       toast({
