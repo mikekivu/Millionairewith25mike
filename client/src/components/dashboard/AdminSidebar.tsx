@@ -16,6 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import logo from '@/assets/logo.png';
+import Logo from '@/components/Logo';
 
 interface NavItem {
   title: string;
@@ -98,8 +99,8 @@ export default function AdminSidebar() {
         <div className="p-6">
           {/* Logo and Brand */}
           <div className="flex items-center justify-center mb-8">
-            <img src={logo} alt="MillionareWith$25" className="h-16 w-16" />
-            <div className="ml-2">
+            <Logo size="lg" className="shadow-lg" />
+            <div className="ml-2"></div>
               <h1 className="text-xl font-bold text-white">
                 <span className="text-orange-500">Millionare</span>
                 <span className="text-yellow-400">With$25</span>
