@@ -1,0 +1,103 @@
+Deployment
+Source
+Log
+2025-06-03 10:49:28.73
+bd2ef6c7
+User
+0x5},
+2025-06-03 11:57:07.92
+bd2ef6c7
+User
+8:57:05 AM [express] serving on port 5000
+2025-06-03 12:00:27.42
+bd2ef6c7
+System
+system: received signal terminated
+2025-06-03 12:01:21.28
+1d875ad7
+User
+9:01:21 AM [vite] Pre-transform error: Failed to load url /src/main.tsx?v=HlEAqKm84LayhyIygz57- (resolved id: /src/main.tsx?v=HlEAqKm84LayhyIygz57-). Does the file exist?
+2025-06-03 12:01:21.30
+1d875ad7
+System
+command finished with error [sh -c node dist/index.js]: exit status 1
+2025-06-03 12:01:23.16
+1d875ad7
+User
+9:01:23 AM [express] serving on port 5000
+2025-06-03 12:01:23.86
+1d875ad7
+User
+9:01:23 AM [vite] Pre-transform error: Failed to load url /src/main.tsx?v=n6MkjY5NcWPVQag-VKqIl (resolved id: /src/main.tsx?v=n6MkjY5NcWPVQag-VKqIl). Does the file exist?
+2025-06-03 12:01:23.91
+1d875ad7
+System
+command finished with error [sh -c node dist/index.js]: exit status 1
+2025-06-03 12:03:36.45
+1d875ad7
+User
+9:03:36 AM [express] serving on port 5000
+2025-06-03 12:04:21.48
+408e4604
+System
+starting up user application
+2025-06-03 12:04:21.73
+408e4604
+System
+forwarding local port 5000 to external port 80 (mapped as 1104)
+2025-06-03 12:04:24.91
+408e4604
+User
+Re-optimizing dependencies because vite config has changed
+2025-06-03 12:04:25.05
+408e4604
+User
+9:04:24 AM [express] serving on port 5000
+2025-06-03 12:04:26.71
+408e4604
+User
+9:04:26 AM [vite] Pre-transform error: Failed to load url /src/main.tsx?v=Xl0Grfis5jfN0ByuD10GG (resolved id: /src/main.tsx?v=Xl0Grfis5jfN0ByuD10GG). Does the file exist?
+2025-06-03 12:04:27.64
+408e4604
+System
+command finished with error [sh -c node dist/index.js]: exit status 1
+2025-06-03 12:06:34.90
+408e4604
+User
+9:06:32 AM [express] serving on port 5000
+2025-06-03 12:08:44.40
+1d875ad7
+System
+system: received signal terminated
+2025-06-03 12:18:25.28
+408e4604
+User
+9:18:25 AM [vite] Pre-transform error: Failed to load url /src/main.tsx?v=D1ogNU1JFoMyUdrYxrJuD (resolved id: /src/main.tsx?v=D1ogNU1JFoMyUdrYxrJuD). Does the file exist?
+2025-06-03 12:18:25.29
+408e4604
+System
+command finished with error [sh -c node dist/index.js]: exit status 1
+2025-06-03 12:18:28.09
+408e4604
+User
+9:18:27 AM [express] serving on port 5000
+2025-06-03 12:18:30.43
+408e4604
+User
+9:18:30 AM [vite] Pre-transform error: Failed to load url /src/main.tsx?v=ETf-Va4HZmUyqUfVAPGrD (resolved id: /src/main.tsx?v=ETf-Va4HZmUyqUfVAPGrD). Does the file exist?
+2025-06-03 12:18:30.47
+408e4604
+System
+command finished with error [sh -c node dist/index.js]: exit status 1
+2025-06-03 12:18:32.83
+408e4604
+User
+9:18:32 AM [express] serving on port 5000
+2025-06-03 12:18:33.75
+408e4604
+User
+9:18:33 AM [vite] Pre-transform error: Failed to load url /src/main.tsx?v=lsaPs3ey3hu-f_az3oDFv (resolved id: /src/main.tsx?v=lsaPs3ey3hu-f_az3oDFv). Does the file exist?
+2025-06-03 12:18:33.78
+408e4604
+System
+command finished with error [sh -c node dist/index.js]: exit status 1
