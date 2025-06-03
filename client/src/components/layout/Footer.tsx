@@ -1,6 +1,6 @@
 import { Link } from 'wouter';
 import Logo from '@/components/Logo';
-import { Facebook, Twitter, Instagram, Linkedin, Mail, Send, CreditCard, Bitcoin } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Linkedin, Mail, Send, CreditCard, Smartphone } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -17,14 +17,26 @@ export default function Footer() {
             </p>
             <div className="mt-6 bg-gradient-to-r from-orange-900/20 to-yellow-900/20 p-3 rounded-lg">
               <h4 className="text-sm font-semibold text-orange-400 mb-2">Payment Methods</h4>
-              <div className="flex items-center space-x-3">
+              <div className="grid grid-cols-2 gap-2">
                 <div className="flex items-center p-2 bg-white/10 rounded">
-                  <CreditCard className="h-5 w-5 text-blue-400 mr-2" />
-                  <span className="text-sm text-gray-300">PayPal</span>
+                  <CreditCard className="h-4 w-4 text-blue-400 mr-2" />
+                  <span className="text-xs text-gray-300">Pesapal</span>
                 </div>
                 <div className="flex items-center p-2 bg-white/10 rounded">
-                  <Bitcoin className="h-5 w-5 text-yellow-500 mr-2" />
-                  <span className="text-sm text-gray-300">USDT (TRC20)</span>
+                  <CreditCard className="h-4 w-4 text-red-400 mr-2" />
+                  <span className="text-xs text-gray-300">Mastercard</span>
+                </div>
+                <div className="flex items-center p-2 bg-white/10 rounded">
+                  <CreditCard className="h-4 w-4 text-blue-600 mr-2" />
+                  <span className="text-xs text-gray-300">Visa</span>
+                </div>
+                <div className="flex items-center p-2 bg-white/10 rounded">
+                  <Smartphone className="h-4 w-4 text-green-500 mr-2" />
+                  <span className="text-xs text-gray-300">M-Pesa</span>
+                </div>
+                <div className="flex items-center p-2 bg-white/10 rounded col-span-2 justify-center">
+                  <CreditCard className="h-4 w-4 text-blue-800 mr-2" />
+                  <span className="text-xs text-gray-300">American Express</span>
                 </div>
               </div>
             </div>
