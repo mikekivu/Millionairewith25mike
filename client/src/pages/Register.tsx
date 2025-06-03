@@ -29,12 +29,12 @@ export default function Register() {
   return (
     <>
       <Helmet>
-        <title>Register - MillionaireWith$25</title>
-        <meta name="description" content="Create a new account on MillionaireWith$25 and start your investment journey today. Enjoy our multi-level referral system and passive income opportunities." />
-        <meta property="og:title" content="Register - MillionaireWith$25" />
-        <meta property="og:description" content="Create a new account on MillionaireWith$25 and start your investment journey today." />
+        <title>Register - ProsperityGroups</title>
+        <meta name="description" content="Create a new account on ProsperityGroups and start your investment journey today. Enjoy our multi-level referral system and passive income opportunities." />
+        <meta property="og:title" content="Register - ProsperityGroups" />
+        <meta property="og:description" content="Create a new account on ProsperityGroups and start your investment journey today." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://millionairewith25.com/register" />
+        <meta property="og:url" content="https://prosperitygroups.com/register" />
       </Helmet>
 
       <div className="min-h-screen flex flex-col">
@@ -45,10 +45,10 @@ export default function Register() {
             {/* Left side - Registration form */}
             <div className="w-full lg:w-1/2 px-6 py-12 sm:px-12">
               <div className="text-center mb-8">
-                <img src={logoImage} alt="MillionaireWith$25 Logo" className="h-16 mx-auto mb-4" />
+                <img src={logoImage} alt="ProsperityGroups Logo" className="h-16 mx-auto mb-4" />
                 <h1 className="text-2xl font-bold text-dark-900 mb-2">
                   <span className="text-orange-500">Start Your Journey with</span>
-                  <span className="text-yellow-500 block">MillionaireWith$25</span>
+                  <span className="text-yellow-500 block">ProsperityGroups</span>
                 </h1>
                 <p className="text-gray-600 mt-2">
                   Create your account and start earning today

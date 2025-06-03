@@ -102,9 +102,9 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <a href="mailto:info@millionairewith25.com" className="text-base text-gray-300 hover:text-orange-300 transition-colors duration-200 flex items-center">
+                <a href="mailto:info@prosperitygroups.com" className="text-base text-gray-300 hover:text-orange-300 transition-colors duration-200 flex items-center">
                   <Mail className="h-4 w-4 mr-2" />
-                  info@millionairewith25.com
+                  info@prosperitygroups.com
                 </a>
               </li>
               <li>

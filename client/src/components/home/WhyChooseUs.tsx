@@ -84,7 +84,7 @@ export default function WhyChooseUs() {
         <div className="text-center">
           <h2 className="text-3xl font-extrabold sm:text-4xl font-heading">
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-yellow-500">
-              Why Choose MillionaireWith$25?
+              Why Choose ProsperityGroups?
             </span>
           </h2>
           <p className="mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4">

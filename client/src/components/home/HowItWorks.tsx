@@ -43,7 +43,7 @@ export default function HowItWorks() {
             </span>
           </h2>
           <p className="mt-3 max-w-2xl mx-auto text-xl text-gray-600 sm:mt-4">
-            Get started with MillionaireWith$25 in just a few simple steps.
+            Get started with ProsperityGroups in just a few simple steps.
           </p>
         </div>
 

@@ -11,9 +11,9 @@ export default function About() {
   return (
     <>
       <Helmet>
-        <title>About Us - MillionaireWith$25</title>
+        <title>About Us - ProsperityGroups</title>
         <meta name="description" content="Learn more about ProsperityGroups, a leading investment platform combining traditional investment strategies with innovative genealogy-based referral systems." />
-        <meta property="og:title" content="About Us - MillionaireWith$25" />
+        <meta property="og:title" content="About Us - ProsperityGroups" />
         <meta property="og:description" content="Learn more about ProsperityGroups, a leading investment platform with innovative genealogy-based referral systems." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://richlance.com/about" />
@@ -26,7 +26,7 @@ export default function About() {
           <div className="bg-primary-800 text-white py-20">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
               <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl font-heading">
-                About MillionaireWith$25
+                About ProsperityGroups
               </h1>
               <p className="mt-6 max-w-3xl mx-auto text-xl">
                 Learn more about our innovative investment platform and how we're helping thousands achieve financial freedom.
@@ -58,7 +58,7 @@ export default function About() {
                 <div>
                   <h3 className="text-xl font-bold text-dark-900 mb-4">Our Values</h3>
                   <p className="text-gray-600">
-                    At MillionaireWith$25, we operate with unwavering integrity, transparency, and a commitment to our users' success. We believe in building long-term relationships based on trust, providing exceptional support, and continuously innovating to deliver the best possible investment experience.
+                    At ProsperityGroups, we operate with unwavering integrity, transparency, and a commitment to our users' success. We believe in building long-term relationships based on trust, providing exceptional support, and continuously innovating to deliver the best possible investment experience.
                   </p>
                 </div>
               </div>

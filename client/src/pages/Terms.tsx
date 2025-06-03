@@ -35,7 +35,7 @@ export default function Terms() {
               <div className="prose prose-blue max-w-none">
                 <h2>1. Acceptance of Terms</h2>
                 <p>
-                  By accessing or using the MillionaireWith$25 platform ("Platform"), you agree to be bound by these Terms and Conditions ("Terms"). If you do not agree to these Terms, please do not use the Platform.
+                  By accessing or using the ProsperityGroups platform ("Platform"), you agree to be bound by these Terms and Conditions ("Terms"). If you do not agree to these Terms, please do not use the Platform.
                 </p>
                 
                 <h2>2. Eligibility</h2>
