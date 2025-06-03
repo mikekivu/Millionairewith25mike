@@ -42,9 +42,9 @@ export class DatabaseStorage implements IStorage {
     if (!user.referralCode) {
       user.referralCode = (user.username.toUpperCase() + nanoid(8)).substring(0, 20);
     }
-    
+
     const [newUser] = await db.insert(users).values(user).returning();
-    
+
     // Handle referrals if user was referred
     if (newUser.referredBy) {
       const referrer = await this.getUser(newUser.referredBy);
@@ -56,7 +56,7 @@ export class DatabaseStorage implements IStorage {
           commissionRate: "10",
           status: "active"
         });
-        
+
         // Create referrals for higher levels if applicable
         const referrerChain = await this.getReferrerChain(referrer.id);
         for (let i = 0; i < referrerChain.length && i < 4; i++) { // Up to level 5
@@ -71,7 +71,7 @@ export class DatabaseStorage implements IStorage {
         }
       }
     }
-    
+
     return newUser;
   }
 
@@ -81,7 +81,7 @@ export class DatabaseStorage implements IStorage {
       .set(userData)
       .where(eq(users.id, id))
       .returning();
-    
+
     return updatedUser;
   }
 
@@ -100,7 +100,7 @@ export class DatabaseStorage implements IStorage {
         eq(referrals.level, 1)
       ))
       .innerJoin(users, eq(referrals.referredId, users.id));
-    
+
     return directReferrals.map(r => r.user);
   }
 
@@ -112,7 +112,7 @@ export class DatabaseStorage implements IStorage {
     const result = await db.delete(users).where(eq(users.id, id));
     return result.rowCount > 0;
   }
-  
+
   // Plans Management
   async createPlan(plan: InsertPlan): Promise<Plan> {
     const [newPlan] = await db.insert(plans).values(plan).returning();
@@ -138,7 +138,7 @@ export class DatabaseStorage implements IStorage {
       .set(planData)
       .where(eq(plans.id, id))
       .returning();
-    
+
     return updatedPlan;
   }
 
@@ -150,12 +150,12 @@ export class DatabaseStorage implements IStorage {
     const result = await db.delete(plans).where(eq(plans.id, id));
     return result.rowCount > 0;
   }
-  
+
   // Investments Management
   async createInvestment(investment: InsertInvestment): Promise<Investment> {
     // Create the investment
     const [newInvestment] = await db.insert(investments).values(investment).returning();
-    
+
     // Create transaction record for the investment
     await this.createTransaction({
       userId: investment.userId,
@@ -167,14 +167,14 @@ export class DatabaseStorage implements IStorage {
       transactionDetails: `Investment in plan #${investment.planId}`,
       investmentId: newInvestment.id
     });
-    
+
     // Deduct from user's wallet
     const user = await this.getUser(investment.userId);
     if (user) {
       const newBalance = parseFloat(user.walletBalance) - parseFloat(investment.amount);
       await this.updateUser(user.id, { walletBalance: newBalance.toString() });
     }
-    
+
     return newInvestment;
   }
 
@@ -197,14 +197,14 @@ export class DatabaseStorage implements IStorage {
       .set(investmentData)
       .where(eq(investments.id, id))
       .returning();
-    
+
     return updatedInvestment;
   }
-  
+
   // Transactions Management
   async createTransaction(transaction: InsertTransaction): Promise<Transaction> {
     const [newTransaction] = await db.insert(transactions).values(transaction).returning();
-    
+
     // If it's a deposit, add to user's wallet
     if (transaction.type === "deposit" && transaction.status === "completed") {
       const user = await this.getUser(transaction.userId);
@@ -213,7 +213,7 @@ export class DatabaseStorage implements IStorage {
         await this.updateUser(user.id, { walletBalance: newBalance.toString() });
       }
     }
-    
+
     // If it's a withdrawal, subtract from user's wallet
     if (transaction.type === "withdrawal" && transaction.status === "completed") {
       const user = await this.getUser(transaction.userId);
@@ -222,7 +222,7 @@ export class DatabaseStorage implements IStorage {
         await this.updateUser(user.id, { walletBalance: newBalance.toString() });
       }
     }
-    
+
     // If it's a referral commission, add to referrer's wallet
     if (transaction.type === "referral" && transaction.status === "completed" && transaction.referralId) {
       const referral = await this.getReferral(transaction.referralId);
@@ -231,7 +231,7 @@ export class DatabaseStorage implements IStorage {
         if (referrer) {
           const newBalance = parseFloat(referrer.walletBalance) + parseFloat(transaction.amount);
           await this.updateUser(referrer.id, { walletBalance: newBalance.toString() });
-          
+
           // Update referral commission amount
           await this.updateReferral(referral.id, { 
             commissionAmount: (parseFloat(referral.commissionAmount) + parseFloat(transaction.amount)).toString() 
@@ -239,7 +239,7 @@ export class DatabaseStorage implements IStorage {
         }
       }
     }
-    
+
     return newTransaction;
   }
 
@@ -313,7 +313,7 @@ export class DatabaseStorage implements IStorage {
     if (!existingTransaction) {
       return undefined;
     }
-    
+
     // If we're changing status from pending to completed
     if (
       existingTransaction.status === "pending" && 
@@ -328,7 +328,7 @@ export class DatabaseStorage implements IStorage {
           await this.updateUser(user.id, { walletBalance: newBalance.toString() });
         }
       }
-      
+
       // Handle withdrawal completion
       if (existingTransaction.type === "withdrawal") {
         const user = await this.getUser(existingTransaction.userId);
@@ -337,7 +337,7 @@ export class DatabaseStorage implements IStorage {
           await this.updateUser(user.id, { walletBalance: Math.max(0, newBalance).toString() });
         }
       }
-      
+
       // Handle referral completion
       if (existingTransaction.type === "referral" && existingTransaction.referralId) {
         const referral = await this.getReferral(existingTransaction.referralId);
@@ -346,7 +346,7 @@ export class DatabaseStorage implements IStorage {
           if (referrer) {
             const newBalance = parseFloat(referrer.walletBalance) + parseFloat(existingTransaction.amount);
             await this.updateUser(referrer.id, { walletBalance: newBalance.toString() });
-            
+
             // Update referral commission amount
             await this.updateReferral(referral.id, { 
               commissionAmount: (parseFloat(referral.commissionAmount) + parseFloat(existingTransaction.amount)).toString() 
@@ -355,16 +355,16 @@ export class DatabaseStorage implements IStorage {
         }
       }
     }
-    
+
     const [updatedTransaction] = await db
       .update(transactions)
       .set(transactionData)
       .where(eq(transactions.id, id))
       .returning();
-    
+
     return updatedTransaction;
   }
-  
+
   // Referral Management
   async createReferral(referral: InsertReferral): Promise<Referral> {
     const [newReferral] = await db.insert(referrals).values(referral).returning();
@@ -403,9 +403,9 @@ export class DatabaseStorage implements IStorage {
           setTimeout(() => reject(new Error('Referrals query timeout')), 15000)
         )
       ]) as any[];
-    
+
     console.log(`Found ${referralData.length} referrals for user ID ${userId}`);
-    
+
     // Map the results to include the actual referral and the user it belongs to
     return referralData.map(r => ({
       ...r.referral,
@@ -426,16 +426,38 @@ export class DatabaseStorage implements IStorage {
     }));
   }
 
+  async getAllUserReferralsSimple(userId: number): Promise<Referral[]> {
+    try {
+      // Simplified query without joins to prevent timeouts
+      const referralData = await Promise.race([
+        db
+          .select()
+          .from(referrals)
+          .where(eq(referrals.referrerId, userId))
+          .orderBy(referrals.level)
+          .limit(50), // Limit results
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Query timeout')), 5000)
+        )
+      ]) as Referral[];
+
+      return referralData;
+    } catch (error) {
+      console.error('Simple referrals query error:', error);
+      return [];
+    }
+  }
+
   async updateReferral(id: number, referralData: Partial<Referral>): Promise<Referral | undefined> {
     const [updatedReferral] = await db
       .update(referrals)
       .set(referralData)
       .where(eq(referrals.id, id))
       .returning();
-    
+
     return updatedReferral;
   }
-  
+
   // Payment Settings Management
   async createPaymentSetting(setting: InsertPaymentSetting): Promise<PaymentSetting> {
     try {
@@ -450,17 +472,17 @@ export class DatabaseStorage implements IStorage {
         active: setting.active !== undefined ? setting.active : true,
         payment_method: setting.method // Important: Explicitly set payment_method 
       };
-      
+
       // Insert using the values object
       const [newSetting] = await db
         .insert(paymentSettings)
         .values(values)
         .returning();
-      
+
       if (!newSetting) {
         throw new Error('Failed to create payment setting');
       }
-      
+
       return newSetting;
     } catch (error) {
       console.error('Error creating payment setting:', error);
@@ -488,24 +510,24 @@ export class DatabaseStorage implements IStorage {
       if (settingData.method) {
         // Create update object with both method and payment_method set to the same value
         const dataToUpdate: any = { ...settingData, payment_method: settingData.method };
-        
+
         const [updatedSetting] = await db
           .update(paymentSettings)
           .set(dataToUpdate)
           .where(eq(paymentSettings.id, id))
           .returning();
-          
+
         return updatedSetting;
       } else {
         // If not updating method, we can use the standard approach
         const dataToUpdate = { ...settingData };
-        
+
         const [updatedSetting] = await db
           .update(paymentSettings)
           .set(dataToUpdate)
           .where(eq(paymentSettings.id, id))
           .returning();
-        
+
         return updatedSetting;
       }
     } catch (error) {
@@ -517,7 +539,7 @@ export class DatabaseStorage implements IStorage {
   async togglePaymentMethod(id: number, active: boolean): Promise<PaymentSetting | undefined> {
     return this.updatePaymentSetting(id, { active });
   }
-  
+
   // Contact Messages Management
   async createContactMessage(message: InsertContactMessage): Promise<ContactMessage> {
     const [newMessage] = await db.insert(contactMessages).values(message).returning();
@@ -539,14 +561,14 @@ export class DatabaseStorage implements IStorage {
       .set({ responded: true })
       .where(eq(contactMessages.id, id))
       .returning();
-    
+
     return updatedMessage;
   }
-  
+
   // User Messages Management
   async createUserMessage(message: InsertUserMessage): Promise<UserMessage> {
     const [newMessage] = await db.insert(userMessages).values(message).returning();
-    
+
     // Create notification for the recipient
     await this.createNotification({
       userId: message.recipientId,
@@ -557,7 +579,7 @@ export class DatabaseStorage implements IStorage {
       entityType: "message",
       link: "/dashboard/messages"
     });
-    
+
     return newMessage;
   }
 
@@ -588,7 +610,7 @@ export class DatabaseStorage implements IStorage {
       .set({ read: true })
       .where(eq(userMessages.id, id))
       .returning();
-    
+
     return updatedMessage;
   }
 
@@ -598,10 +620,8 @@ export class DatabaseStorage implements IStorage {
       .set({ replied: true })
       .where(eq(userMessages.id, id))
       .returning();
-    
-    return updatedMessage;
   }
-  
+
   // Notifications Management
   async createNotification(notification: InsertNotification): Promise<Notification> {
     const [newNotification] = await db.insert(notifications).values(notification).returning();
@@ -638,43 +658,43 @@ export class DatabaseStorage implements IStorage {
       .set({ status: "read" })
       .where(eq(notifications.id, id))
       .returning();
-    
+
     return updatedNotification;
   }
-  
+
   // Dashboard statistics
   async getDashboardStats(): Promise<DashboardStats> {
     const allUsers = await this.getAllUsers();
     const activeUsers = allUsers.filter(user => user.active);
     const inactiveUsers = allUsers.filter(user => !user.active);
-    
+
     // Calculate investment total
     const investments = await this.getAllInvestments();
     const totalInvested = investments.reduce((sum, inv) => sum + parseFloat(inv.amount), 0).toString();
-    
+
     // Get transaction totals
     const deposits = await this.getTransactionsByType("deposit");
     const totalDeposits = deposits
       .filter(tx => tx.status === "completed")
       .reduce((sum, tx) => sum + parseFloat(tx.amount), 0).toString();
-    
+
     const withdrawals = await this.getTransactionsByType("withdrawal");
     const totalWithdrawals = withdrawals
       .filter(tx => tx.status === "completed")
       .reduce((sum, tx) => sum + parseFloat(tx.amount), 0).toString();
-    
+
     // Get most recent transactions
     const allTransactions = await this.getAllTransactions();
     const recentTransactions = allTransactions
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       .slice(0, 5);
-    
+
     // Get most recent users
     const recentUsers = allUsers
       .filter(user => user.role !== "admin")
       .sort((a, b) => b.id - a.id)
       .slice(0, 5);
-    
+
     return {
       totalUsers: allUsers.length,
       activeUsers: activeUsers.length,
@@ -692,24 +712,24 @@ export class DatabaseStorage implements IStorage {
     if (!user) {
       throw new Error(`User with id ${userId} not found`);
     }
-    
+
     // Get user's investments
     const userInvestments = await this.getUserInvestments(userId);
     const totalInvested = userInvestments.reduce((sum, inv) => sum + parseFloat(inv.amount), 0).toString();
     const activeInvestments = userInvestments.filter(inv => inv.status === "active").length;
-    
+
     // Calculate user's earnings
     const totalProfit = userInvestments.reduce((sum, inv) => sum + parseFloat(inv.profit), 0);
-    
+
     // Get referral earnings
     const userReferrals = await this.getAllUserReferrals(userId);
     const referralEarnings = userReferrals.reduce(
       (sum, ref) => sum + parseFloat(ref.commissionAmount), 
       0
     ).toString();
-    
+
     const referralCount = (await this.getUserReferralsByLevel(userId, 1)).length;
-    
+
     return {
       walletBalance: user.walletBalance,
       totalInvested,
@@ -726,7 +746,7 @@ export class DatabaseStorage implements IStorage {
     if (!user || !user.referredBy) {
       return chain;
     }
-    
+
     chain.push(user.referredBy);
     return this.getReferrerChain(user.referredBy, chain);
   }
@@ -739,10 +759,10 @@ export class DatabaseStorage implements IStorage {
       4: "2",  // 2% for level 4
       5: "1"   // 1% for level 5
     };
-    
+
     return rates[level as keyof typeof rates] || "0";
   }
-  
+
   // Network performance heatmap data
   async getNetworkPerformance(userId: number): Promise<any> {
     try {
@@ -750,7 +770,7 @@ export class DatabaseStorage implements IStorage {
       if (!user) {
         throw new Error(`User with id ${userId} not found`);
       }
-      
+
       // Get user's direct referrals (level 1) with timeout
       const directReferrals = await Promise.race([
         this.getUserReferralsByLevel(userId, 1),
@@ -758,7 +778,7 @@ export class DatabaseStorage implements IStorage {
           setTimeout(() => reject(new Error('Query timeout')), 10000)
         )
       ]) as Referral[];
-      
+
       // If no referrals, return just the user
       if (directReferrals.length === 0) {
         return {
@@ -770,36 +790,49 @@ export class DatabaseStorage implements IStorage {
           referrals: []
         };
       }
-      
+
       // Build a simplified tree (max 3 levels to prevent timeout)
       const referralTree = await this.buildReferralPerformanceTree(userId, 0, 3);
-      
+
       return referralTree;
     } catch (error) {
       console.error('Network performance query error:', error);
-      // Return basic user info if query fails
-      const user = await this.getUser(userId);
-      return {
-        id: userId,
-        name: user ? `${user.firstName} ${user.lastName}` : 'User',
-        username: user?.username || 'unknown',
-        level: 0,
-        performance: 100,
-        referrals: []
-      };
+      return []; // Return empty array on timeout
     }
   }
-  
+
+  async getAllUserReferralsSimple(userId: number): Promise<Referral[]> {
+    try {
+      // Simplified query without joins to prevent timeouts
+      const referralData = await Promise.race([
+        db
+          .select()
+          .from(referrals)
+          .where(eq(referrals.referrerId, userId))
+          .orderBy(referrals.level)
+          .limit(50), // Limit results
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Query timeout')), 5000)
+        )
+      ]) as Referral[];
+
+      return referralData;
+    } catch (error) {
+      console.error('Simple referrals query error:', error);
+      return [];
+    }
+  }
+
   private async buildReferralPerformanceTree(userId: number, currentLevel: number, maxLevel: number): Promise<any> {
     if (currentLevel > maxLevel) return null;
-    
+
     // Get user info
     const user = await this.getUser(userId);
     if (!user) return null;
-    
+
     // Get direct referrals
     const directReferrals = await this.getUserReferralsByLevel(userId, 1);
-    
+
     // Calculate performance score based on wallet balance, activity, etc.
     const userInvestments = await this.getUserInvestments(userId);
     const investmentAmount = userInvestments.reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
@@ -807,13 +840,13 @@ export class DatabaseStorage implements IStorage {
     const recentActivity = userTransactions.filter(tx => 
       new Date(tx.createdAt).getTime() > Date.now() - (30 * 24 * 60 * 60 * 1000) // Last 30 days
     ).length;
-    
+
     // Performance formula: active status (50%) + investment amount (30%) + recent activity (20%)
     let performanceScore = 0;
     performanceScore += user.active ? 50 : 0;
     performanceScore += Math.min(investmentAmount / 500, 1) * 30; // Cap at $500 for max score
     performanceScore += Math.min(recentActivity / 5, 1) * 20; // Cap at 5 activities for max score
-    
+
     // Build tree node
     const treeNode = {
       id: userId,
@@ -823,7 +856,7 @@ export class DatabaseStorage implements IStorage {
       performance: performanceScore,
       referrals: []
     };
-    
+
     // Process child nodes recursively
     if (currentLevel < maxLevel && directReferrals.length > 0) {
       for (const referral of directReferrals) {
@@ -832,13 +865,13 @@ export class DatabaseStorage implements IStorage {
           currentLevel + 1, 
           maxLevel
         );
-        
+
         if (childNode) {
           treeNode.referrals.push(childNode);
         }
       }
     }
-    
+
     return treeNode;
   }
 }

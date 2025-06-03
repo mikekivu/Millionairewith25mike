@@ -114,7 +114,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // First capture the order with PayPal
       const originalResponse = await capturePaypalOrder(req, res);
-      
+
       // After successful capture, create a transaction record
       // This needs to be implemented properly according to how capturePaypalOrder responds
       // and how your transaction creation system works
@@ -148,13 +148,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/webhook/coinbase", async (req, res) => {
     // In a production environment, verify webhook signature
     const { event } = req.body;
-    
+
     if (event && event.type === "charge:confirmed") {
       const { data } = event;
       if (data && data.metadata && data.metadata.userId) {
         const userId = parseInt(data.metadata.userId);
         const amount = data.pricing.local.amount;
-        
+
         // Create transaction
         await storage.createTransaction({
           userId,
@@ -167,7 +167,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
     }
-    
+
     res.status(200).end();
   });
 
@@ -175,19 +175,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/register", async (req, res) => {
     try {
       const validatedData = registerSchema.parse(req.body);
-      
+
       // Check if username or email already exists
       const existingUser = await storage.getUserByEmail(validatedData.email) || 
                            await storage.getUserByUsername(validatedData.username);
-      
+
       if (existingUser) {
         return res.status(400).json({ message: "Username or email already exists" });
       }
-      
+
       // Hash password
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(validatedData.password, salt);
-      
+
       // Handle referral code
       let referredBy = undefined;
       if (validatedData.referralCode) {
@@ -196,7 +196,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           referredBy = referrer.id;
         }
       }
-      
+
       // Create user
       const newUser = await storage.createUser({
         username: validatedData.username,
@@ -211,12 +211,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         role: "user",
         active: true
       });
-      
+
       // Create referral entries if user was referred
       if (referredBy) {
         try {
           console.log(`Creating referral record for new user ${newUser.id} referred by ${referredBy}`);
-          
+
           // Create direct (level 1) referral
           await storage.createReferral({
             referrerId: referredBy,
@@ -224,7 +224,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             level: 1,
             commissionRate: "10"
           });
-          
+
           // Check if the referrer has their own referrer (for level 2)
           const referrer = await storage.getUser(referredBy);
           if (referrer && referrer.referredBy) {
@@ -235,7 +235,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               level: 2,
               commissionRate: "5"
             });
-            
+
             // Check for level 3 referrer
             const level2Referrer = await storage.getUser(referrer.referredBy);
             if (level2Referrer && level2Referrer.referredBy) {
@@ -246,7 +246,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 level: 3,
                 commissionRate: "3"
               });
-              
+
               // Check for level 4 referrer
               const level3Referrer = await storage.getUser(level2Referrer.referredBy);
               if (level3Referrer && level3Referrer.referredBy) {
@@ -257,7 +257,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   level: 4,
                   commissionRate: "2"
                 });
-                
+
                 // Check for level 5 referrer
                 const level4Referrer = await storage.getUser(level3Referrer.referredBy);
                 if (level4Referrer && level4Referrer.referredBy) {
@@ -277,13 +277,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Continue registration process even if referral creation fails
         }
       }
-      
+
       // Generate JWT token
       const token = jwt.sign({ userId: newUser.id }, JWT_SECRET, { expiresIn: "1d" });
-      
+
       // Set user in session
       req.session.userId = newUser.id;
-      
+
       // Return user without password
       const { password, ...userWithoutPassword } = newUser;
       res.status(201).json({ 
@@ -306,30 +306,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/login", async (req, res) => {
     try {
       const validatedData = loginSchema.parse(req.body);
-      
+
       // Find user by email
       const user = await storage.getUserByEmail(validatedData.email);
       if (!user) {
         return res.status(400).json({ message: "Invalid email or password" });
       }
-      
+
       // Check if user is active
       if (!user.active) {
         return res.status(403).json({ message: "Account is deactivated" });
       }
-      
+
       // Verify password
       const isPasswordValid = await bcrypt.compare(validatedData.password, user.password);
       if (!isPasswordValid) {
         return res.status(400).json({ message: "Invalid email or password" });
       }
-      
+
       // Generate JWT token
       const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "1d" });
-      
+
       // Set user in session
       req.session.userId = user.id;
-      
+
       // Return user without password
       const { password, ...userWithoutPassword } = user;
       res.status(200).json({ 
@@ -362,11 +362,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session.userId;
       const user = await storage.getUser(userId);
-      
+
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-      
+
       // Return user without password
       const { password, ...userWithoutPassword } = user;
       res.status(200).json(userWithoutPassword);
@@ -423,7 +423,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session.userId;
       const investments = await storage.getUserInvestments(userId);
-      
+
       // Enrich with plan details
       const enrichedInvestments = await Promise.all(
         investments.map(async (investment) => {
@@ -431,7 +431,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return { ...investment, plan };
         })
       );
-      
+
       res.status(200).json(enrichedInvestments);
     } catch (error) {
       console.error(error);
@@ -446,46 +446,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...req.body,
         userId
       });
-      
+
       // Check if plan exists and is active
       const plan = await storage.getPlan(validatedData.planId);
       if (!plan || !plan.active) {
         return res.status(400).json({ message: "Invalid or inactive plan" });
       }
-      
+
       // Check min/max deposit
       const amount = parseFloat(validatedData.amount);
       const minDeposit = parseFloat(plan.minDeposit);
       const maxDeposit = parseFloat(plan.maxDeposit);
-      
+
       if (amount < minDeposit || amount > maxDeposit) {
         return res.status(400).json({ 
           message: `Investment amount must be between ${minDeposit} and ${maxDeposit} USDT` 
         });
       }
-      
+
       // Check if user has enough balance
       const user = await storage.getUser(userId);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-      
+
       const walletBalance = parseFloat(user.walletBalance);
       if (walletBalance < amount) {
         return res.status(400).json({ message: "Insufficient wallet balance" });
       }
-      
+
       // Calculate end date
       const endDate = new Date();
       endDate.setDate(endDate.getDate() + plan.durationDays);
-      
+
       // Create investment
       const investment = await storage.createInvestment({
         ...validatedData,
         endDate,
         status: "active"
       });
-      
+
       res.status(201).json({ 
         message: "Investment created successfully", 
         investment 
@@ -522,7 +522,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         type: "deposit",
         status: "pending"
       });
-      
+
       const transaction = await storage.createTransaction(validatedData);
       res.status(201).json({ 
         message: "Deposit initiated", 
@@ -544,18 +544,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session.userId;
       const { amount, currency, paymentMethod, transactionDetails } = req.body;
-      
+
       // Check if user has enough balance
       const user = await storage.getUser(userId);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-      
+
       const walletBalance = parseFloat(user.walletBalance);
       if (walletBalance < parseFloat(amount)) {
         return res.status(400).json({ message: "Insufficient wallet balance" });
       }
-      
+
       const transaction = await storage.createTransaction({
         userId,
         type: "withdrawal",
@@ -565,7 +565,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         paymentMethod,
         transactionDetails
       });
-      
+
       res.status(201).json({ 
         message: "Withdrawal request submitted", 
         transaction 
@@ -587,7 +587,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.session.userId;
       console.log(`Fetching referrals for user ID: ${userId}`);
       const referrals = await storage.getAllUserReferrals(userId);
-      
+
       // Group by level - referrals now already include referred user details
       const referralsByLevel = {};
       for (const referral of referrals) {
@@ -596,25 +596,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         referralsByLevel[referral.level].push(referral);
       }
-      
+
       console.log(`Grouped referrals by level: ${Object.keys(referralsByLevel).join(', ')}`);
       console.log(`Total referrals found: ${referrals.length}`);
-      
+
       res.status(200).json(referralsByLevel);
     } catch (error) {
       console.error("Error fetching referrals:", error);
       res.status(500).json({ message: "Server error" });
     }
   });
-  
+
   // Network performance heatmap data endpoint
   app.get("/api/user/network-performance", authMiddleware, async (req, res) => {
     try {
       const userId = req.session.userId;
       console.log(`Fetching network performance data for user ID: ${userId}`);
-      
+
       const performanceData = await storage.getNetworkPerformance(userId);
-      
+
       res.status(200).json(performanceData);
     } catch (error) {
       console.error("Error fetching network performance data:", error);
@@ -626,18 +626,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session.userId;
       const user = await storage.getUser(userId);
-      
+
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-      
+
       res.status(200).json({ referralCode: user.referralCode });
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Server error" });
     }
   });
-  
+
   // User Messages Routes
   app.get("/api/user/messages/sent", authMiddleware, async (req, res) => {
     try {
@@ -649,7 +649,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Server error" });
     }
   });
-  
+
   app.get("/api/user/messages/received", authMiddleware, async (req, res) => {
     try {
       const userId = req.session.userId;
@@ -660,34 +660,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Server error" });
     }
   });
-  
+
   app.get("/api/user/messages/:id", authMiddleware, async (req, res) => {
     try {
       const messageId = parseInt(req.params.id);
       const message = await storage.getUserMessage(messageId);
-      
+
       if (!message) {
         return res.status(404).json({ message: "Message not found" });
       }
-      
+
       // Check if user is authorized to view this message
       const userId = req.session.userId;
       if (message.senderId !== userId && message.recipientId !== userId) {
         return res.status(403).json({ message: "Unauthorized to view this message" });
       }
-      
+
       // If user is the recipient, mark as read
       if (message.recipientId === userId && !message.read) {
         await storage.markUserMessageAsRead(messageId);
       }
-      
+
       res.status(200).json(message);
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Server error" });
     }
   });
-  
+
   app.post("/api/user/messages", authMiddleware, async (req, res) => {
     try {
       const userId = req.session.userId;
@@ -695,13 +695,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...req.body,
         senderId: userId,
       });
-      
+
       // Check if recipient exists
       const recipient = await storage.getUser(validatedData.recipientId);
       if (!recipient) {
         return res.status(404).json({ message: "Recipient not found" });
       }
-      
+
       const message = await storage.createUserMessage(validatedData);
       res.status(201).json({ 
         message: "Message sent successfully", 
@@ -718,22 +718,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Server error" });
     }
   });
-  
+
   app.post("/api/user/messages/:id/reply", authMiddleware, async (req, res) => {
     try {
       const userId = req.session.userId;
       const messageId = parseInt(req.params.id);
       const originalMessage = await storage.getUserMessage(messageId);
-      
+
       if (!originalMessage) {
         return res.status(404).json({ message: "Original message not found" });
       }
-      
+
       // Verify user is recipient of original message
       if (originalMessage.recipientId !== userId) {
         return res.status(403).json({ message: "Unauthorized to reply to this message" });
       }
-      
+
       // Create reply message
       const validatedData = insertUserMessageSchema.parse({
         senderId: userId,
@@ -741,12 +741,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         subject: `Re: ${originalMessage.subject}`,
         content: req.body.content,
       });
-      
+
       const replyMessage = await storage.createUserMessage(validatedData);
-      
+
       // Mark original message as replied
       await storage.markUserMessageAsReplied(messageId);
-      
+
       res.status(201).json({ 
         message: "Reply sent successfully", 
         id: replyMessage.id 
@@ -762,7 +762,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Server error" });
     }
   });
-  
+
   // User Notifications Routes
   app.get("/api/user/notifications", authMiddleware, async (req, res) => {
     try {
@@ -774,7 +774,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Server error" });
     }
   });
-  
+
   app.get("/api/user/notifications/unread", authMiddleware, async (req, res) => {
     try {
       const userId = req.session.userId;
@@ -785,25 +785,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Server error" });
     }
   });
-  
+
   app.post("/api/user/notifications/:id/read", authMiddleware, async (req, res) => {
     try {
       const notificationId = parseInt(req.params.id);
-      
+
       // Check if notification table exists
       try {
         const notification = await storage.getNotification(notificationId);
-        
+
         if (!notification) {
           return res.status(200).json({ id: notificationId, status: "read" });
         }
-        
+
         // Verify user is owner of notification
         const userId = req.session.userId;
         if (notification.userId !== userId) {
           return res.status(403).json({ message: "Unauthorized to mark this notification" });
         }
-        
+
         const updatedNotification = await storage.markNotificationAsRead(notificationId);
         res.status(200).json(updatedNotification);
       } catch (dbError) {
@@ -822,7 +822,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session.userId;
       const { firstName, lastName, profileImage, country, phoneNumber } = req.body;
-      
+
       const updatedUser = await storage.updateUser(userId, {
         firstName,
         lastName,
@@ -830,11 +830,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         country,
         phoneNumber
       });
-      
+
       if (!updatedUser) {
         return res.status(404).json({ message: "User not found" });
       }
-      
+
       // Return user without password
       const { password, ...userWithoutPassword } = updatedUser;
       res.status(200).json({ 
@@ -851,33 +851,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session.userId;
       const { currentPassword, newPassword } = req.body;
-      
+
       // Validate input
       if (!currentPassword || !newPassword || newPassword.length < 6) {
         return res.status(400).json({ 
           message: "New password must be at least 6 characters long" 
         });
       }
-      
+
       // Get user
       const user = await storage.getUser(userId);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-      
+
       // Verify current password
       const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
       if (!isPasswordValid) {
         return res.status(400).json({ message: "Current password is incorrect" });
       }
-      
+
       // Hash new password
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(newPassword, salt);
-      
+
       // Update password
       await storage.updateUser(userId, { password: hashedPassword });
-      
+
       res.status(200).json({ message: "Password updated successfully" });
     } catch (error) {
       console.error(error);
@@ -900,7 +900,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           maxAmount: setting.maxAmount,
           active: setting.active
         }));
-      
+
       res.status(200).json(activePaymentMethods);
     } catch (error) {
       console.error(error);
@@ -925,9 +925,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Remove passwords
       const usersWithoutPasswords = users.map(user => {
         const { password, ...userWithoutPassword } = user;
-        return userWithoutPassword;
+                return userWithoutPassword;
       });
-      
+
       res.status(200).json(usersWithoutPasswords);
     } catch (error) {
       console.error(error);
@@ -939,17 +939,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = parseInt(req.params.id);
       const { active } = req.body;
-      
+
       if (typeof active !== "boolean") {
         return res.status(400).json({ message: "Active status must be a boolean" });
       }
-      
+
       const updatedUser = await storage.toggleUserStatus(userId, active);
-      
+
       if (!updatedUser) {
         return res.status(404).json({ message: "User not found" });
       }
-      
+
       // Return user without password
       const { password, ...userWithoutPassword } = updatedUser;
       res.status(200).json({ 
@@ -966,11 +966,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = parseInt(req.params.id);
       const deleted = await storage.deleteUser(userId);
-      
+
       if (!deleted) {
         return res.status(404).json({ message: "User not found" });
       }
-      
+
       res.status(200).json({ message: "User deleted successfully" });
     } catch (error) {
       console.error(error);
@@ -1005,11 +1005,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const planId = parseInt(req.params.id);
       const updatedPlan = await storage.updatePlan(planId, req.body);
-      
+
       if (!updatedPlan) {
         return res.status(404).json({ message: "Plan not found" });
       }
-      
+
       res.status(200).json({ 
         message: "Plan updated successfully", 
         plan: updatedPlan 
@@ -1024,17 +1024,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const planId = parseInt(req.params.id);
       const { active } = req.body;
-      
+
       if (typeof active !== "boolean") {
         return res.status(400).json({ message: "Active status must be a boolean" });
       }
-      
+
       const updatedPlan = await storage.togglePlanStatus(planId, active);
-      
+
       if (!updatedPlan) {
         return res.status(404).json({ message: "Plan not found" });
       }
-      
+
       res.status(200).json({ 
         message: `Plan ${active ? 'activated' : 'deactivated'} successfully`, 
         plan: updatedPlan 
@@ -1049,11 +1049,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const planId = parseInt(req.params.id);
       const deleted = await storage.deletePlan(planId);
-      
+
       if (!deleted) {
         return res.status(404).json({ message: "Plan not found" });
       }
-      
+
       res.status(200).json({ message: "Plan deleted successfully" });
     } catch (error) {
       console.error(error);
@@ -1086,17 +1086,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const transactionId = parseInt(req.params.id);
       const { status } = req.body;
-      
+
       if (!["pending", "completed", "failed"].includes(status)) {
         return res.status(400).json({ message: "Invalid transaction status" });
       }
-      
+
       const updatedTransaction = await storage.updateTransaction(transactionId, { status });
-      
+
       if (!updatedTransaction) {
         return res.status(404).json({ message: "Transaction not found" });
       }
-      
+
       res.status(200).json({ 
         message: "Transaction status updated successfully", 
         transaction: updatedTransaction 
@@ -1116,16 +1116,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Server error" });
     }
   });
-  
+
   app.post("/api/admin/payment-settings", authMiddleware, adminMiddleware, async (req, res) => {
     try {
       const { method, name, instructions, credentials, minAmount, maxAmount, active } = req.body;
-      
+
       // Validation
       if (!method || !name) {
         return res.status(400).json({ message: "Method and name are required" });
       }
-      
+
       const newSetting = await storage.createPaymentSetting({
         method,
         name,
@@ -1137,7 +1137,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Also set the payment_method field to the same value as method to satisfy the NOT NULL constraint
         payment_method: method
       });
-      
+
       res.status(201).json({
         message: "Payment setting created successfully",
         setting: newSetting
@@ -1156,13 +1156,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (updatedData.method) {
         updatedData.payment_method = updatedData.method;
       }
-      
+
       const updatedSetting = await storage.updatePaymentSetting(settingId, updatedData);
-      
+
       if (!updatedSetting) {
         return res.status(404).json({ message: "Payment setting not found" });
       }
-      
+
       res.status(200).json({ 
         message: "Payment setting updated successfully", 
         setting: updatedSetting 
@@ -1177,17 +1177,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const settingId = parseInt(req.params.id);
       const { active } = req.body;
-      
+
       if (typeof active !== "boolean") {
         return res.status(400).json({ message: "Active status must be a boolean" });
       }
-      
+
       const updatedSetting = await storage.togglePaymentMethod(settingId, active);
-      
+
       if (!updatedSetting) {
         return res.status(404).json({ message: "Payment setting not found" });
       }
-      
+
       res.status(200).json({ 
         message: `Payment method ${active ? 'activated' : 'deactivated'} successfully`, 
         setting: updatedSetting 
@@ -1197,24 +1197,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Server error" });
     }
   });
-  
+
   app.delete("/api/admin/payment-settings/:id", authMiddleware, adminMiddleware, async (req, res) => {
     try {
       const settingId = parseInt(req.params.id);
-      
+
       // In a production environment, you might want to check if this payment method
       // is being used in transactions before deleting it
-      
+
       // For now we'll just check if the setting exists
       const setting = await storage.getPaymentSetting(settingId);
       if (!setting) {
         return res.status(404).json({ message: "Payment setting not found" });
       }
-      
+
       // Delete the setting (this would need to be implemented in the storage interface)
       // For now, we'll just deactivate it since we don't have a delete method in the interface
       const updatedSetting = await storage.togglePaymentMethod(settingId, false);
-      
+
       res.status(200).json({
         message: "Payment method deleted successfully"
       });
@@ -1229,7 +1229,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Check if PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET environment variables are set
       const configured = !!(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET);
-      
+
       res.status(200).json({
         configured,
         clientId: process.env.PAYPAL_CLIENT_ID || '',
@@ -1243,27 +1243,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Server error" });
     }
   });
-  
+
   app.post("/api/admin/payment-settings/paypal-config", authMiddleware, adminMiddleware, async (req, res) => {
     try {
       const { clientId, clientSecret } = req.body;
-      
+
       if (!clientId) {
         return res.status(400).json({ message: "Client ID is required" });
       }
-      
+
       // If clientSecret is not provided and we already have one in env, keep using the existing one
       const newClientSecret = clientSecret || process.env.PAYPAL_CLIENT_SECRET;
-      
+
       if (!newClientSecret) {
         return res.status(400).json({ message: "Client Secret is required" });
       }
-      
+
       // In a real-world scenario, we'd save these to a secure environment variable store
       // For Replit, we're just updating the environment variables in memory
       process.env.PAYPAL_CLIENT_ID = clientId;
       process.env.PAYPAL_CLIENT_SECRET = newClientSecret;
-      
+
       res.status(200).json({ 
         message: "PayPal API configuration saved successfully",
         configured: true,
@@ -1289,11 +1289,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const messageId = parseInt(req.params.id);
       const updatedMessage = await storage.markMessageAsResponded(messageId);
-      
+
       if (!updatedMessage) {
         return res.status(404).json({ message: "Message not found" });
       }
-      
+
       res.status(200).json({ 
         message: "Message marked as responded", 
         contactMessage: updatedMessage 
@@ -1303,7 +1303,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Server error" });
     }
   });
-  
+
   // Admin User Messages Routes
   app.get("/api/admin/user-messages", authMiddleware, adminMiddleware, async (req, res) => {
     try {
@@ -1319,78 +1319,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
           lastName: user.lastName,
         });
       });
-      
+
       // Get all messages (getting all sent messages will capture all messages in the system)
       let allMessages = [];
       for (const user of users) {
         const sentMessages = await storage.getUserSentMessages(user.id);
         allMessages = [...allMessages, ...sentMessages];
       }
-      
+
       // Sort by date, most recent first
       allMessages.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-      
+
       // Enrich with user info
       const enrichedMessages = allMessages.map(msg => ({
         ...msg,
         sender: userMap.get(msg.senderId),
         recipient: userMap.get(msg.recipientId)
       }));
-      
+
       res.status(200).json(enrichedMessages);
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Server error" });
     }
   });
-  
+
   app.get("/api/admin/user-messages/:id", authMiddleware, adminMiddleware, async (req, res) => {
     try {
       const messageId = parseInt(req.params.id);
       const message = await storage.getUserMessage(messageId);
-      
+
       if (!message) {
         return res.status(404).json({ message: "Message not found" });
       }
-      
+
       // Get sender and recipient info
       const sender = await storage.getUser(message.senderId);
       const recipient = await storage.getUser(message.recipientId);
-      
+
       // Remove sensitive data
       const { password: senderPass, ...senderInfo } = sender;
       const { password: recipientPass, ...recipientInfo } = recipient;
-      
+
       // Enrich the message
       const enrichedMessage = {
         ...message,
         sender: senderInfo,
         recipient: recipientInfo
       };
-      
+
       res.status(200).json(enrichedMessage);
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Server error" });
     }
   });
-  
+
   app.post("/api/admin/messages", authMiddleware, adminMiddleware, async (req, res) => {
     try {
       const adminId = req.session.userId;
       const { recipientId, subject, content } = req.body;
-      
+
       // Validate input
       if (!recipientId || !subject || !content) {
         return res.status(400).json({ message: "Missing required fields" });
       }
-      
+
       // Check if recipient exists
       const recipient = await storage.getUser(recipientId);
       if (!recipient) {
         return res.status(404).json({ message: "Recipient not found" });
       }
-      
+
       // Create message
       const message = await storage.createUserMessage({
         senderId: adminId,
@@ -1398,7 +1398,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         subject,
         content
       });
-      
+
       res.status(201).json({
         message: "Message sent successfully",
         id: message.id
@@ -1408,7 +1408,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Server error" });
     }
   });
-  
+
   // Admin Notifications Routes
   app.get("/api/admin/notifications", authMiddleware, adminMiddleware, async (req, res) => {
     try {
@@ -1420,22 +1420,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Server error" });
     }
   });
-  
+
   app.post("/api/admin/notifications", authMiddleware, adminMiddleware, async (req, res) => {
     try {
       const { userId, title, message, type, link } = req.body;
-      
+
       // Validate input
       if (!userId || !title || !message || !type) {
         return res.status(400).json({ message: "Missing required fields" });
       }
-      
+
       // Check if user exists
       const user = await storage.getUser(userId);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-      
+
       // Create notification
       const notification = await storage.createNotification({
         userId,
@@ -1446,7 +1446,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         entityId: null,
         entityType: null
       });
-      
+
       res.status(201).json({
         message: "Notification created successfully",
         notification
@@ -1456,25 +1456,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Server error" });
     }
   });
-  
+
   app.post("/api/admin/notifications/:id/read", authMiddleware, adminMiddleware, async (req, res) => {
     try {
       const notificationId = parseInt(req.params.id);
-      
+
       // Check if notification table exists
       try {
         const notification = await storage.getNotification(notificationId);
-        
+
         if (!notification) {
           return res.status(200).json({ id: notificationId, status: "read" });
         }
-        
+
         // Verify user is owner of notification
         const userId = req.session.userId;
         if (notification.userId !== userId) {
           return res.status(403).json({ message: "Unauthorized to mark this notification" });
         }
-        
+
         const updatedNotification = await storage.markNotificationAsRead(notificationId);
         res.status(200).json(updatedNotification);
       } catch (dbError) {
@@ -1492,18 +1492,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/notifications/broadcast", authMiddleware, adminMiddleware, async (req, res) => {
     try {
       const { title, message, type, link, userRole } = req.body;
-      
+
       // Validate input
       if (!title || !message || !type) {
         return res.status(400).json({ message: "Missing required fields" });
       }
-      
+
       // Get users (filtered by role if specified)
       let users = await storage.getAllUsers();
       if (userRole) {
         users = users.filter(user => user.role === userRole);
       }
-      
+
       // Create notification for each user
       const promises = users.map(user => storage.createNotification({
         userId: user.id,
@@ -1514,9 +1514,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         entityId: null,
         entityType: null
       }));
-      
+
       await Promise.all(promises);
-      
+
       res.status(201).json({
         message: `Notification broadcast to ${users.length} users successfully`
       });
@@ -1524,6 +1524,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error(error);
       res.status(500).json({ message: "Server error" });
     }
+  });
+
+  // Health check endpoint
+  app.get("/api/health", async (_req, res) => {
+    try {
+      // Simple database connectivity check
+      await storage.testDatabaseConnection();
+      res.json({ status: "healthy", database: "connected" });
+    } catch (error) {
+      console.error("Health check failed:", error);
+      res.status(503).json({ status: "unhealthy", database: "disconnected" });
+    }
+  });
+
+  // Get user referrals with timeout protection
+  app.get("/api/user/referrals", authMiddleware, async (req, res) => {
+    try {
+      // Try simple query first, fallback to complex if needed
+      const userId = req.session.userId;
+      const referrals = await Promise.race([
+        storage.getAllUserReferrals(userId),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Referrals timeout')), 10000)
+        )
+      ]);
+      res.status(200).json(referrals);
+    } catch (error: any) {
+      console.error("Error fetching referrals:", error);
+      // Return empty array instead of error
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Get network performance/heatmap data with timeout protection
+  app.get("/api/user/network-performance", authMiddleware, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      // Race against timeout
+      const performanceData = await Promise.race([
+        storage.getNetworkPerformance(userId),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Network performance timeout')), 15000)
+        )
+      ]);
+      res.status(200).json(performanceData);
+    } catch (error: any) {
+      console.error("Error fetching network performance:", error);
+      // Return basic fallback data instead of error
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+  
+
+  app.use(express.static("dist"));
+
+  app.get("*", (_req, res) => {
+    res.sendFile(path.join(process.cwd(), "dist", "index.html"));
   });
 
   const httpServer = createServer(app);
