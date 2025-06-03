@@ -109,13 +109,58 @@ export default function AdminPaymentSettings() {
   // Predefined payment methods
   const predefinedMethods: PredefinedMethod[] = [
     {
+      id: "paypal",
+      name: "PayPal",
+      icon: <CreditCard className="h-5 w-5" />,
+      defaultInstructions: "Send payment to the provided PayPal email address. Include your username in the payment note for faster processing.",
+      defaultCredentials: "payments@yourcompany.com (enter your PayPal email)",
+      minAmount: "10",
+      maxAmount: "5000"
+    },
+    {
+      id: "gpay",
+      name: "Google Pay",
+      icon: <Wallet className="h-5 w-5" />,
+      defaultInstructions: "Send payment using Google Pay to the provided phone number or email. Include your username in the payment description.",
+      defaultCredentials: "+1234567890 or gpay@yourcompany.com (enter your Google Pay details)",
+      minAmount: "10",
+      maxAmount: "3000"
+    },
+    {
       id: "usdt_trc20",
-      name: "USDT TRC20 (Coinbase)",
+      name: "USDT TRC20",
       icon: <Bitcoin className="h-5 w-5" />,
       defaultInstructions: "Send USDT to the provided wallet address using the TRC20 network only. Include your username in the transaction memo for faster processing.",
       defaultCredentials: "TXz8aYxxx...(enter your USDT TRC20 wallet address)",
       minAmount: "25",
       maxAmount: "8000"
+    },
+    {
+      id: "bank_transfer",
+      name: "Bank Transfer",
+      icon: <CreditCard className="h-5 w-5" />,
+      defaultInstructions: "Transfer funds to the provided bank account details. Use your username as the transfer reference.",
+      defaultCredentials: "Bank: Your Bank Name\nAccount: 1234567890\nRouting: 123456789",
+      minAmount: "50",
+      maxAmount: "10000"
+    },
+    {
+      id: "apple_pay",
+      name: "Apple Pay",
+      icon: <Wallet className="h-5 w-5" />,
+      defaultInstructions: "Send payment using Apple Pay to the provided email or phone number. Include your username in the payment memo.",
+      defaultCredentials: "applepay@yourcompany.com or +1234567890",
+      minAmount: "10",
+      maxAmount: "3000"
+    },
+    {
+      id: "cashapp",
+      name: "Cash App",
+      icon: <CreditCard className="h-5 w-5" />,
+      defaultInstructions: "Send payment to the provided Cash App tag ($cashtag). Include your username in the payment note.",
+      defaultCredentials: "$YourCashTag (enter your Cash App tag)",
+      minAmount: "5",
+      maxAmount: "2500"
     }
   ];
 
@@ -361,15 +406,15 @@ export default function AdminPaymentSettings() {
             <div className="mb-8">
               <Card>
                 <CardHeader>
-                  <CardTitle>USDT TRC20 Payments</CardTitle>
+                  <CardTitle>Payment Methods</CardTitle>
                   <CardDescription>
-                    Configure Coinbase USDT TRC20 payment settings below
+                    Configure multiple payment options for your users
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground">
-                    We have removed PayPal integration and now support only Coinbase USDT TRC20 payments.
-                    Add your Coinbase wallet address using the "Add Payment Method" button above.
+                    Support multiple payment methods including PayPal, Google Pay, Apple Pay, Cash App, Bank Transfers, and cryptocurrency.
+                    Click "Add Payment Method" to configure each payment option with custom limits and instructions.
                   </p>
                 </CardContent>
               </Card>

@@ -128,7 +128,40 @@ export default function DepositModal({ open, onOpenChange }: DepositModalProps) 
       handleResetForm();
     }, 300); // Reset after close animation
   };
-  
+
+  const getPaymentInstructions = (method: string) => {
+    const paymentMethod = paymentSettings?.find((pm: any) => pm.method === method);
+    if (!paymentMethod) return "Please select a payment method to see instructions.";
+
+    return paymentMethod.instructions || "No specific instructions provided.";
+  };
+
+  const getPaymentCredentials = (method: string) => {
+    const paymentMethod = paymentSettings?.find((pm: any) => pm.method === method);
+    if (!paymentMethod) return "";
+
+    return paymentMethod.credentials || "";
+  };
+
+  const getPaymentMethodLabel = (method: string) => {
+    switch (method.toLowerCase()) {
+      case 'paypal':
+        return 'PayPal Email Address';
+      case 'gpay':
+        return 'Google Pay Phone/Email';
+      case 'apple_pay':
+        return 'Apple Pay Email/Phone';
+      case 'cashapp':
+        return 'Cash App Tag';
+      case 'bank_transfer':
+        return 'Bank Account Details';
+      case 'usdt_trc20':
+        return 'USDT TRC20 Wallet Address';
+      default:
+        return 'Payment Details';
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[500px]">
@@ -140,7 +173,7 @@ export default function DepositModal({ open, onOpenChange }: DepositModalProps) 
                 Add funds to your wallet to start investing
               </DialogDescription>
             </DialogHeader>
-            
+
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <FormField
@@ -180,7 +213,7 @@ export default function DepositModal({ open, onOpenChange }: DepositModalProps) 
                     </FormItem>
                   )}
                 />
-                
+
                 <DialogFooter>
                   <Button type="submit" disabled={depositMutation.isPending}>
                     {depositMutation.isPending ? "Processing..." : "Continue"}
@@ -197,7 +230,7 @@ export default function DepositModal({ open, onOpenChange }: DepositModalProps) 
                 Follow the instructions below to complete your deposit
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="space-y-4 my-2">
               <div className="flex justify-between items-center p-3 bg-gray-50 rounded-md">
                 <div>
@@ -209,7 +242,7 @@ export default function DepositModal({ open, onOpenChange }: DepositModalProps) 
                   <p className="font-medium">{formatCurrency(parseFloat(form.getValues().amount), 'USDT')}</p>
                 </div>
               </div>
-              
+
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>Important</AlertTitle>
@@ -217,7 +250,7 @@ export default function DepositModal({ open, onOpenChange }: DepositModalProps) 
                   Please send the exact amount to the USDT TRC20 wallet address below. Your deposit will be processed once confirmed on the blockchain.
                 </AlertDescription>
               </Alert>
-              
+
               <Card>
                 <CardContent className="pt-6">
                   <div className="space-y-4">
@@ -234,12 +267,12 @@ export default function DepositModal({ open, onOpenChange }: DepositModalProps) 
                         </Button>
                       </div>
                     </div>
-                    
+
                     <div>
                       <p className="text-sm font-medium mb-1">Amount to Send:</p>
                       <p className="text-lg font-bold">{formatCurrency(parseFloat(form.getValues().amount), 'USDT')}</p>
                     </div>
-                    
+
                     <div className="text-sm text-gray-600">
                       <p className="font-medium">Instructions:</p>
                       <ul className="list-disc list-inside space-y-1">
@@ -252,7 +285,7 @@ export default function DepositModal({ open, onOpenChange }: DepositModalProps) 
                 </CardContent>
               </Card>
             </div>
-            
+
             <DialogFooter className="flex flex-col sm:flex-row gap-2">
               <Button variant="outline" onClick={handleResetForm}>
                 Make Another Deposit

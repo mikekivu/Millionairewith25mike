@@ -91,7 +91,7 @@ export default function WithdrawModal({ open, onOpenChange, currentBalance }: Wi
       });
       return;
     }
-    
+
     withdrawMutation.mutate(values);
   };
 
@@ -118,15 +118,28 @@ export default function WithdrawModal({ open, onOpenChange, currentBalance }: Wi
   );
 
   const getAddressPlaceholder = () => {
-    const paymentMethod = form.getValues().paymentMethod.toLowerCase();
-    if (paymentMethod.includes('usdt') || paymentMethod.includes('crypto')) {
-      return 'USDT TRC20 Wallet Address';
-    } else if (paymentMethod.includes('paypal')) {
-      return 'PayPal Email Address';
-    } else if (paymentMethod.includes('bank')) {
-      return 'Bank Account Details';
+    const method = form.getValues().paymentMethod;
+    if (!method) return "Payment details";
+
+    switch (method.toLowerCase()) {
+      case 'paypal':
+        return "Enter your PayPal email address";
+      case 'gpay':
+        return "Enter your Google Pay phone number or email";
+      case 'apple_pay':
+        return "Enter your Apple Pay email or phone number";
+      case 'cashapp':
+        return "Enter your Cash App tag (e.g., $username)";
+      case 'bank_transfer':
+        return "Enter your bank account details (Account number, routing number, etc.)";
+      case 'usdt_trc20':
+        return "Enter your USDT TRC20 wallet address";
+      default:
+        if (method.toLowerCase().includes('usdt') || method.toLowerCase().includes('crypto')) {
+          return "Enter your cryptocurrency wallet address";
+        }
+        return "Enter your payment details";
     }
-    return 'Withdrawal Address';
   };
 
   return (
@@ -140,12 +153,12 @@ export default function WithdrawModal({ open, onOpenChange, currentBalance }: Wi
                 Withdraw funds from your wallet to your preferred payment method
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="flex items-center justify-between p-3 bg-gray-50 rounded-md mb-4">
               <p className="text-sm font-medium">Available Balance:</p>
               <p className="font-bold text-lg">{formatCurrency(currentBalance, 'USDT')}</p>
             </div>
-            
+
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <FormField
@@ -185,7 +198,7 @@ export default function WithdrawModal({ open, onOpenChange, currentBalance }: Wi
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="paymentMethod"
@@ -219,7 +232,7 @@ export default function WithdrawModal({ open, onOpenChange, currentBalance }: Wi
                     </FormItem>
                   )}
                 />
-                
+
                 {form.getValues().paymentMethod && (
                   <FormField
                     control={form.control}
@@ -240,7 +253,7 @@ export default function WithdrawModal({ open, onOpenChange, currentBalance }: Wi
                     )}
                   />
                 )}
-                
+
                 {selectedMethod && (
                   <Alert>
                     <AlertCircle className="h-4 w-4" />
@@ -252,7 +265,7 @@ export default function WithdrawModal({ open, onOpenChange, currentBalance }: Wi
                     </AlertDescription>
                   </Alert>
                 )}
-                
+
                 <DialogFooter>
                   <Button 
                     type="submit" 
@@ -272,17 +285,17 @@ export default function WithdrawModal({ open, onOpenChange, currentBalance }: Wi
                 Your withdrawal request has been successfully submitted
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="py-6 flex flex-col items-center justify-center">
               <div className="h-16 w-16 rounded-full bg-green-100 flex items-center justify-center text-green-600 mb-4">
                 <CheckCircle className="h-8 w-8" />
               </div>
-              
+
               <h3 className="text-lg font-semibold">Thank You!</h3>
               <p className="text-center text-gray-500 mt-2">
                 Your withdrawal request for {formatCurrency(parseFloat(form.getValues().amount), 'USDT')} has been submitted for processing.
               </p>
-              
+
               <div className="w-full p-4 bg-gray-50 rounded-md mt-4">
                 <div className="flex justify-between py-2">
                   <span className="text-gray-500">Amount:</span>
@@ -304,7 +317,7 @@ export default function WithdrawModal({ open, onOpenChange, currentBalance }: Wi
                   <span className="font-medium text-yellow-600">Pending</span>
                 </div>
               </div>
-              
+
               <Alert className="mt-4">
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>Next Steps</AlertTitle>
@@ -313,7 +326,7 @@ export default function WithdrawModal({ open, onOpenChange, currentBalance }: Wi
                 </AlertDescription>
               </Alert>
             </div>
-            
+
             <DialogFooter className="flex flex-col sm:flex-row gap-2">
               <Button variant="outline" onClick={handleResetForm}>
                 Make Another Withdrawal
