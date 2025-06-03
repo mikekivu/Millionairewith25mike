@@ -193,3 +193,6 @@ export function AdminStatsCards({ stats, isLoading = false }: AdminStatsCardsPro
     </div>
   );
 }
+
+// Add default export
+export default { UserStatsCards, AdminStatsCards };
