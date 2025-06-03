@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Helmet } from 'react-helmet';
 import { useQuery } from '@tanstack/react-query';
@@ -8,10 +7,10 @@ import { formatCurrency, formatDate } from '@/lib/utils';
 import { useAuth } from '@/lib/auth';
 import { TrendingUp, Users, DollarSign, Clock, Share2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { default as UserSidebar } from '@/components/dashboard/UserSidebar';
-import { default as StatsCards } from '@/components/dashboard/StatsCards';
-import { default as InvestmentPerformance } from '@/components/dashboard/InvestmentPerformance';
-import { default as ReferralTools } from '@/components/dashboard/ReferralTools';
+import UserSidebar from '@/components/dashboard/UserSidebar';
+import StatsCards from '@/components/dashboard/StatsCards';
+import InvestmentPerformance from '@/components/dashboard/InvestmentPerformance';
+import ReferralTools from '@/components/dashboard/ReferralTools';
 
 export default function UserDashboard() {
   const { user } = useAuth();
@@ -81,7 +80,7 @@ export default function UserDashboard() {
         <div className="w-full md:w-64 lg:w-72">
           <UserSidebar />
         </div>
-        
+
         <div className="flex-1 bg-gray-50 p-4 md:p-8 overflow-auto">
           <div className="max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-6">
@@ -95,7 +94,7 @@ export default function UserDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
               <div className="lg:col-span-2 space-y-6">
                 <InvestmentPerformance />
-                
+
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center">
@@ -149,7 +148,7 @@ export default function UserDashboard() {
                           <div className="text-sm text-green-600">Total Earned</div>
                         </div>
                       </div>
-                      
+
                       <div className="grid grid-cols-2 gap-4 text-center">
                         <div>
                           <div className="text-lg font-bold">{totalReferrals}</div>

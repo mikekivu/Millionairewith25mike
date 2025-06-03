@@ -18,14 +18,14 @@ export default function ReferralTools({ referralCode, referralLink }: ReferralTo
 
   const handleCopyCode = async () => {
     const success = await copyToClipboard(referralCode);
-    
+
     if (success) {
       setIsCopied(true);
       toast({
         title: 'Copied!',
         description: 'Referral code copied to clipboard',
       });
-      
+
       setTimeout(() => setIsCopied(false), 2000);
     } else {
       toast({
@@ -38,14 +38,14 @@ export default function ReferralTools({ referralCode, referralLink }: ReferralTo
 
   const handleCopyLink = async () => {
     const success = await copyToClipboard(referralLink);
-    
+
     if (success) {
       setIsLinkCopied(true);
       toast({
         title: 'Copied!',
         description: 'Referral link copied to clipboard',
       });
-      
+
       setTimeout(() => setIsLinkCopied(false), 2000);
     } else {
       toast({
@@ -64,7 +64,7 @@ export default function ReferralTools({ referralCode, referralLink }: ReferralTo
           text: 'Join me on MillionaireWith$25 and start earning passive income through smart investments!',
           url: referralLink,
         });
-        
+
         toast({
           title: 'Shared!',
           description: 'Thank you for sharing your referral link',
@@ -89,42 +89,41 @@ export default function ReferralTools({ referralCode, referralLink }: ReferralTo
         <CardTitle>Referral Tools</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div>
-          <label className="text-sm font-medium mb-1 block">Your Referral Code</label>
-          <div className="flex">
-            <Input value={referralCode} readOnly className="rounded-r-none" />
-            <Button
-              variant="secondary"
-              className="rounded-l-none"
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Your Referral Code</label>
+          <div className="flex gap-2">
+            <div className="flex-1 p-2 bg-gray-50 border rounded text-sm font-mono">
+              {referralCode}
+            </div>
+            <Button 
+              size="sm" 
               onClick={handleCopyCode}
+              variant={isCopied ? "default" : "outline"}
             >
-              {isCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+              <Copy className="h-4 w-4 mr-1" />
+              {isCopied ? 'Copied!' : 'Copy'}
             </Button>
           </div>
         </div>
-        
-        <div>
-          <label className="text-sm font-medium mb-1 block">Your Referral Link</label>
-          <div className="flex">
-            <Input value={referralLink} readOnly className="rounded-r-none text-xs sm:text-sm" />
-            <Button
-              variant="secondary"
-              className="rounded-l-none rounded-r-none border-r border-r-input"
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Your Referral Link</label>
+          <div className="flex gap-2">
+            <div className="flex-1 p-2 bg-gray-50 border rounded text-sm break-all">
+              {referralLink}
+            </div>
+            <Button 
+              size="sm" 
               onClick={handleCopyLink}
+              variant={isLinkCopied ? "default" : "outline"}
             >
-              {isLinkCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-            </Button>
-            <Button
-              variant="secondary"
-              className="rounded-l-none"
-              onClick={handleShare}
-            >
-              <Share2 className="h-4 w-4" />
+              <Share2 className="h-4 w-4 mr-1" />
+              {isLinkCopied ? 'Copied!' : 'Share'}
             </Button>
           </div>
         </div>
-        
-        <div className="mt-4 space-y-2">
+
+        <div className="pt-4 border-t">
           <h4 className="text-sm font-medium">How Referrals Work</h4>
           <p className="text-sm text-muted-foreground">
             Share your referral code or link with friends. When they sign up and invest, you earn:
@@ -136,86 +135,6 @@ export default function ReferralTools({ referralCode, referralLink }: ReferralTo
             <li>2% on Level 4 referrals</li>
             <li>1% on Level 5 referrals</li>
           </ul>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Share2, Copy } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-
-interface ReferralToolsProps {
-  referralCode: string;
-  referralLink: string;
-}
-
-export default function ReferralTools({ referralCode, referralLink }: ReferralToolsProps) {
-  const { toast } = useToast();
-
-  const handleCopyCode = () => {
-    navigator.clipboard.writeText(referralCode);
-    toast({
-      title: "Copied!",
-      description: "Referral code copied to clipboard",
-    });
-  };
-
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(referralLink);
-    toast({
-      title: "Copied!",
-      description: "Referral link copied to clipboard",
-    });
-  };
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center">
-          <Share2 className="h-5 w-5 mr-2" />
-          Referral Tools
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div>
-          <label className="text-sm font-medium">Your Referral Code</label>
-          <div className="flex mt-1">
-            <input
-              type="text"
-              value={referralCode}
-              readOnly
-              className="flex-1 px-3 py-2 border rounded-l-md bg-gray-50"
-            />
-            <Button
-              onClick={handleCopyCode}
-              size="sm"
-              className="rounded-l-none"
-            >
-              <Copy className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-        
-        <div>
-          <label className="text-sm font-medium">Your Referral Link</label>
-          <div className="flex mt-1">
-            <input
-              type="text"
-              value={referralLink}
-              readOnly
-              className="flex-1 px-3 py-2 border rounded-l-md bg-gray-50 text-xs"
-            />
-            <Button
-              onClick={handleCopyLink}
-              size="sm"
-              className="rounded-l-none"
-            >
-              <Copy className="h-4 w-4" />
-            </Button>
-          </div>
         </div>
       </CardContent>
     </Card>
