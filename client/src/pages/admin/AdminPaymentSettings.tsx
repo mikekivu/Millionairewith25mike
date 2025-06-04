@@ -810,7 +810,7 @@ export default function AdminPaymentSettings() {
                 />
               </div>
               <div className="col-span-4 text-sm text-muted-foreground">
-                <p>• Get your PayPal API credentials from <a href="https://developer.paypal.com" target="_blank" className="text-blue-600 hover:underline">PayPal Developer Dashboard</a></p>
+                <p>• Get your PayPal API credentials from <a href="https://developer.paypal.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">PayPal Developer Dashboard</a></p>
                 <p>• Leave Client Secret empty to keep the existing secret</p>
                 <p>• Use Sandbox credentials for testing, Live credentials for production</p>
               </div>
@@ -864,7 +864,7 @@ export default function AdminPaymentSettings() {
                 />
               </div>
               <div className="col-span-4 text-sm text-muted-foreground">
-                <p>• Get your Pesapal API credentials from <a href="https://www.pesapal.com" target="_blank" className="text-blue-600 hover:underline">Pesapal Dashboard</a></p>
+                <p>• Get your Pesapal API credentials from <a href="https://www.pesapal.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Pesapal Dashboard</a></p>
                 <p>• Leave Consumer Secret empty to keep the existing secret</p>
                 <p>• Supports mobile money and card payments across Africa</p>
               </div>
