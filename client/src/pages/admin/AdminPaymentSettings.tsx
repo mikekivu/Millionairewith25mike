@@ -6,6 +6,11 @@ import { apiRequest } from '@/lib/queryClient';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Plus, Edit, Trash2, CreditCard } from 'lucide-react';
 import AdminSidebar from '@/components/dashboard/AdminSidebar';
 
@@ -23,6 +28,18 @@ interface PaymentMethod {
 export default function AdminPaymentSettings() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingMethod, setEditingMethod] = useState<PaymentMethod | null>(null);
+  const [formData, setFormData] = useState({
+    method: '',
+    name: '',
+    instructions: '',
+    credentials: '',
+    minAmount: '10',
+    maxAmount: '10000',
+    active: true
+  });
 
   const { data: paymentMethods, isLoading } = useQuery({
     queryKey: ['admin', 'payment-methods'],
@@ -77,6 +94,95 @@ export default function AdminPaymentSettings() {
     },
   });
 
+  const createMethodMutation = useMutation({
+    mutationFn: async (methodData: any) => {
+      const response = await apiRequest('POST', '/api/admin/payment-settings', methodData);
+      if (!response.ok) throw new Error('Failed to create payment method');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'payment-methods'] });
+      setIsAddModalOpen(false);
+      resetForm();
+      toast({
+        title: "Success",
+        description: "Payment method created successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to create payment method",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateMethodMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+      const response = await apiRequest('PUT', `/api/admin/payment-settings/${id}`, data);
+      if (!response.ok) throw new Error('Failed to update payment method');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'payment-methods'] });
+      setIsEditModalOpen(false);
+      setEditingMethod(null);
+      resetForm();
+      toast({
+        title: "Success",
+        description: "Payment method updated successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update payment method",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const resetForm = () => {
+    setFormData({
+      method: '',
+      name: '',
+      instructions: '',
+      credentials: '',
+      minAmount: '10',
+      maxAmount: '10000',
+      active: true
+    });
+  };
+
+  const handleAddClick = () => {
+    resetForm();
+    setIsAddModalOpen(true);
+  };
+
+  const handleEditClick = (method: PaymentMethod) => {
+    setFormData({
+      method: method.method || '',
+      name: method.name || '',
+      instructions: method.instructions || '',
+      credentials: method.credentials || '',
+      minAmount: method.minAmount || '10',
+      maxAmount: method.maxAmount || '10000',
+      active: method.active
+    });
+    setEditingMethod(method);
+    setIsEditModalOpen(true);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingMethod) {
+      updateMethodMutation.mutate({ id: editingMethod.id, data: formData });
+    } else {
+      createMethodMutation.mutate(formData);
+    }
+  };
+
   return (
     <>
       <Helmet>
@@ -93,7 +199,7 @@ export default function AdminPaymentSettings() {
           <div className="max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-2xl md:text-3xl font-bold">Payment Settings</h1>
-              <Button>
+              <Button onClick={handleAddClick}>
                 <Plus className="h-4 w-4 mr-2" /> Add Payment Method
               </Button>
             </div>
@@ -247,7 +353,11 @@ export default function AdminPaymentSettings() {
                         >
                           {method.active ? "Disable" : "Enable"}
                         </Button>
-                        <Button size="sm" variant="outline">
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          onClick={() => handleEditClick(method)}
+                        >
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button
@@ -270,7 +380,7 @@ export default function AdminPaymentSettings() {
                   <p className="text-muted-foreground text-center mb-4">
                     No payment methods have been configured yet. Add your first payment method to get started.
                   </p>
-                  <Button>
+                  <Button onClick={handleAddClick}>
                     <Plus className="h-4 w-4 mr-2" /> Add Payment Method
                   </Button>
                 </CardContent>
@@ -279,6 +389,206 @@ export default function AdminPaymentSettings() {
           </div>
         </div>
       </div>
+
+      {/* Add Payment Method Modal */}
+      <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Add Payment Method</DialogTitle>
+            <DialogDescription>
+              Add a new payment method for users to make deposits and withdrawals.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSubmit}>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="method" className="text-right">Method</Label>
+                <Input
+                  id="method"
+                  value={formData.method}
+                  onChange={(e) => setFormData({ ...formData, method: e.target.value })}
+                  className="col-span-3"
+                  placeholder="e.g., paypal, usdt_trc20"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="name" className="text-right">Name</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="col-span-3"
+                  placeholder="e.g., PayPal, USDT (TRC20)"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="instructions" className="text-right">Instructions</Label>
+                <Textarea
+                  id="instructions"
+                  value={formData.instructions}
+                  onChange={(e) => setFormData({ ...formData, instructions: e.target.value })}
+                  className="col-span-3"
+                  placeholder="Payment instructions for users"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="credentials" className="text-right">Credentials</Label>
+                <Input
+                  id="credentials"
+                  value={formData.credentials}
+                  onChange={(e) => setFormData({ ...formData, credentials: e.target.value })}
+                  className="col-span-3"
+                  placeholder="Wallet address, API key, etc."
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="minAmount" className="text-right">Min Amount</Label>
+                <Input
+                  id="minAmount"
+                  type="number"
+                  value={formData.minAmount}
+                  onChange={(e) => setFormData({ ...formData, minAmount: e.target.value })}
+                  className="col-span-3"
+                  placeholder="10"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="maxAmount" className="text-right">Max Amount</Label>
+                <Input
+                  id="maxAmount"
+                  type="number"
+                  value={formData.maxAmount}
+                  onChange={(e) => setFormData({ ...formData, maxAmount: e.target.value })}
+                  className="col-span-3"
+                  placeholder="10000"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="active" className="text-right">Active</Label>
+                <div className="col-span-3">
+                  <Switch
+                    id="active"
+                    checked={formData.active}
+                    onCheckedChange={(checked) => setFormData({ ...formData, active: checked })}
+                  />
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsAddModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={createMethodMutation.isPending}>
+                {createMethodMutation.isPending ? "Creating..." : "Create Payment Method"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Payment Method Modal */}
+      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Edit Payment Method</DialogTitle>
+            <DialogDescription>
+              Update the payment method details.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSubmit}>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-method" className="text-right">Method</Label>
+                <Input
+                  id="edit-method"
+                  value={formData.method}
+                  onChange={(e) => setFormData({ ...formData, method: e.target.value })}
+                  className="col-span-3"
+                  placeholder="e.g., paypal, usdt_trc20"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-name" className="text-right">Name</Label>
+                <Input
+                  id="edit-name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="col-span-3"
+                  placeholder="e.g., PayPal, USDT (TRC20)"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-instructions" className="text-right">Instructions</Label>
+                <Textarea
+                  id="edit-instructions"
+                  value={formData.instructions}
+                  onChange={(e) => setFormData({ ...formData, instructions: e.target.value })}
+                  className="col-span-3"
+                  placeholder="Payment instructions for users"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-credentials" className="text-right">Credentials</Label>
+                <Input
+                  id="edit-credentials"
+                  value={formData.credentials}
+                  onChange={(e) => setFormData({ ...formData, credentials: e.target.value })}
+                  className="col-span-3"
+                  placeholder="Wallet address, API key, etc."
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-minAmount" className="text-right">Min Amount</Label>
+                <Input
+                  id="edit-minAmount"
+                  type="number"
+                  value={formData.minAmount}
+                  onChange={(e) => setFormData({ ...formData, minAmount: e.target.value })}
+                  className="col-span-3"
+                  placeholder="10"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-maxAmount" className="text-right">Max Amount</Label>
+                <Input
+                  id="edit-maxAmount"
+                  type="number"
+                  value={formData.maxAmount}
+                  onChange={(e) => setFormData({ ...formData, maxAmount: e.target.value })}
+                  className="col-span-3"
+                  placeholder="10000"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-active" className="text-right">Active</Label>
+                <div className="col-span-3">
+                  <Switch
+                    id="edit-active"
+                    checked={formData.active}
+                    onCheckedChange={(checked) => setFormData({ ...formData, active: checked })}
+                  />
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsEditModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={updateMethodMutation.isPending}>
+                {updateMethodMutation.isPending ? "Updating..." : "Update Payment Method"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
