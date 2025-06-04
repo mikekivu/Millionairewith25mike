@@ -588,8 +588,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Create success notification for demo user
         await storage.createNotification({
           userId,
-          title: "Demo Deposit Successful",
-          message: `Your demo deposit of ${validatedData.amount} ${validatedData.currency} has been processed successfully. This is a simulated transaction for testing purposes.`,
+          title: "Deposit Successful",
+          message: `Your deposit of ${validatedData.amount} ${validatedData.currency} has been processed successfully. Thank you for choosing our platform!`,
           type: "deposit_completed",
           entityId: transaction.id,
           entityType: "transaction",
@@ -942,7 +942,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 color: #2d5016;
             }
             .security-icon {
-                color: #28a745;
+                color: #28a745;```text
                 margin-right: 8px;
             }
         </style>
@@ -1845,528 +1845,528 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: "Payment setting created successfully",
         setting: newSetting
       });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Server error" });
-    }
-  });
-
-  app.put("/api/admin/payment-settings/:id", authMiddleware, adminMiddleware, async (req, res) => {
-    try {
-      const settingId = parseInt(req.params.id);
-      // If the method is being updated, make sure payment_method is also updated
-      const updatedData = { ...req.body };
-      if (updatedData.method) {
-        updatedData.payment_method = updatedData.method;
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
       }
+    });
 
-      const updatedSetting = await storage.updatePaymentSetting(settingId, updatedData);
-
-      if (!updatedSetting) {
-        return res.status(404).json({ message: "Payment setting not found" });
-      }
-
-      res.status(200).json({ 
-        message: "Payment setting updated successfully", 
-        setting: updatedSetting 
-      });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Server error" });
-    }
-  });
-
-  app.put("/api/admin/payment-settings/:id/toggle-status", authMiddleware, adminMiddleware, async (req, res) => {
-    try {
-      const settingId = parseInt(req.params.id);
-      const { active } = req.body;
-
-      if (typeof active !== "boolean") {
-        return res.status(400).json({ message: "Active status must be a boolean" });
-      }
-
-      const updatedSetting = await storage.togglePaymentMethod(settingId, active);
-
-      if (!updatedSetting) {
-        return res.status(404).json({ message: "Payment setting not found" });
-      }
-
-      res.status(200).json({ 
-        message: `Payment method ${active ? 'activated' : 'deactivated'} successfully`, 
-        setting: updatedSetting 
-      });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Server error" });
-    }
-  });
-
-  app.delete("/api/admin/payment-settings/:id", authMiddleware, adminMiddleware, async (req, res) => {
-    try {
-      const settingId = parseInt(req.params.id);
-
-      // In a production environment, you might want to check if this payment method
-      // is being used in transactions before deleting it
-
-      // For now we'll just check if the setting exists
-      const setting = await storage.getPaymentSetting(settingId);
-      if (!setting) {
-        return res.status(404).json({ message: "Payment setting not found" });
-      }
-
-      // Delete the setting (this would need to be implemented in the storage interface)
-      // For now, we'll just deactivate it since we don't have a delete method in the interface
-      const updatedSetting = await storage.togglePaymentMethod(settingId, false);
-
-      res.status(200).json({
-        message: "Payment method deleted successfully"
-      });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Server error" });
-    }
-  });
-
-  // Admin wallet balance management
-  app.put("/api/admin/users/:id/wallet", authMiddleware, adminMiddleware, async (req, res) => {
-    try {
-      const userId = parseInt(req.params.id);
-      const { amount, action, notes } = req.body;
-
-      // Validate input
-      if (!amount || !action || !["set", "add", "subtract"].includes(action)) {
-        return res.status(400).json({ message: "Invalid amount or action. Action must be 'set', 'add', or 'subtract'" });
-      }
-
-      const walletAmount = parseFloat(amount);
-      if (walletAmount < 0) {
-        return res.status(400).json({ message: "Amount must be positive" });
-      }
-
-      // Get the user
-      const user = await storage.getUser(userId);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      const currentBalance = parseFloat(user.walletBalance);
-      let newBalance: number;
-
-      switch (action) {
-        case "set":
-          newBalance = walletAmount;
-          break;
-        case "add":
-          newBalance = currentBalance + walletAmount;
-          break;
-        case "subtract":
-          newBalance = Math.max(0, currentBalance - walletAmount); // Don't allow negative balance
-          break;
-        default:
-          return res.status(400).json({ message: "Invalid action" });
-      }
-
-      // Update user wallet balance
-      const updatedUser = await storage.updateUser(userId, { 
-        walletBalance: newBalance.toString() 
-      });
-
-      // Create a transaction record for audit trail
-      await storage.createTransaction({
-        userId,
-        type: "admin_adjustment",
-        amount: amount.toString(),
-        currency: "USD",
-        status: "completed",
-        paymentMethod: "admin",
-        transactionDetails: `Admin wallet adjustment: ${action} ${amount} USD`,
-        description: notes || `Admin ${action} wallet balance by ${amount} USD`
-      });
-
-      // Create notification for user
-      await storage.createNotification({
-        userId,
-        title: "Wallet Balance Updated",
-        message: `Your wallet balance has been ${action === 'set' ? 'set to' : action === 'add' ? 'increased by' : 'decreased by'} ${formatCurrency(amount, 'USD')} by an administrator`,
-        type: "wallet_adjustment",
-        entityId: userId,
-        entityType: "user",
-        link: "/dashboard/wallet"
-      });
-
-      res.status(200).json({
-        message: "Wallet balance updated successfully",
-        user: {
-          id: updatedUser?.id,
-          username: updatedUser?.username,
-          firstName: updatedUser?.firstName,
-          lastName: updatedUser?.lastName,
-          walletBalance: updatedUser?.walletBalance
-        },
-        previousBalance: currentBalance.toString(),
-        newBalance: newBalance.toString(),
-        action,
-        amount: amount.toString()
-      });
-    } catch (error) {
-      console.error("Error updating wallet balance:", error);
-      res.status(500).json({ message: "Server error" });
-    }
-  });
-
-  // PayPal API Configuration
-  app.get("/api/admin/payment-settings/paypal-config", authMiddleware, adminMiddleware, async (req, res) => {
-    try {
-      // Check if PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET environment variables are set
-      const configured = !!(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET);
-
-      res.status(200).json({
-        configured,
-        clientId: process.env.PAYPAL_CLIENT_ID || '',
-        // Don't send back the actual secret, just indicate if it's set
-        clientSecret: process.env.PAYPAL_CLIENT_SECRET ? '••••••••••••••••' : '',
-        status: configured ? 'success' : 'idle',
-        message: configured ? 'PayPal API is configured' : 'PayPal API is not configured'
-      });
-    } catch (error) {
-      console.error('Error getting PayPal config:', error);
-      res.status(500).json({ message: "Server error" });
-    }
-  });
-
-  app.post("/api/admin/payment-settings/paypal-config", authMiddleware, adminMiddleware, async (req, res) => {
-    try {
-      const { clientId, clientSecret } = req.body;
-
-      if (!clientId) {
-        return res.status(400).json({ message: "Client ID is required" });
-      }
-
-      // If clientSecret is not provided and we already have one in env, keep using the existing one
-      const newClientSecret = clientSecret || process.env.PAYPAL_CLIENT_SECRET;
-
-      if (!newClientSecret) {
-        return res.status(400).json({ message: "Client Secret is required" });
-      }
-
-      // In a real-world scenario, we'd save these to a secure environment variable store
-      // For Replit, we're just updating the environment variables in memory
-      process.env.PAYPAL_CLIENT_ID = clientId;
-      process.env.PAYPAL_CLIENT_SECRET = newClientSecret;
-
-      res.status(200).json({ 
-        message: "PayPal API configuration saved successfully",
-        configured: true,
-        status: 'success'
-      });
-    } catch (error) {
-      console.error('Error saving PayPal config:', error);
-      res.status(500).json({ message: "Server error" });
-    }
-  });
-
-  // Pesapal API Configuration
-  app.get("/api/admin/payment-settings/pesapal-config", authMiddleware, adminMiddleware, async (req, res) => {
-    try {
-      // Check if PESAPAL_CONSUMER_KEY and PESAPAL_CONSUMER_SECRET environment variables are set
-      const configured = !!(process.env.PESAPAL_CONSUMER_KEY && process.env.PESAPAL_CONSUMER_SECRET);
-
-      res.status(200).json({
-        configured,
-        consumerKey: process.env.PESAPAL_CONSUMER_KEY || '',
-        // Don't send back the actual secret, just indicate if it's set
-        consumerSecret: process.env.PESAPAL_CONSUMER_SECRET ? '••••••••••••••••' : '',
-        sandbox: process.env.NODE_ENV !== 'production',
-        status: configured ? 'success' : 'idle',
-        message: configured ? 'Pesapal API is configured' : 'Pesapal API is not configured'
-      });
-    } catch (error) {
-      console.error('Error getting Pesapal config:', error);
-      res.status(500).json({ message: "Server error" });
-    }
-  });
-
-  app.post("/api/admin/payment-settings/pesapal-config", authMiddleware, adminMiddleware, async (req, res) => {
-    try {
-      const { consumerKey, consumerSecret } = req.body;
-
-      if (!consumerKey) {
-        return res.status(400).json({ message: "Consumer Key is required" });
-      }
-
-      // If consumerSecret is not provided and we already have one in env, keep using the existing one
-      const newConsumerSecret = consumerSecret || process.env.PESAPAL_CONSUMER_SECRET;
-
-      if (!newConsumerSecret) {
-        return res.status(400).json({ message: "Consumer Secret is required" });
-      }
-
-      // Update environment variables in memory
-      process.env.PESAPAL_CONSUMER_KEY = consumerKey;
-      process.env.PESAPAL_CONSUMER_SECRET = newConsumerSecret;
-
-      res.status(200).json({ 
-        message: "Pesapal API configuration saved successfully",
-        configured: true,
-        status: 'success'
-      });
-    } catch (error) {
-      console.error('Error saving Pesapal config:', error);
-      res.status(500).json({ message: "Server error" });
-    }
-  });
-
-  app.get("/api/admin/contact-messages", authMiddleware, adminMiddleware, async (req, res) => {
-    try {
-      const messages = await storage.getAllContactMessages();
-      res.status(200).json(messages);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Server error" });
-    }
-  });
-
-  app.put("/api/admin/contact-messages/:id/mark-responded", authMiddleware, adminMiddleware, async (req, res) => {
-    try {
-      const messageId = parseInt(req.params.id);
-      const updatedMessage = await storage.markMessageAsResponded(messageId);
-
-      if (!updatedMessage) {
-        return res.status(404).json({ message: "Message not found" });
-      }
-
-      res.status(200).json({ 
-        message: "Message marked as responded", 
-        contactMessage: updatedMessage 
-      });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Server error" });
-    }
-  });
-
-  // Admin User Messages Routes
-  app.get("/api/admin/user-messages", authMiddleware, adminMiddleware, async (req, res) => {
-    try {
-      // Get all users to enrich the messages with user info
-      const users = await storage.getAllUsers();
-      const userMap = new Map();
-      users.forEach(user => {
-        userMap.set(user.id, {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-        });
-      });
-
-      // Get all messages (getting all sent messages will capture all messages in the system)
-      let allMessages = [];
-      for (const user of users) {
-        const sentMessages = await storage.getUserSentMessages(user.id);
-        allMessages = [...allMessages, ...sentMessages];
-      }
-
-      // Sort by date, most recent first
-      allMessages.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
-      // Enrich with user info
-      const enrichedMessages = allMessages.map(msg => ({
-        ...msg,
-        sender: userMap.get(msg.senderId),
-        recipient: userMap.get(msg.recipientId)
-      }));
-
-      res.status(200).json(enrichedMessages);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Server error" });
-    }
-  });
-
-  app.get("/api/admin/user-messages/:id", authMiddleware, adminMiddleware, async (req, res) => {
-    try {
-      const messageId = parseInt(req.params.id);
-      const message = await storage.getUserMessage(messageId);
-
-      if (!message) {
-        return res.status(404).json({ message: "Message not found" });
-      }
-
-      // Get sender and recipient info
-      const sender = await storage.getUser(message.senderId);
-      const recipient = await storage.getUser(message.recipientId);
-
-      // Remove sensitive data
-      const { password: senderPass, ...senderInfo } = sender;
-      const { password: recipientPass, ...recipientInfo } = recipient;
-
-      // Enrich the message
-      const enrichedMessage = {
-        ...message,
-        sender: senderInfo,
-        recipient: recipientInfo
-      };
-
-      res.status(200).json(enrichedMessage);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Server error" });
-    }
-  });
-
-  app.post("/api/admin/messages", authMiddleware, adminMiddleware, async (req, res) => {
-    try {
-      const adminId = req.session.userId;
-      const { recipientId, subject, content } = req.body;
-
-      // Validate input
-      if (!recipientId || !subject || !content) {
-        return res.status(400).json({ message: "Missing required fields" });
-      }
-
-      // Check if recipient exists
-      const recipient = await storage.getUser(recipientId);
-      if (!recipient) {
-        return res.status(404).json({ message: "Recipient not found" });
-      }
-
-      // Create message
-      const message = await storage.createUserMessage({
-        senderId: adminId,
-        recipientId,
-        subject,
-        content
-      });
-
-      res.status(201).json({
-        message: "Message sent successfully",
-        id: message.id
-      });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Server error" });
-    }
-  });
-
-  // Admin Notifications Routes
-  app.get("/api/admin/notifications", authMiddleware, adminMiddleware, async (req, res) => {
-    try {
-      const userId = req.session.userId;
-      const notifications = await storage.getUserNotifications(userId);
-      res.status(200).json(notifications);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Server error" });
-    }
-  });
-
-  app.post("/api/admin/notifications", authMiddleware, adminMiddleware, async (req, res) => {
-    try {
-      const { userId, title, message, type, link } = req.body;
-
-      // Validate input
-      if (!userId || !title || !message || !type) {
-        return res.status(400).json({ message: "Missing required fields" });
-      }
-
-      // Check if user exists
-      const user = await storage.getUser(userId);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      // Create notification
-      const notification = await storage.createNotification({
-        userId,
-        title,
-        message,
-        type,
-        link: link || null,
-        entityId: null,
-        entityType: null
-      });
-
-      res.status(201).json({
-        message: "Notification created successfully",
-        notification
-      });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Server error" });
-    }
-  });
-
-  app.post("/api/admin/notifications/:id/read", authMiddleware, adminMiddleware, async (req, res) => {
-    try {
-      const notificationId = parseInt(req.params.id);
-
-      // Check if notification table exists
+    app.put("/api/admin/payment-settings/:id", authMiddleware, adminMiddleware, async (req, res) => {
       try {
-        const notification = await storage.getNotification(notificationId);
+        const settingId = parseInt(req.params.id);
+        // If the method is being updated, make sure payment_method is also updated
+        const updatedData = { ...req.body };
+        if (updatedData.method) {
+          updatedData.payment_method = updatedData.method;
+        }
 
-        if (!notification) {
+        const updatedSetting = await storage.updatePaymentSetting(settingId, updatedData);
+
+        if (!updatedSetting) {
+          return res.status(404).json({ message: "Payment setting not found" });
+        }
+
+        res.status(200).json({ 
+          message: "Payment setting updated successfully", 
+          setting: updatedSetting 
+        });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+      }
+    });
+
+    app.put("/api/admin/payment-settings/:id/toggle-status", authMiddleware, adminMiddleware, async (req, res) => {
+      try {
+        const settingId = parseInt(req.params.id);
+        const { active } = req.body;
+
+        if (typeof active !== "boolean") {
+          return res.status(400).json({ message: "Active status must be a boolean" });
+        }
+
+        const updatedSetting = await storage.togglePaymentMethod(settingId, active);
+
+        if (!updatedSetting) {
+          return res.status(404).json({ message: "Payment setting not found" });
+        }
+
+        res.status(200).json({ 
+          message: `Payment method ${active ? 'activated' : 'deactivated'} successfully`, 
+          setting: updatedSetting 
+        });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+      }
+    });
+
+    app.delete("/api/admin/payment-settings/:id", authMiddleware, adminMiddleware, async (req, res) => {
+      try {
+        const settingId = parseInt(req.params.id);
+
+        // In a production environment, you might want to check if this payment method
+        // is being used in transactions before deleting it
+
+        // For now we'll just check if the setting exists
+        const setting = await storage.getPaymentSetting(settingId);
+        if (!setting) {
+          return res.status(404).json({ message: "Payment setting not found" });
+        }
+
+        // Delete the setting (this would need to be implemented in the storage interface)
+        // For now, we'll just deactivate it since we don't have a delete method in the interface
+        const updatedSetting = await storage.togglePaymentMethod(settingId, false);
+
+        res.status(200).json({
+          message: "Payment method deleted successfully"
+        });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+      }
+    });
+
+    // Admin wallet balance management
+    app.put("/api/admin/users/:id/wallet", authMiddleware, adminMiddleware, async (req, res) => {
+      try {
+        const userId = parseInt(req.params.id);
+        const { amount, action, notes } = req.body;
+
+        // Validate input
+        if (!amount || !action || !["set", "add", "subtract"].includes(action)) {
+          return res.status(400).json({ message: "Invalid amount or action. Action must be 'set', 'add', or 'subtract'" });
+        }
+
+        const walletAmount = parseFloat(amount);
+        if (walletAmount < 0) {
+          return res.status(400).json({ message: "Amount must be positive" });
+        }
+
+        // Get the user
+        const user = await storage.getUser(userId);
+        if (!user) {
+          return res.status(404).json({ message: "User not found" });
+        }
+
+        const currentBalance = parseFloat(user.walletBalance);
+        let newBalance: number;
+
+        switch (action) {
+          case "set":
+            newBalance = walletAmount;
+            break;
+          case "add":
+            newBalance = currentBalance + walletAmount;
+            break;
+          case "subtract":
+            newBalance = Math.max(0, currentBalance - walletAmount); // Don't allow negative balance
+            break;
+          default:
+            return res.status(400).json({ message: "Invalid action" });
+        }
+
+        // Update user wallet balance
+        const updatedUser = await storage.updateUser(userId, { 
+          walletBalance: newBalance.toString() 
+        });
+
+        // Create a transaction record for audit trail
+        await storage.createTransaction({
+          userId,
+          type: "admin_adjustment",
+          amount: amount.toString(),
+          currency: "USD",
+          status: "completed",
+          paymentMethod: "admin",
+          transactionDetails: `Admin wallet adjustment: ${action} ${amount} USD`,
+          description: notes || `Admin ${action} wallet balance by ${amount} USD`
+        });
+
+        // Create notification for user
+        await storage.createNotification({
+          userId,
+          title: "Wallet Balance Updated",
+          message: `Your wallet balance has been ${action === 'set' ? 'set to' : action === 'add' ? 'increased by' : 'decreased by'} ${formatCurrency(amount, 'USD')} by an administrator`,
+          type: "wallet_adjustment",
+          entityId: userId,
+          entityType: "user",
+          link: "/dashboard/wallet"
+        });
+
+        res.status(200).json({
+          message: "Wallet balance updated successfully",
+          user: {
+            id: updatedUser?.id,
+            username: updatedUser?.username,
+            firstName: updatedUser?.firstName,
+            lastName: updatedUser?.lastName,
+            walletBalance: updatedUser?.walletBalance
+          },
+          previousBalance: currentBalance.toString(),
+          newBalance: newBalance.toString(),
+          action,
+          amount: amount.toString()
+        });
+      } catch (error) {
+        console.error("Error updating wallet balance:", error);
+        res.status(500).json({ message: "Server error" });
+      }
+    });
+
+    // PayPal API Configuration
+    app.get("/api/admin/payment-settings/paypal-config", authMiddleware, adminMiddleware, async (req, res) => {
+      try {
+        // Check if PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET environment variables are set
+        const configured = !!(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET);
+
+        res.status(200).json({
+          configured,
+          clientId: process.env.PAYPAL_CLIENT_ID || '',
+          // Don't send back the actual secret, just indicate if it's set
+          clientSecret: process.env.PAYPAL_CLIENT_SECRET ? '••••••••••••••••' : '',
+          status: configured ? 'success' : 'idle',
+          message: configured ? 'PayPal API is configured' : 'PayPal API is not configured'
+        });
+      } catch (error) {
+        console.error('Error getting PayPal config:', error);
+        res.status(500).json({ message: "Server error" });
+      }
+    });
+
+    app.post("/api/admin/payment-settings/paypal-config", authMiddleware, adminMiddleware, async (req, res) => {
+      try {
+        const { clientId, clientSecret } = req.body;
+
+        if (!clientId) {
+          return res.status(400).json({ message: "Client ID is required" });
+        }
+
+        // If clientSecret is not provided and we already have one in env, keep using the existing one
+        const newClientSecret = clientSecret || process.env.PAYPAL_CLIENT_SECRET;
+
+        if (!newClientSecret) {
+          return res.status(400).json({ message: "Client Secret is required" });
+        }
+
+        // In a real-world scenario, we'd save these to a secure environment variable store
+        // For Replit, we're just updating the environment variables in memory
+        process.env.PAYPAL_CLIENT_ID = clientId;
+        process.env.PAYPAL_CLIENT_SECRET = newClientSecret;
+
+        res.status(200).json({ 
+          message: "PayPal API configuration saved successfully",
+          configured: true,
+          status: 'success'
+        });
+      } catch (error) {
+        console.error('Error saving PayPal config:', error);
+        res.status(500).json({ message: "Server error" });
+      }
+    });
+
+    // Pesapal API Configuration
+    app.get("/api/admin/payment-settings/pesapal-config", authMiddleware, adminMiddleware, async (req, res) => {
+      try {
+        // Check if PESAPAL_CONSUMER_KEY and PESAPAL_CONSUMER_SECRET environment variables are set
+        const configured = !!(process.env.PESAPAL_CONSUMER_KEY && process.env.PESAPAL_CONSUMER_SECRET);
+
+        res.status(200).json({
+          configured,
+          consumerKey: process.env.PESAPAL_CONSUMER_KEY || '',
+          // Don't send back the actual secret, just indicate if it's set
+          consumerSecret: process.env.PESAPAL_CONSUMER_SECRET ? '••••••••••••••••' : '',
+          sandbox: process.env.NODE_ENV !== 'production',
+          status: configured ? 'success' : 'idle',
+          message: configured ? 'Pesapal API is configured' : 'Pesapal API is not configured'
+        });
+      } catch (error) {
+        console.error('Error getting Pesapal config:', error);
+        res.status(500).json({ message: "Server error" });
+      }
+    });
+
+    app.post("/api/admin/payment-settings/pesapal-config", authMiddleware, adminMiddleware, async (req, res) => {
+      try {
+        const { consumerKey, consumerSecret } = req.body;
+
+        if (!consumerKey) {
+          return res.status(400).json({ message: "Consumer Key is required" });
+        }
+
+        // If consumerSecret is not provided and we already have one in env, keep using the existing one
+        const newConsumerSecret = consumerSecret || process.env.PESAPAL_CONSUMER_SECRET;
+
+        if (!newConsumerSecret) {
+          return res.status(400).json({ message: "Consumer Secret is required" });
+        }
+
+        // Update environment variables in memory
+        process.env.PESAPAL_CONSUMER_KEY = consumerKey;
+        process.env.PESAPAL_CONSUMER_SECRET = newConsumerSecret;
+
+        res.status(200).json({ 
+          message: "Pesapal API configuration saved successfully",
+          configured: true,
+          status: 'success'
+        });
+      } catch (error) {
+        console.error('Error saving Pesapal config:', error);
+        res.status(500).json({ message: "Server error" });
+      }
+    });
+
+    app.get("/api/admin/contact-messages", authMiddleware, adminMiddleware, async (req, res) => {
+      try {
+        const messages = await storage.getAllContactMessages();
+        res.status(200).json(messages);
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+      }
+    });
+
+    app.put("/api/admin/contact-messages/:id/mark-responded", authMiddleware, adminMiddleware, async (req, res) => {
+      try {
+        const messageId = parseInt(req.params.id);
+        const updatedMessage = await storage.markMessageAsResponded(messageId);
+
+        if (!updatedMessage) {
+          return res.status(404).json({ message: "Message not found" });
+        }
+
+        res.status(200).json({ 
+          message: "Message marked as responded", 
+          contactMessage: updatedMessage 
+        });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+      }
+    });
+
+    // Admin User Messages Routes
+    app.get("/api/admin/user-messages", authMiddleware, adminMiddleware, async (req, res) => {
+      try {
+        // Get all users to enrich the messages with user info
+        const users = await storage.getAllUsers();
+        const userMap = new Map();
+        users.forEach(user => {
+          userMap.set(user.id, {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+          });
+        });
+
+        // Get all messages (getting all sent messages will capture all messages in the system)
+        let allMessages = [];
+        for (const user of users) {
+          const sentMessages = await storage.getUserSentMessages(user.id);
+          allMessages = [...allMessages, ...sentMessages];
+        }
+
+        // Sort by date, most recent first
+        allMessages.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+        // Enrich with user info
+        const enrichedMessages = allMessages.map(msg => ({
+          ...msg,
+          sender: userMap.get(msg.senderId),
+          recipient: userMap.get(msg.recipientId)
+        }));
+
+        res.status(200).json(enrichedMessages);
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+      }
+    });
+
+    app.get("/api/admin/user-messages/:id", authMiddleware, adminMiddleware, async (req, res) => {
+      try {
+        const messageId = parseInt(req.params.id);
+        const message = await storage.getUserMessage(messageId);
+
+        if (!message) {
+          return res.status(404).json({ message: "Message not found" });
+        }
+
+        // Get sender and recipient info
+        const sender = await storage.getUser(message.senderId);
+        const recipient = await storage.getUser(message.recipientId);
+
+        // Remove sensitive data
+        const { password: senderPass, ...senderInfo } = sender;
+        const { password: recipientPass, ...recipientInfo } = recipient;
+
+        // Enrich the message
+        const enrichedMessage = {
+          ...message,
+          sender: senderInfo,
+          recipient: recipientInfo
+        };
+
+        res.status(200).json(enrichedMessage);
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+      }
+    });
+
+    app.post("/api/admin/messages", authMiddleware, adminMiddleware, async (req, res) => {
+      try {
+        const adminId = req.session.userId;
+        const { recipientId, subject, content } = req.body;
+
+        // Validate input
+        if (!recipientId || !subject || !content) {
+          return res.status(400).json({ message: "Missing required fields" });
+        }
+
+        // Check if recipient exists
+        const recipient = await storage.getUser(recipientId);
+        if (!recipient) {
+          return res.status(404).json({ message: "Recipient not found" });
+        }
+
+        // Create message
+        const message = await storage.createUserMessage({
+          senderId: adminId,
+          recipientId,
+          subject,
+          content
+        });
+
+        res.status(201).json({
+          message: "Message sent successfully",
+          id: message.id
+        });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+      }
+    });
+
+    // Admin Notifications Routes
+    app.get("/api/admin/notifications", authMiddleware, adminMiddleware, async (req, res) => {
+      try {
+        const userId = req.session.userId;
+        const notifications = await storage.getUserNotifications(userId);
+        res.status(200).json(notifications);
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+      }
+    });
+
+    app.post("/api/admin/notifications", authMiddleware, adminMiddleware, async (req, res) => {
+      try {
+        const { userId, title, message, type, link } = req.body;
+
+        // Validate input
+        if (!userId || !title || !message || !type) {
+          return res.status(400).json({ message: "Missing required fields" });
+        }
+
+        // Check if user exists
+        const user = await storage.getUser(userId);
+        if (!user) {
+          return res.status(404).json({ message: "User not found" });
+        }
+
+        // Create notification
+        const notification = await storage.createNotification({
+          userId,
+          title,
+          message,
+          type,
+          link: link || null,
+          entityId: null,
+          entityType: null
+        });
+
+        res.status(201).json({
+          message: "Notification created successfully",
+          notification
+        });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+      }
+    });
+
+    app.post("/api/admin/notifications/:id/read", authMiddleware, adminMiddleware, async (req, res) => {
+      try {
+        const notificationId = parseInt(req.params.id);
+
+        // Check if notification table exists
+        try {
+          const notification = await storage.getNotification(notificationId);
+
+          if (!notification) {
+            return res.status(200).json({ id: notificationId, status: "read" });
+          }
+
+          // Verify user is owner of notification
+          const userId = req.session.userId;
+          if (notification.userId !== userId) {
+            return res.status(403).json({ message: "Unauthorized to mark this notification" });
+          }
+
+          const updatedNotification = await storage.markNotificationAsRead(notificationId);
+          res.status(200).json(updatedNotification);
+        } catch (dbError) {
+          // If there's a database error (like missing table), just return success
+          // This is a temporary solution until the notifications table is created
+          console.log("Database error in admin notifications, using client-side state:", dbError.message);
           return res.status(200).json({ id: notificationId, status: "read" });
         }
+      } catch (error) {
+        console.error("Unexpected error in admin notification route:", error);
+        res.status(500).json({ message: "Server error" });
+      }
+    });
 
-        // Verify user is owner of notification
-        const userId = req.session.userId;
-        if (notification.userId !== userId) {
-          return res.status(403).json({ message: "Unauthorized to mark this notification" });
+    app.post("/api/admin/notifications/broadcast", authMiddleware, adminMiddleware, async (req, res) => {
+      try {
+        const { title, message, type, link, userRole } = req.body;
+
+        // Validate input
+        if (!title || !message || !type) {
+          return res.status(400).json({ message: "Missing required fields" });
         }
 
-        const updatedNotification = await storage.markNotificationAsRead(notificationId);
-        res.status(200).json(updatedNotification);
-      } catch (dbError) {
-        // If there's a database error (like missing table), just return success
-        // This is a temporary solution until the notifications table is created
-        console.log("Database error in admin notifications, using client-side state:", dbError.message);
-        return res.status(200).json({ id: notificationId, status: "read" });
+        // Get users (filtered by role if specified)
+        let users = await storage.getAllUsers();
+        if (userRole) {
+          users = users.filter(user => user.role === userRole);
+        }
+
+        // Create notification for each user
+        const promises = users.map(user => storage.createNotification({
+          userId: user.id,
+          title,
+          message,
+          type,
+          link: link || null,
+          entityId: null,
+          entityType: null
+        }));
+
+        await Promise.all(promises);
+
+        res.status(201).json({
+          message: `Notification broadcast to ${users.length} users successfully`
+        });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
       }
-    } catch (error) {
-      console.error("Unexpected error in admin notification route:", error);
-      res.status(500).json({ message: "Server error" });
-    }
-  });
+    });
+    const httpServer = createServer(app);
 
-  app.post("/api/admin/notifications/broadcast", authMiddleware, adminMiddleware, async (req, res) => {
-    try {
-      const { title, message, type, link, userRole } = req.body;
-
-      // Validate input
-      if (!title || !message || !type) {
-        return res.status(400).json({ message: "Missing required fields" });
-      }
-
-      // Get users (filtered by role if specified)
-      let users = await storage.getAllUsers();
-      if (userRole) {
-        users = users.filter(user => user.role === userRole);
-      }
-
-      // Create notification for each user
-      const promises = users.map(user => storage.createNotification({
-        userId: user.id,
-        title,
-        message,
-        type,
-        link: link || null,
-        entityId: null,
-        entityType: null
-      }));
-
-      await Promise.all(promises);
-
-      res.status(201).json({
-        message: `Notification broadcast to ${users.length} users successfully`
-      });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Server error" });
-    }
-  });
-  const httpServer = createServer(app);
-
-  return httpServer;
-}
+    return httpServer;
+  }

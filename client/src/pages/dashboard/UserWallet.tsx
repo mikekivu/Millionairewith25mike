@@ -97,52 +97,52 @@ export default function UserWallet() {
     const isDemoUser = user?.role === 'demo_user';
 
     if (isDemoUser) {
-      // For demo users, process withdrawal instantly with success message
-      toast({
-        title: "Processing Demo Withdrawal...",
-        description: "Your withdrawal request is being processed...",
-      });
-
-      try {
-        const response = await fetch('/api/user/withdrawals', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          },
-          body: JSON.stringify({
-            amount: withdrawAmount,
-            currency: selectedCurrency,
-            paymentMethod: 'demo_withdrawal',
-            transactionDetails: `Demo withdrawal of ${withdrawAmount} ${selectedCurrency}`
-          }),
-        });
-
-        if (response.ok) {
-          // Wait 2 seconds to simulate processing
-          setTimeout(() => {
-            toast({
-              title: "🎉 Withdrawal Successful!",
-              description: `Your withdrawal of ${formatCurrency(amount, selectedCurrency)} has been processed successfully! Thank you for investing with us. Your funds have been transferred to your account.`,
-              duration: 10000, // Show for 10 seconds
-            });
-
-            // Refresh user data and clear form
-            refetchUser();
-            setWithdrawAmount('');
-            setIsWithdrawing(false);
-          }, 2000);
-        } else {
-          throw new Error('Demo withdrawal failed');
-        }
-      } catch (error) {
+        // For demo users, process withdrawal instantly with success message
         toast({
-          title: "Error",
-          description: "Failed to process demo withdrawal. Please try again.",
-          variant: "destructive",
+          title: "Processing Withdrawal...",
+          description: "Your withdrawal request is being processed...",
         });
-        setIsWithdrawing(false);
-      }
+
+        try {
+          const response = await fetch('/api/user/withdrawals', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            },
+            body: JSON.stringify({
+              amount: withdrawAmount,
+              currency: selectedCurrency,
+              paymentMethod: 'instant_withdrawal',
+              transactionDetails: `Withdrawal of ${withdrawAmount} ${selectedCurrency}`
+            }),
+          });
+
+          if (response.ok) {
+            // Wait 2 seconds to simulate processing
+            setTimeout(() => {
+              toast({
+                title: "🎉 Withdrawal Successful!",
+                description: `Your withdrawal of ${formatCurrency(amount, selectedCurrency)} has been processed successfully! Thank you for investing with us. Your funds have been transferred to your account.`,
+                duration: 10000, // Show for 10 seconds
+              });
+
+              // Refresh user data and clear form
+              refetchUser();
+              setWithdrawAmount('');
+              setIsWithdrawing(false);
+            }, 2000);
+          } else {
+            throw new Error('Withdrawal processing failed');
+          }
+        } catch (error) {
+          toast({
+            title: "Error",
+            description: "Failed to process withdrawal. Please try again.",
+            variant: "destructive",
+          });
+          setIsWithdrawing(false);
+        }
     } else {
       // Regular user flow - simulate processing with admin authorization message
       toast({
