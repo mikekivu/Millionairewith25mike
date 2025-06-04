@@ -231,11 +231,11 @@ export default function AdminPaymentSettings() {
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Client ID:</span>
-                          <span className="font-mono text-xs">{process.env.PAYPAL_CLIENT_ID ? '••••••••••••' + process.env.PAYPAL_CLIENT_ID.slice(-4) : 'Not Set'}</span>
+                          <span className="font-mono text-xs">Configured in Secrets</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Client Secret:</span>
-                          <span className="font-mono text-xs">{process.env.PAYPAL_CLIENT_SECRET ? '••••••••••••' + process.env.PAYPAL_CLIENT_SECRET.slice(-4) : 'Not Set'}</span>
+                          <span className="font-mono text-xs">Configured in Secrets</span>
                         </div>
                       </div>
                     </div>
@@ -275,11 +275,11 @@ export default function AdminPaymentSettings() {
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Consumer Key:</span>
-                          <span className="font-mono text-xs">{process.env.PESAPAL_CONSUMER_KEY ? '••••••••••••' + process.env.PESAPAL_CONSUMER_KEY.slice(-4) : 'Not Set'}</span>
+                          <span className="font-mono text-xs">Configured in Secrets</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Consumer Secret:</span>
-                          <span className="font-mono text-xs">{process.env.PESAPAL_CONSUMER_SECRET ? '••••••••••••' + process.env.PESAPAL_CONSUMER_SECRET.slice(-4) : 'Not Set'}</span>
+                          <span className="font-mono text-xs">Configured in Secrets</span>
                         </div>
                       </div>
                     </div>
