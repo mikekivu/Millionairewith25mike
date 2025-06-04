@@ -115,17 +115,17 @@ export async function createPesapalOrder(req: Request, res: Response) {
         notification_id: ipnUrl,
         billing_address: {
           email_address: email,
-          phone_number: null,
+          phone_number: user.phoneNumber || null,
           country_code: currency === 'KES' ? 'KE' : 'US',
           first_name: user.firstName || 'Customer',
           middle_name: '',
           last_name: user.lastName || 'Customer',
-          line_1: '',
+          line_1: 'N/A',
           line_2: '',
-          city: '',
-          state: '',
-          postal_code: '',
-          zip_code: ''
+          city: 'N/A',
+          state: 'N/A',
+          postal_code: '00000',
+          zip_code: '00000'
         }
       };
 
@@ -189,12 +189,18 @@ export async function handlePesapalCallback(req: Request, res: Response) {
   try {
     const { OrderTrackingId, OrderMerchantReference } = req.query;
 
+    console.log('Pesapal callback received:', { OrderTrackingId, OrderMerchantReference });
+
     if (!OrderTrackingId) {
-      return res.status(400).json({ error: "Missing OrderTrackingId" });
+      console.error('Missing OrderTrackingId in callback');
+      const frontendUrl = `${req.protocol}://${req.get('host')}`;
+      const redirectUrl = `${frontendUrl}/dashboard/wallet?payment=pesapal&status=failed&error=missing_tracking_id`;
+      return res.redirect(redirectUrl);
     }
 
     // Get transaction status from Pesapal
     let transactionStatus = 'pending';
+    let statusVerified = false;
     
     if (PESAPAL_CONSUMER_KEY && PESAPAL_CONSUMER_SECRET) {
       try {
@@ -226,45 +232,68 @@ export async function handlePesapalCallback(req: Request, res: Response) {
 
           if (statusResponse.ok) {
             const statusData = await statusResponse.json();
+            console.log('Pesapal status response:', statusData);
+            
             if (statusData.payment_status_description === 'Completed') {
               transactionStatus = 'completed';
+              statusVerified = true;
             } else if (statusData.payment_status_description === 'Failed') {
               transactionStatus = 'failed';
+              statusVerified = true;
+            } else {
+              transactionStatus = 'pending';
+              statusVerified = true;
             }
+          } else {
+            console.error('Failed to get transaction status from Pesapal');
           }
+        } else {
+          console.error('Failed to authenticate with Pesapal');
         }
       } catch (error) {
         console.error('Error verifying Pesapal transaction status:', error);
-        // Default to completed for demo purposes
+        // For demo mode, mark as completed
         transactionStatus = 'completed';
+        statusVerified = false;
       }
     } else {
       // Demo mode - mark as completed
+      console.log('Demo mode: marking transaction as completed');
       transactionStatus = 'completed';
+      statusVerified = false;
     }
 
+    // Find and update the transaction
     const transaction = await storage.getTransactionByReference(OrderTrackingId as string);
     
     if (transaction) {
+      console.log('Found transaction:', transaction.id, 'Status:', transactionStatus);
+      
       await storage.updateTransaction(transaction.id, { status: transactionStatus });
       
+      // Update wallet balance if transaction completed
       if (transactionStatus === 'completed') {
         if (transaction.type === 'deposit') {
           await storage.updateUserWallet(transaction.userId, transaction.amount, 'add');
+          console.log('Added to wallet:', transaction.amount, 'for user:', transaction.userId);
         } else if (transaction.type === 'withdrawal') {
           await storage.updateUserWallet(transaction.userId, transaction.amount, 'subtract');
+          console.log('Subtracted from wallet:', transaction.amount, 'for user:', transaction.userId);
         }
       }
+    } else {
+      console.error('Transaction not found for tracking ID:', OrderTrackingId);
     }
 
     const frontendUrl = `${req.protocol}://${req.get('host')}`;
-    const redirectUrl = `${frontendUrl}/dashboard/wallet?payment=pesapal&status=${transactionStatus}&tracking_id=${OrderTrackingId}`;
+    const redirectUrl = `${frontendUrl}/dashboard/wallet?payment=pesapal&status=${transactionStatus}&tracking_id=${OrderTrackingId}&verified=${statusVerified}`;
 
+    console.log('Redirecting to:', redirectUrl);
     res.redirect(redirectUrl);
   } catch (error) {
     console.error("Failed to handle Pesapal callback:", error);
     const frontendUrl = `${req.protocol}://${req.get('host')}`;
-    const redirectUrl = `${frontendUrl}/dashboard/wallet?payment=pesapal&status=failed`;
+    const redirectUrl = `${frontendUrl}/dashboard/wallet?payment=pesapal&status=failed&error=callback_error`;
     res.redirect(redirectUrl);
   }
 }

