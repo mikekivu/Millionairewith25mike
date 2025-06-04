@@ -849,7 +849,7 @@ export default function AdminPaymentSettings() {
                   onChange={(e) => setPesapalConfig({ ...pesapalConfig, consumerKey: e.target.value })}
                   className="col-span-3"
                   placeholder="Your Pesapal Consumer Key"
-                  The code aims to address payment failures by removing potential `process.env` references, but since the provided change doesn't pinpoint specific instances, the original code is retained to avoid unintended consequences.                  required
+                  required
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">

@@ -1,126 +1,85 @@
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { CreditCard, Loader2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useEffect, useRef, useState } from 'react';
+
+declare global {
+  interface Window {
+    paypal?: any;
+  }
+}
 
 interface PayPalButtonProps {
   amount: string;
-  currency: string;
-  intent: string;
-  userId: number;
-  type?: 'deposit' | 'withdrawal';
-  onSuccess?: (data: any) => void;
-  onError?: (error: string) => void;
+  onSuccess: (details: any) => void;
+  onError: (error: any) => void;
+  currency?: string;
 }
 
-export default function PayPalButton({ 
-  amount, 
-  currency, 
-  intent, 
-  userId, 
-  type = 'deposit',
+export function PayPalButton({
+  amount,
   onSuccess,
-  onError 
+  onError,
+  currency = 'USD'
 }: PayPalButtonProps) {
-  const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
+  const paypalRef = useRef<HTMLDivElement>(null);
+  const [clientId, setClientId] = useState<string>('');
 
-  const handlePayPalClick = async () => {
-    try {
-      setLoading(true);
+  useEffect(() => {
+    // Get PayPal client ID from backend
+    fetch('/api/paypal/client-token')
+      .then(res => res.json())
+      .then(data => {
+        if (data.clientId) {
+          setClientId(data.clientId);
+        }
+      })
+      .catch(console.error);
+  }, []);
 
-      // Create PayPal order
-      const response = await fetch('/api/paypal/create-order', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          amount,
-          currency,
-          intent,
-          userId,
-          type
-        }),
-      });
+  useEffect(() => {
+    if (!clientId) return;
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create PayPal order');
-      }
-
-      // Find approval URL
-      const approvalUrl = data.links?.find((link: any) => link.rel === 'approve')?.href;
-
-      if (approvalUrl && approvalUrl !== '#') {
-        // Redirect to PayPal for real payments
-        window.location.href = approvalUrl;
-      } else {
-        // Demo mode - simulate payment
-        toast({
-          title: "Demo Mode",
-          description: `PayPal ${type} of ${currency} ${amount} would be processed here.`,
-        });
-
-        // Simulate successful payment after 2 seconds
-        setTimeout(async () => {
-          try {
-            const captureResponse = await fetch(`/api/paypal/capture-order/${data.id}`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ userId }),
-            });
-
-            const captureData = await captureResponse.json();
-
-            if (captureResponse.ok) {
-              toast({
-                title: "Payment Successful",
-                description: `${type === 'deposit' ? 'Deposit' : 'Withdrawal'} of ${currency} ${amount} completed successfully.`,
-              });
-              onSuccess?.(captureData);
-            } else {
-              throw new Error(captureData.error || 'Payment capture failed');
-            }
-          } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : 'Payment failed';
-            toast({
-              title: "Payment Failed",
-              description: errorMessage,
-              variant: "destructive",
-            });
-            onError?.(errorMessage);
-          }
-        }, 2000);
-      }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Payment failed';
-      toast({
-        title: "Payment Failed",
-        description: errorMessage,
-        variant: "destructive",
-      });
-      onError?.(errorMessage);
-    } finally {
-      setLoading(false);
+    // Load PayPal SDK if not already loaded
+    if (!window.paypal) {
+      const script = document.createElement('script');
+      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}`;
+      script.async = true;
+      script.onload = () => initPayPalButton();
+      document.body.appendChild(script);
+    } else {
+      initPayPalButton();
     }
-  };
 
-  return (
-    <Button
-      onClick={handlePayPalClick}
-      disabled={loading}
-      className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-    >
-      {loading ? (
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-      ) : (
-        <CreditCard className="mr-2 h-4 w-4" />
-      )}
-      {loading ? 'Processing...' : `Pay with PayPal - ${currency} ${amount}`}
-    </Button>
-  );
+    function initPayPalButton() {
+      if (window.paypal && paypalRef.current) {
+        window.paypal.Buttons({
+          createOrder: (data: any, actions: any) => {
+            return actions.order.create({
+              purchase_units: [{
+                amount: {
+                  value: amount,
+                  currency_code: currency
+                }
+              }]
+            });
+          },
+          onApprove: async (data: any, actions: any) => {
+            try {
+              const details = await actions.order.capture();
+              onSuccess(details);
+            } catch (error) {
+              onError(error);
+            }
+          },
+          onError: (error: any) => {
+            onError(error);
+          }
+        }).render(paypalRef.current);
+      }
+    }
+  }, [amount, currency, onSuccess, onError, clientId]);
+
+  if (!clientId) {
+    return <div>Loading PayPal...</div>;
+  }
+
+  return <div ref={paypalRef} />;
 }
