@@ -72,15 +72,6 @@ export default function UserWallet() {
   };
 
   const handleWithdrawalRequest = async () => {
-    if (!withdrawAmount) {
-      toast({
-        title: "Error",
-        description: "Please enter the withdrawal amount",
-        variant: "destructive",
-      });
-      return;
-    }
-
     const amount = parseFloat(withdrawAmount);
     if (amount < 10) {
       toast({
@@ -102,30 +93,82 @@ export default function UserWallet() {
 
     setIsWithdrawing(true);
 
-    // Simulate processing with rotating animation
-    toast({
-      title: "Processing Withdrawal",
-      description: "Your withdrawal request is being processed...",
-    });
+    // Check if this is a demo user
+    const isDemoUser = user?.role === 'demo_user';
 
-    // Wait 3-5 seconds to simulate processing
-    setTimeout(() => {
+    if (isDemoUser) {
+      // For demo users, process withdrawal instantly with success message
       toast({
-        title: "Withdrawal Submitted",
-        description: "Your withdrawal request has been submitted for admin authorization. You will be contacted soon.",
+        title: "Processing Demo Withdrawal...",
+        description: "Your withdrawal request is being processed...",
       });
 
-      // After another 2 seconds, show admin contact message
-      setTimeout(() => {
+      try {
+        const response = await fetch('/api/user/withdrawals', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          },
+          body: JSON.stringify({
+            amount: withdrawAmount,
+            currency: selectedCurrency,
+            paymentMethod: 'demo_withdrawal',
+            transactionDetails: `Demo withdrawal of ${withdrawAmount} ${selectedCurrency}`
+          }),
+        });
+
+        if (response.ok) {
+          // Wait 2 seconds to simulate processing
+          setTimeout(() => {
+            toast({
+              title: "🎉 Demo Withdrawal Successful!",
+              description: `Your withdrawal of ${formatCurrency(amount, selectedCurrency)} has been processed successfully! Thank you for investing with us and exploring our platform. This is a simulated transaction for testing purposes.`,
+              duration: 10000, // Show for 10 seconds
+            });
+
+            // Refresh user data and clear form
+            refetchUser();
+            setWithdrawAmount('');
+            setIsWithdrawing(false);
+          }, 2000);
+        } else {
+          throw new Error('Demo withdrawal failed');
+        }
+      } catch (error) {
         toast({
-          title: "Admin Authorization Required",
-          description: "Please contact admin for withdrawal authorization. Your request is being reviewed and action will be taken soon.",
-          duration: 8000, // Show for 8 seconds
+          title: "Error",
+          description: "Failed to process demo withdrawal. Please try again.",
+          variant: "destructive",
         });
         setIsWithdrawing(false);
-        setWithdrawAmount('');
-      }, 2000);
-    }, Math.random() * 2000 + 3000); // Random delay between 3-5 seconds
+      }
+    } else {
+      // Regular user flow - simulate processing with admin authorization message
+      toast({
+        title: "Processing Withdrawal",
+        description: "Your withdrawal request is being processed...",
+      });
+
+      // Wait 3-5 seconds to simulate processing
+      setTimeout(() => {
+        toast({
+          title: "Withdrawal Submitted",
+          description: "Your withdrawal request has been submitted for admin authorization. You will be contacted soon.",
+        });
+
+        // After another 2 seconds, show admin contact message
+        setTimeout(() => {
+          toast({
+            title: "Admin Authorization Required",
+            description: "Please contact admin for withdrawal authorization. Your request is being reviewed and action will be taken soon.",
+            duration: 8000, // Show for 8 seconds
+          });
+          setIsWithdrawing(false);
+          setWithdrawAmount('');
+        }, 2000);
+      }, Math.random() * 2000 + 3000); // Random delay between 3-5 seconds
+    }
   };
 
   const walletBalance = parseFloat(user?.walletBalance || '0');
@@ -198,6 +241,30 @@ export default function UserWallet() {
       }, 2000);
     }
   }, [toast]);
+
+  const handleDepositSuccess = async (transactionId: string, amount: string) => {
+    // Check if this is a demo user
+    const isDemoUser = user?.role === 'demo_user';
+
+    if (isDemoUser) {
+      toast({
+        title: "Demo Deposit Successful! 🎉",
+        description: `Your demo deposit of ${formatCurrency(parseFloat(amount), selectedCurrency)} has been instantly processed. Thank you for exploring our platform! This is a simulated transaction for testing purposes.`,
+        duration: 8000,
+      });
+    } else {
+      toast({
+        title: "Deposit Successful",
+        description: `Your deposit of ${formatCurrency(parseFloat(amount), selectedCurrency)} has been processed successfully.`,
+      });
+    }
+
+    // Refresh user data to show updated balance
+    await refetchUser();
+
+    // Clear the deposit amount
+    setDepositAmount('');
+  };
 
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-6">
