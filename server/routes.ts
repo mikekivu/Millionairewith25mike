@@ -962,18 +962,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Validate input
       if (!amount || !method || !destination) {
-        return res.status(400).json({ message: "Missing required fields" });
+        return res.status(400).json({ message: "Missing required fields: amount, method, and destination are required" });
       }
 
-      if (parseFloat(amount) <= 0) {
+      const withdrawAmount = parseFloat(amount);
+      if (withdrawAmount <= 0) {
         return res.status(400).json({ message: "Amount must be greater than 0" });
+      }
+
+      // Get dashboard stats to check available balance
+      const stats = await storage.getDashboardStats();
+      const availableBalance = parseFloat(stats.totalDeposits) - parseFloat(stats.totalWithdrawals || '0');
+
+      if (withdrawAmount > availableBalance) {
+        return res.status(400).json({ 
+          message: "Insufficient funds. Amount exceeds available balance." 
+        });
       }
 
       // Create admin withdrawal transaction
       const withdrawal = await storage.createTransaction({
         userId: adminId,
         type: "admin_withdrawal",
-        amount,
+        amount: amount.toString(),
         currency: currency || "USD",
         status: "completed", // Admin withdrawals are auto-approved
         paymentMethod: method,
@@ -986,8 +997,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         withdrawal
       });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Server error" });
+      console.error("Admin withdrawal error:", error);
+      res.status(500).json({ message: "Server error during withdrawal" });
     }
   });
 

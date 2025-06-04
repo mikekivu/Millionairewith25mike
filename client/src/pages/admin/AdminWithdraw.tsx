@@ -85,7 +85,7 @@ export default function AdminWithdraw() {
   });
 
   const handleWithdraw = async () => {
-    if (!withdrawAmount || !destination) {
+    if (!withdrawAmount || !destination.trim()) {
       toast({
         title: "Error",
         description: "Please fill in all required fields",
@@ -94,10 +94,20 @@ export default function AdminWithdraw() {
       return;
     }
 
-    if (parseFloat(withdrawAmount) <= 0) {
+    const amount = parseFloat(withdrawAmount);
+    if (amount <= 0) {
       toast({
         title: "Error",
         description: "Withdrawal amount must be greater than 0",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (amount > parseFloat(availableBalance)) {
+      toast({
+        title: "Error",
+        description: "Insufficient funds. Amount exceeds available balance.",
         variant: "destructive",
       });
       return;
@@ -109,8 +119,8 @@ export default function AdminWithdraw() {
       amount: withdrawAmount,
       currency: 'USD',
       method: withdrawMethod,
-      destination,
-      notes
+      destination: destination.trim(),
+      notes: notes.trim() || `Admin withdrawal via ${withdrawMethod}`
     });
   };
 
@@ -248,7 +258,7 @@ export default function AdminWithdraw() {
 
                   <Button
                     onClick={handleWithdraw}
-                    disabled={!isValidAmount || !destination || isWithdrawing}
+                    disabled={!isValidAmount || !destination.trim() || isWithdrawing}
                     className="w-full"
                     size="lg"
                   >
