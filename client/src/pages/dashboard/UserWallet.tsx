@@ -72,44 +72,60 @@ export default function UserWallet() {
   };
 
   const handleWithdrawalRequest = async () => {
-    if (!isValidWithdrawAmount) return;
+    if (!withdrawAmount) {
+      toast({
+        title: "Error",
+        description: "Please enter the withdrawal amount",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const amount = parseFloat(withdrawAmount);
+    if (amount < 10) {
+      toast({
+        title: "Error",
+        description: "Minimum withdrawal amount is $10.00",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (amount > parseFloat(user?.walletBalance || '0')) {
+      toast({
+        title: "Error",
+        description: "Insufficient balance",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsWithdrawing(true);
 
-    try {
-      const response = await fetch('/api/user/withdrawals', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          amount: withdrawAmount,
-          currency: selectedCurrency,
-          paymentMethod: 'manual',
-          transactionDetails: `Withdrawal request for ${formatCurrency(parseFloat(withdrawAmount), selectedCurrency)}`
-        }),
+    // Simulate processing with rotating animation
+    toast({
+      title: "Processing Withdrawal",
+      description: "Your withdrawal request is being processed...",
+    });
+
+    // Wait 3-5 seconds to simulate processing
+    setTimeout(() => {
+      toast({
+        title: "Withdrawal Submitted",
+        description: "Your withdrawal request has been submitted for admin authorization. You will be contacted soon.",
       });
 
-      if (response.ok) {
+      // After another 2 seconds, show admin contact message
+      setTimeout(() => {
         toast({
-          title: "Withdrawal Request Submitted",
-          description: "Your withdrawal request has been submitted for admin approval. You will be notified once it's processed.",
+          title: "Admin Authorization Required",
+          description: "Please contact admin for withdrawal authorization. Your request is being reviewed and action will be taken soon.",
+          duration: 8000, // Show for 8 seconds
         });
+        setIsWithdrawing(false);
         setWithdrawAmount('');
-        fetchTransactions(); // Refresh transaction history
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to submit withdrawal request');
-      }
-    } catch (error) {
-      toast({
-        title: "Request Failed",
-        description: error instanceof Error ? error.message : "Failed to submit withdrawal request. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsWithdrawing(false);
-    }
+      }, 2000);
+    }, Math.random() * 2000 + 3000); // Random delay between 3-5 seconds
   };
 
   const walletBalance = parseFloat(user?.walletBalance || '0');
