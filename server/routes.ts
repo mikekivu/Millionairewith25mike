@@ -716,6 +716,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     await getPesapalTransactionStatus(req, res);
   });
 
+  // Demo Pesapal payment page simulation
+  app.get("/api/pesapal/demo-payment", async (req, res) => {
+    const { OrderTrackingId } = req.query;
+    
+    if (!OrderTrackingId) {
+      return res.status(400).send('Missing OrderTrackingId');
+    }
+
+    // Simple HTML page that simulates Pesapal payment options
+    const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Pesapal Payment - Demo</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            body { font-family: Arial, sans-serif; max-width: 500px; margin: 50px auto; padding: 20px; }
+            .payment-option { border: 1px solid #ddd; margin: 10px 0; padding: 15px; cursor: pointer; border-radius: 5px; }
+            .payment-option:hover { background-color: #f5f5f5; }
+            h1 { color: #1a5f7a; text-align: center; }
+            .amount { font-size: 24px; font-weight: bold; color: #2d5016; text-align: center; margin: 20px 0; }
+        </style>
+    </head>
+    <body>
+        <h1>🏦 Pesapal Payment Gateway</h1>
+        <div class="amount">Choose your payment method:</div>
+        
+        <div class="payment-option" onclick="processPayment('visa')">
+            💳 Visa Card
+        </div>
+        
+        <div class="payment-option" onclick="processPayment('mastercard')">
+            💳 Mastercard
+        </div>
+        
+        <div class="payment-option" onclick="processPayment('mpesa')">
+            📱 M-Pesa
+        </div>
+        
+        <div class="payment-option" onclick="processPayment('airtel')">
+            📱 Airtel Money
+        </div>
+        
+        <div class="payment-option" onclick="processPayment('bank')">
+            🏦 Bank Transfer
+        </div>
+
+        <script>
+            function processPayment(method) {
+                alert('Processing payment via ' + method + '...\\n\\nIn a real integration, this would redirect to the actual payment processor.');
+                
+                // Simulate payment processing
+                setTimeout(() => {
+                    // Redirect back to callback with success
+                    window.location.href = '/api/pesapal/callback?OrderTrackingId=${OrderTrackingId}&demo=true&method=' + method;
+                }, 2000);
+            }
+        </script>
+    </body>
+    </html>
+    `;
+    
+    res.send(html);
+  });
+
   // Mount the API router
   app.use('/api', router);
 

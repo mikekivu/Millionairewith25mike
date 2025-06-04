@@ -58,32 +58,20 @@ export default function PesapalButton({
         throw new Error(data.error || 'Failed to create Pesapal order');
       }
 
-      if (data.demo_mode) {
-        // Demo mode
-        toast({
-          title: "Demo Mode",
-          description: `Pesapal ${type} of ${currency} ${amount} would be processed here.`,
-        });
-
-        // Simulate successful payment after 2 seconds
-        setTimeout(() => {
-          toast({
-            title: "Payment Successful",
-            description: `${type === 'deposit' ? 'Deposit' : 'Withdrawal'} of ${currency} ${amount} completed successfully.`,
-          });
-          onSuccess?.(data);
-        }, 2000);
-      } else if (data.redirect_url) {
-        // Real Pesapal payment - redirect to payment page
+      if (data.redirect_url) {
+        // Redirect to Pesapal payment page (works for both demo and live)
         toast({
           title: "Redirecting to Pesapal",
-          description: "Please complete your payment on the Pesapal secure page. You will be redirected back automatically.",
+          description: "You will be redirected to Pesapal where you can choose from various payment methods including Visa, Mastercard, M-Pesa, and more.",
+          duration: 3000,
         });
         
-        // Redirect immediately to Pesapal
-        window.location.href = data.redirect_url;
+        // Small delay to show the toast, then redirect
+        setTimeout(() => {
+          window.location.href = data.redirect_url;
+        }, 1000);
       } else {
-        throw new Error('Invalid response from Pesapal API');
+        throw new Error('No redirect URL received from Pesapal');
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Payment failed';

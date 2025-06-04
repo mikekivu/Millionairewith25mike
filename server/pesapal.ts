@@ -47,7 +47,7 @@ export async function createPesapalOrder(req: Request, res: Response) {
     const orderId = `PESAPAL_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
     if (!PESAPAL_CONSUMER_KEY || !PESAPAL_CONSUMER_SECRET) {
-      // Demo mode
+      // Demo mode - simulate real redirect for testing
       await storage.createTransaction({
         userId,
         type,
@@ -59,12 +59,16 @@ export async function createPesapalOrder(req: Request, res: Response) {
         paymentReference: orderId
       });
 
+      // Simulate Pesapal redirect URL for demo
+      const demoRedirectUrl = `${req.protocol}://${req.get('host')}/api/pesapal/demo-payment?OrderTrackingId=${orderId}`;
+      
       return res.json({
         order_tracking_id: orderId,
         merchant_reference: orderId,
-        redirect_url: `${req.protocol}://${req.get('host')}/dashboard/wallet?payment=pesapal&status=pending&tracking_id=${orderId}`,
+        redirect_url: demoRedirectUrl,
         status: "pending",
-        orderId: orderId
+        orderId: orderId,
+        demo_mode: true
       });
     }
 
@@ -158,25 +162,10 @@ export async function createPesapalOrder(req: Request, res: Response) {
     } catch (error) {
       console.error('Pesapal API error:', error);
       
-      // Fallback to demo mode if API fails
-      await storage.createTransaction({
-        userId,
-        type,
-        amount,
-        currency,
-        status: "pending",
-        paymentMethod: "pesapal",
-        transactionDetails: `Pesapal ${type}: ${orderId} (Demo)`,
-        paymentReference: orderId
-      });
-
-      res.json({
-        order_tracking_id: orderId,
-        merchant_reference: orderId,
-        redirect_url: `${req.protocol}://${req.get('host')}/dashboard/wallet?payment=pesapal&status=demo&tracking_id=${orderId}`,
-        status: "pending",
-        orderId: orderId,
-        demo_mode: true
+      // Return error instead of falling back to demo mode
+      return res.status(500).json({
+        error: "Failed to connect to Pesapal payment gateway. Please try again later.",
+        details: error instanceof Error ? error.message : "Unknown error"
       });
     }
   } catch (error) {
@@ -257,10 +246,16 @@ export async function handlePesapalCallback(req: Request, res: Response) {
         statusVerified = false;
       }
     } else {
-      // Demo mode - mark as completed
-      console.log('Demo mode: marking transaction as completed');
-      transactionStatus = 'completed';
-      statusVerified = false;
+      // Demo mode or missing credentials - check if it's a demo request
+      if (req.query.demo === 'true') {
+        console.log('Demo mode: marking transaction as completed');
+        transactionStatus = 'completed';
+        statusVerified = false;
+      } else {
+        console.log('No API credentials: marking transaction as pending');
+        transactionStatus = 'pending';
+        statusVerified = false;
+      }
     }
 
     // Find and update the transaction
