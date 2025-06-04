@@ -83,3 +83,5 @@ export function PayPalButton({
 
   return <div ref={paypalRef} />;
 }
+
+export default PayPalButton;
