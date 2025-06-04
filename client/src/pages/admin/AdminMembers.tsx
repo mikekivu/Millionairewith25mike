@@ -48,6 +48,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Label } from '@/components/ui/label';
+import EditWalletDialog from '@/components/dashboard/EditWalletDialog';
 
 interface User {
   id: number;
@@ -75,6 +76,8 @@ export default function AdminMembers() {
   const [isSuperAdmin, setIsSuperAdmin] = useState<boolean>(false);
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [walletEditDialogOpen, setWalletEditDialogOpen] = useState(false);
+  const [userForWalletEdit, setUserForWalletEdit] = useState<User | null>(null);
 
   // Check if current user is super admin
   const { data: currentUser } = useQuery({
@@ -164,6 +167,11 @@ export default function AdminMembers() {
   const handleViewProfile = (user: User) => {
     setSelectedUser(user);
     setProfileDialogOpen(true);
+  };
+
+  const handleEditWallet = (user: User) => {
+    setUserForWalletEdit(user);
+    setWalletEditDialogOpen(true);
   };
 
   const columns: ColumnDef<User>[] = [
@@ -274,10 +282,7 @@ export default function AdminMembers() {
                   </DropdownMenuItem>
                   
                   <DropdownMenuItem
-                    onClick={() => toast({
-                      title: "Edit Wallet Balance",
-                      description: `Editing wallet balance for ${user.firstName} ${user.lastName}`,
-                    })}
+                    onClick={() => handleEditWallet(user)}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><path d="M2 6h20"></path><path d="M2 10h20"></path><path d="M2 14h20"></path><path d="M2 18h9"></path></svg>
                     Edit Wallet Balance
@@ -552,6 +557,13 @@ export default function AdminMembers() {
           </div>
         </div>
       </div>
+
+      {/* Wallet Edit Dialog */}
+      <EditWalletDialog
+        user={userForWalletEdit}
+        open={walletEditDialogOpen}
+        onOpenChange={setWalletEditDialogOpen}
+      />
 
       {/* Status change confirmation dialog */}
       <AlertDialog open={isStatusDialogOpen} onOpenChange={setIsStatusDialogOpen}>

@@ -20,6 +20,12 @@ import { nanoid } from 'nanoid';
 import { authenticateToken } from './db-compatibility.js';
 import { Decimal } from 'decimal.js';
 
+// Utility function for formatting currency
+const formatCurrency = (amount: string | number, currency: string = 'USD') => {
+  const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+  return `${numAmount.toFixed(2)} ${currency}`;
+};
+
 // Define session interface
 declare module "express-session" {
   interface SessionData {
@@ -1812,6 +1818,93 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error(error);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Admin wallet balance management
+  app.put("/api/admin/users/:id/wallet", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { amount, action, notes } = req.body;
+
+      // Validate input
+      if (!amount || !action || !["set", "add", "subtract"].includes(action)) {
+        return res.status(400).json({ message: "Invalid amount or action. Action must be 'set', 'add', or 'subtract'" });
+      }
+
+      const walletAmount = parseFloat(amount);
+      if (walletAmount < 0) {
+        return res.status(400).json({ message: "Amount must be positive" });
+      }
+
+      // Get the user
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const currentBalance = parseFloat(user.walletBalance);
+      let newBalance: number;
+
+      switch (action) {
+        case "set":
+          newBalance = walletAmount;
+          break;
+        case "add":
+          newBalance = currentBalance + walletAmount;
+          break;
+        case "subtract":
+          newBalance = Math.max(0, currentBalance - walletAmount); // Don't allow negative balance
+          break;
+        default:
+          return res.status(400).json({ message: "Invalid action" });
+      }
+
+      // Update user wallet balance
+      const updatedUser = await storage.updateUser(userId, { 
+        walletBalance: newBalance.toString() 
+      });
+
+      // Create a transaction record for audit trail
+      await storage.createTransaction({
+        userId,
+        type: "admin_adjustment",
+        amount: amount.toString(),
+        currency: "USD",
+        status: "completed",
+        paymentMethod: "admin",
+        transactionDetails: `Admin wallet adjustment: ${action} ${amount} USD`,
+        description: notes || `Admin ${action} wallet balance by ${amount} USD`
+      });
+
+      // Create notification for user
+      await storage.createNotification({
+        userId,
+        title: "Wallet Balance Updated",
+        message: `Your wallet balance has been ${action === 'set' ? 'set to' : action === 'add' ? 'increased by' : 'decreased by'} ${formatCurrency(amount, 'USD')} by an administrator`,
+        type: "wallet_adjustment",
+        entityId: userId,
+        entityType: "user",
+        link: "/dashboard/wallet"
+      });
+
+      res.status(200).json({
+        message: "Wallet balance updated successfully",
+        user: {
+          id: updatedUser?.id,
+          username: updatedUser?.username,
+          firstName: updatedUser?.firstName,
+          lastName: updatedUser?.lastName,
+          walletBalance: updatedUser?.walletBalance
+        },
+        previousBalance: currentBalance.toString(),
+        newBalance: newBalance.toString(),
+        action,
+        amount: amount.toString()
+      });
+    } catch (error) {
+      console.error("Error updating wallet balance:", error);
       res.status(500).json({ message: "Server error" });
     }
   });
