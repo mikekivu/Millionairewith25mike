@@ -501,6 +501,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
 
+      console.log(`Investment check - User: ${userId}, Current balance: ${user.walletBalance}, Investment amount: ${amount}`);
+
       const walletBalance = parseFloat(user.walletBalance);
       if (walletBalance < amount) {
         return res.status(400).json({ message: "Insufficient wallet balance" });
@@ -512,9 +514,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Deduct from user's wallet first
       const newBalance = walletBalance - amount;
+      console.log(`Deducting from wallet - Old balance: ${walletBalance}, New balance: ${newBalance}`);
+      
       await storage.updateUser(userId, { 
         walletBalance: newBalance.toString() 
       });
+
+      // Verify the update
+      const updatedUser = await storage.getUser(userId);
+      console.log(`Wallet updated - New balance in DB: ${updatedUser?.walletBalance}`);
 
       // Create investment
       const investment = await storage.createInvestment({

@@ -89,7 +89,12 @@ export default function UserDashboard() {
               </h1>
             </div>
 
-            <UserStatsCards stats={dashboardStats} />
+            <UserStatsCards stats={{
+                totalBalance: user?.walletBalance || dashboardStats?.walletBalance || '0',
+                totalInvestments: dashboardStats?.totalInvested || '0',
+                totalEarnings: dashboardStats?.totalEarnings || '0',
+                referralCount: dashboardStats?.referralCount || 0,
+              }} />
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
               <div className="lg:col-span-2 space-y-6">

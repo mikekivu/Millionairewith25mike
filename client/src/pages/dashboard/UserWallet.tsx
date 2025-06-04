@@ -132,14 +132,23 @@ export default function UserWallet() {
   const isValidDepositAmount = depositAmount && parseFloat(depositAmount) > 0;
   const isValidWithdrawAmount = withdrawAmount && parseFloat(withdrawAmount) > 0 && parseFloat(withdrawAmount) <= walletBalance;
 
+  // Debug log for wallet balance
+  console.log('User wallet balance:', user?.walletBalance, 'Parsed:', walletBalance);
+
   // Fetch user data
   const refetchUser = async () => {
     try {
       await refetch();
+      console.log('User data refetched:', user);
     } catch (error) {
       console.error("Failed to refetch user:", error);
     }
   };
+
+  // Force refresh user data on component mount
+  useEffect(() => {
+    refetchUser();
+  }, []);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -207,7 +216,7 @@ export default function UserWallet() {
         </CardHeader>
         <CardContent>
           <div className="text-2xl md:text-3xl font-bold">
-            {formatCurrency(walletBalance, 'USD')}
+            ${walletBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
           <p className="text-blue-100 mt-2 text-sm">Available for investment and withdrawal</p>
         </CardContent>
