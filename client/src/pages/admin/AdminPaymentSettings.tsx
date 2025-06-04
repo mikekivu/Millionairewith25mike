@@ -161,6 +161,7 @@ export default function AdminPaymentSettings() {
   };
 
   const handleEditClick = (method: PaymentMethod) => {
+    console.log('Editing method:', method);
     setFormData({
       method: method.method || '',
       name: method.name || '',
@@ -176,9 +177,22 @@ export default function AdminPaymentSettings() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Basic validation
+    if (!formData.method || !formData.name) {
+      toast({
+        title: "Error",
+        description: "Method and name are required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (editingMethod) {
+      console.log('Updating method:', editingMethod.id, formData);
       updateMethodMutation.mutate({ id: editingMethod.id, data: formData });
     } else {
+      console.log('Creating new method:', formData);
       createMethodMutation.mutate(formData);
     }
   };
@@ -388,16 +402,28 @@ export default function AdminPaymentSettings() {
                         <Button 
                           size="sm" 
                           variant="outline" 
-                          onClick={() => handleEditClick(method)}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleEditClick(method);
+                          }}
                         >
-                          <Edit className="h-4 w-4" />
+                          <Edit className="h-4 w-4 mr-1" />
+                          Edit
                         </Button>
                         <Button
                           size="sm"
-                          variant="outline"
-                          onClick={() => deleteMethodMutation.mutate(method.id)}
+                          variant="destructive"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (confirm('Are you sure you want to delete this payment method?')) {
+                              deleteMethodMutation.mutate(method.id);
+                            }
+                          }}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Delete
                         </Button>
                       </div>
                     </CardContent>
@@ -476,10 +502,12 @@ export default function AdminPaymentSettings() {
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="minAmount" className="text-right">Min Amount</Label>
+                <Label htmlFor="minAmount" className="text-right">Min Amount ($)</Label>
                 <Input
                   id="minAmount"
                   type="number"
+                  min="1"
+                  step="0.01"
                   value={formData.minAmount}
                   onChange={(e) => setFormData({ ...formData, minAmount: e.target.value })}
                   className="col-span-3"
@@ -488,10 +516,12 @@ export default function AdminPaymentSettings() {
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="maxAmount" className="text-right">Max Amount</Label>
+                <Label htmlFor="maxAmount" className="text-right">Max Amount ($)</Label>
                 <Input
                   id="maxAmount"
                   type="number"
+                  min="1"
+                  step="0.01"
                   value={formData.maxAmount}
                   onChange={(e) => setFormData({ ...formData, maxAmount: e.target.value })}
                   className="col-span-3"
@@ -576,10 +606,12 @@ export default function AdminPaymentSettings() {
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-minAmount" className="text-right">Min Amount</Label>
+                <Label htmlFor="edit-minAmount" className="text-right">Min Amount ($)</Label>
                 <Input
                   id="edit-minAmount"
                   type="number"
+                  min="1"
+                  step="0.01"
                   value={formData.minAmount}
                   onChange={(e) => setFormData({ ...formData, minAmount: e.target.value })}
                   className="col-span-3"
@@ -588,10 +620,12 @@ export default function AdminPaymentSettings() {
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-maxAmount" className="text-right">Max Amount</Label>
+                <Label htmlFor="edit-maxAmount" className="text-right">Max Amount ($)</Label>
                 <Input
                   id="edit-maxAmount"
                   type="number"
+                  min="1"
+                  step="0.01"
                   value={formData.maxAmount}
                   onChange={(e) => setFormData({ ...formData, maxAmount: e.target.value })}
                   className="col-span-3"
