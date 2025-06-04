@@ -185,6 +185,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
         active: true,
       });
 
+      // Create notification for new user registration (for admins)
+      try {
+        // Get all admin users
+        const allUsers = await storage.getAllUsers();
+        const adminUsers = allUsers.filter(u => u.role === 'admin');
+        
+        // Create notification for each admin about new registration
+        for (const admin of adminUsers) {
+          await storage.createNotification({
+            userId: admin.id,
+            title: "New User Registration",
+            message: `${firstName} ${lastName} has registered and joined the platform`,
+            type: "registration",
+            entityId: newUser.id,
+            entityType: "user",
+            link: "/admin/members"
+          });
+        }
+
+        // Create welcome notification for new user
+        await storage.createNotification({
+          userId: newUser.id,
+          title: "Welcome to MillionareWith$25!",
+          message: "Welcome to our platform! Complete your profile and start exploring investment opportunities.",
+          type: "welcome",
+          entityId: newUser.id,
+          entityType: "user",
+          link: "/dashboard"
+        });
+      } catch (notifError) {
+        console.error("Failed to create registration notifications:", notifError);
+      }
+
       // Create referral entries if user was referred
       if (referredBy) {
         try {
@@ -499,6 +532,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       const transaction = await storage.createTransaction(validatedData);
+
+      // Create notifications for deposit
+      try {
+        // Get user info
+        const user = await storage.getUser(userId);
+        
+        // Notify user about deposit initiation
+        await storage.createNotification({
+          userId,
+          title: "Deposit Initiated",
+          message: `Your deposit of ${validatedData.amount} ${validatedData.currency} has been initiated and is pending confirmation`,
+          type: "deposit_pending",
+          entityId: transaction.id,
+          entityType: "transaction",
+          link: "/dashboard/transactions"
+        });
+
+        // Notify admins about new deposit
+        const allUsers = await storage.getAllUsers();
+        const adminUsers = allUsers.filter(u => u.role === 'admin');
+        
+        for (const admin of adminUsers) {
+          await storage.createNotification({
+            userId: admin.id,
+            title: "New Deposit Request",
+            message: `${user?.firstName} ${user?.lastName} has initiated a deposit of ${validatedData.amount} ${validatedData.currency}`,
+            type: "deposit_request",
+            entityId: transaction.id,
+            entityType: "transaction",
+            link: "/admin/transactions"
+          });
+        }
+      } catch (notifError) {
+        console.error("Failed to create deposit notifications:", notifError);
+      }
+
       res.status(201).json({ 
         message: "Deposit initiated", 
         transaction 
@@ -1366,6 +1435,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const updatedTransaction = await storage.updateTransaction(transactionId, { status });
+
+      // Create notifications for transaction status updates
+      try {
+        const user = await storage.getUser(transaction.userId);
+        
+        if (transaction.type === "deposit" && status === "completed") {
+          // Notify user about successful deposit
+          await storage.createNotification({
+            userId: transaction.userId,
+            title: "Deposit Completed",
+            message: `Your deposit of ${transaction.amount} ${transaction.currency} has been successfully processed and added to your wallet`,
+            type: "deposit_completed",
+            entityId: transaction.id,
+            entityType: "transaction",
+            link: "/dashboard/transactions"
+          });
+        } else if (transaction.type === "deposit" && status === "failed") {
+          // Notify user about failed deposit
+          await storage.createNotification({
+            userId: transaction.userId,
+            title: "Deposit Failed",
+            message: `Your deposit of ${transaction.amount} ${transaction.currency} could not be processed. Please contact support if you believe this is an error.`,
+            type: "deposit_failed",
+            entityId: transaction.id,
+            entityType: "transaction",
+            link: "/dashboard/transactions"
+          });
+        }
+      } catch (notifError) {
+        console.error("Failed to create transaction update notifications:", notifError);
+      }
 
       res.status(200).json({ 
         message: "Transaction status updated successfully", 

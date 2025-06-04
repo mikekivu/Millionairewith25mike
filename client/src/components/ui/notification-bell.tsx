@@ -45,45 +45,122 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ userRole }) => {
         console.log('Fetching notifications for', userRole);
         // Return demo notifications until backend is fixed
         
-        // For demo purpose - create notifications including unread messages
-        return [
-          {
-            id: 1,
-            userId: 1,
-            title: 'New Message',
-            message: 'You have received a new message from Admin',
-            status: 'unread',
-            type: 'message',
-            link: '/dashboard/messages',
-            createdAt: new Date(Date.now() - 30 * 60000).toISOString(), // 30 minutes ago
-            entityId: 1,
-            entityType: 'message'
-          },
-          {
-            id: 2,
-            userId: 1,
-            title: 'Referral Commission',
-            message: 'You have earned $25 in referral commission',
-            status: 'unread',
-            type: 'referral',
-            link: '/dashboard/referrals',
-            createdAt: new Date(Date.now() - 2 * 3600000).toISOString(), // 2 hours ago
-            entityId: 123,
-            entityType: 'transaction'
-          },
-          {
-            id: 3,
-            userId: 1,
-            title: 'New Referral',
-            message: 'John Smith has joined using your referral link',
-            status: 'unread',
-            type: 'referral',
-            link: '/dashboard/referrals',
-            createdAt: new Date(Date.now() - 1 * 86400000).toISOString(), // 1 day ago
-            entityId: 456,
-            entityType: 'user'
-          }
-        ];
+        // For demo purpose - create comprehensive notifications for different user roles
+        if (userRole === "admin") {
+          return [
+            {
+              id: 1,
+              userId: 1,
+              title: 'New User Registration',
+              message: 'Jane Smith has registered and joined the platform',
+              status: 'unread',
+              type: 'registration',
+              link: '/admin/members',
+              createdAt: new Date(Date.now() - 15 * 60000).toISOString(), // 15 minutes ago
+              entityId: 25,
+              entityType: 'user'
+            },
+            {
+              id: 2,
+              userId: 1,
+              title: 'New Deposit Request',
+              message: 'John Doe has initiated a deposit of $500 USD',
+              status: 'unread',
+              type: 'deposit_request',
+              link: '/admin/transactions',
+              createdAt: new Date(Date.now() - 45 * 60000).toISOString(), // 45 minutes ago
+              entityId: 123,
+              entityType: 'transaction'
+            },
+            {
+              id: 3,
+              userId: 1,
+              title: 'New Withdrawal Request',
+              message: 'Sarah Johnson has requested a withdrawal of $200 USD',
+              status: 'unread',
+              type: 'withdrawal_request',
+              link: '/admin/withdrawals',
+              createdAt: new Date(Date.now() - 2 * 3600000).toISOString(), // 2 hours ago
+              entityId: 456,
+              entityType: 'transaction'
+            },
+            {
+              id: 4,
+              userId: 1,
+              title: 'New Message',
+              message: 'You have received a new message from Mike Wilson',
+              status: 'unread',
+              type: 'message',
+              link: '/admin/user-messages',
+              createdAt: new Date(Date.now() - 4 * 3600000).toISOString(), // 4 hours ago
+              entityId: 789,
+              entityType: 'message'
+            }
+          ];
+        } else {
+          return [
+            {
+              id: 1,
+              userId: 2,
+              title: 'Welcome to MillionareWith$25!',
+              message: 'Welcome to our platform! Complete your profile and start exploring investment opportunities.',
+              status: 'unread',
+              type: 'welcome',
+              link: '/dashboard',
+              createdAt: new Date(Date.now() - 30 * 60000).toISOString(), // 30 minutes ago
+              entityId: 2,
+              entityType: 'user'
+            },
+            {
+              id: 2,
+              userId: 2,
+              title: 'Deposit Completed',
+              message: 'Your deposit of $100 USD has been successfully processed',
+              status: 'unread',
+              type: 'deposit_completed',
+              link: '/dashboard/transactions',
+              createdAt: new Date(Date.now() - 2 * 3600000).toISOString(), // 2 hours ago
+              entityId: 123,
+              entityType: 'transaction'
+            },
+            {
+              id: 3,
+              userId: 2,
+              title: 'Referral Commission',
+              message: 'You have earned $25 in referral commission',
+              status: 'unread',
+              type: 'referral',
+              link: '/dashboard/referrals',
+              createdAt: new Date(Date.now() - 6 * 3600000).toISOString(), // 6 hours ago
+              entityId: 456,
+              entityType: 'transaction'
+            },
+            {
+              id: 4,
+              userId: 2,
+              title: 'New Referral',
+              message: 'John Smith has joined using your referral link',
+              status: 'unread',
+              type: 'referral',
+              link: '/dashboard/referrals',
+              createdAt: new Date(Date.now() - 1 * 86400000).toISOString(), // 1 day ago
+              entityId: 789,
+              entityType: 'user'
+            },
+            {
+              id: 5,
+              userId: 2,
+              title: 'Investment Matured',
+              message: 'Your Bronze plan investment has matured. Check your earnings!',
+              status: 'unread',
+              type: 'investment',
+              link: '/dashboard/investments',
+              createdAt: new Date(Date.now() - 2 * 86400000).toISOString(), // 2 days ago
+              entityId: 101,
+              entityType: 'investment'
+            }
+          ];
+        }
         
         // Original query - uncomment when database is ready
         /*
@@ -141,7 +218,14 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ userRole }) => {
   const getTypeIcon = (type: string) => {
     switch (type) {
       case "payment":
+      case "deposit_pending":
+      case "deposit_completed":
+      case "deposit_request":
         return "💰";
+      case "withdrawal_request":
+      case "withdrawal_approved":
+      case "withdrawal_rejected":
+        return "💸";
       case "message":
         return "💬";
       case "system":
@@ -150,6 +234,10 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ userRole }) => {
         return "👥";
       case "investment":
         return "📈";
+      case "registration":
+        return "👤";
+      case "welcome":
+        return "🎉";
       default:
         return "🔔";
     }

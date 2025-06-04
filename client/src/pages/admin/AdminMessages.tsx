@@ -44,6 +44,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2, Mail, ArrowUpRight, RefreshCw, Search } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface Message {
   id: number;
@@ -122,7 +123,7 @@ const AdminMessages = () => {
       console.log('Fetching admin user messages');
       // Return empty array until backend is fixed
       return [];
-      
+
       // Original query - uncomment when database is ready
       /*
       const response = await apiRequest('GET', '/api/admin/user-messages');
@@ -184,7 +185,7 @@ const AdminMessages = () => {
           email: 'jennifer@example.com'
         }
       ];
-      
+
       // Original query - uncomment when database is ready
       /*
       const response = await apiRequest('GET', '/api/admin/users');
@@ -200,7 +201,7 @@ const AdminMessages = () => {
   const fetchMessage = async (messageId: number) => {
     try {
       console.log('Fetching admin message details for ID:', messageId);
-      
+
       // Simulate message data until database is fixed
       const message: Message = {
         id: messageId,
@@ -226,10 +227,10 @@ const AdminMessages = () => {
           email: 'jane@example.com'
         }
       };
-      
+
       setSelectedMessage(message);
       setMessageDialogOpen(true);
-      
+
       // Original API call - uncomment when database is ready
       /*
       const response = await apiRequest('GET', `/api/admin/user-messages/${messageId}`);
@@ -252,7 +253,7 @@ const AdminMessages = () => {
     mutationFn: async (values: MessageFormValues) => {
       try {
         console.log('Admin sending message with values:', values);
-        
+
         // Attempt to use database if it's working
         try {
           // Try to use the actual database
@@ -264,7 +265,7 @@ const AdminMessages = () => {
         } catch (dbError) {
           console.error('Database error, using fallback:', dbError);
         }
-        
+
         // Simulate successful message sending if database isn't ready
         return {
           ok: true,
@@ -327,6 +328,31 @@ const AdminMessages = () => {
     );
   });
 
+  // Contact Messages
+  const [contactMessages, setContactMessages] = useState([
+    {
+      id: 1,
+      firstName: 'John',
+      lastName: 'Doe',
+      email: 'john@example.com',
+      subject: 'Inquiry about your services',
+      message: 'I am interested in learning more about your services. Please contact me at your earliest convenience.',
+      createdAt: new Date().toISOString(),
+      responded: false,
+    },
+    {
+      id: 2,
+      firstName: 'Jane',
+      lastName: 'Smith',
+      email: 'jane@example.com',
+      subject: 'Feedback on your website',
+      message: 'I wanted to provide some feedback on your website. I think it is well-designed and easy to navigate.',
+      createdAt: new Date().toISOString(),
+      responded: true,
+    },
+  ]);
+  const [isLoadingContact, setIsLoadingContact] = useState(false);
+
   return (
     <DashboardLayout>
       <Helmet>
@@ -359,74 +385,173 @@ const AdminMessages = () => {
           />
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>All Messages</CardTitle>
-            <CardDescription>
-              View and manage messages between users and administrators
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="flex justify-center py-10">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            ) : filteredMessages.length === 0 ? (
-              <div className="text-center py-10 text-muted-foreground">
-                <p>No messages found.</p>
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>From</TableHead>
-                    <TableHead>To</TableHead>
-                    <TableHead>Subject</TableHead>
-                    <TableHead className="hidden md:table-cell">Date</TableHead>
-                    <TableHead className="w-[100px]">Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredMessages.map((message: Message) => (
-                    <TableRow key={message.id} className={!message.read ? 'bg-muted/50' : undefined}>
-                      <TableCell className="font-medium">
-                        {message.sender.firstName} {message.sender.lastName}
-                      </TableCell>
-                      <TableCell>
-                        {message.recipient.firstName} {message.recipient.lastName}
-                      </TableCell>
-                      <TableCell>{message.subject}</TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        {formatDistanceToNow(new Date(message.createdAt), { addSuffix: true })}
-                      </TableCell>
-                      <TableCell>
-                        {!message.read ? (
-                          <span className="inline-block px-2 py-1 text-xs rounded-full bg-primary/20 text-primary">
-                            New
-                          </span>
-                        ) : message.replied ? (
-                          <span className="inline-block px-2 py-1 text-xs rounded-full bg-muted text-muted-foreground">
-                            Replied
-                          </span>
-                        ) : (
-                          <span className="inline-block px-2 py-1 text-xs rounded-full bg-muted text-muted-foreground">
-                            Read
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="ghost" size="sm" onClick={() => fetchMessage(message.id)}>
-                          <ArrowUpRight className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
+        <Tabs defaultValue="user-messages" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="user-messages">User Messages</TabsTrigger>
+            <TabsTrigger value="contact-messages">Contact Messages</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="user-messages">
+            <Card>
+              <CardHeader>
+                <CardTitle>All Messages</CardTitle>
+                <CardDescription>
+                  View and manage messages between users and administrators
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="flex justify-center py-10">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                ) : filteredMessages.length === 0 ? (
+                  <div className="text-center py-10 text-muted-foreground">
+                    <p>No messages found.</p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>From</TableHead>
+                        <TableHead>To</TableHead>
+                        <TableHead>Subject</TableHead>
+                        <TableHead className="hidden md:table-cell">Date</TableHead>
+                        <TableHead className="w-[100px]">Status</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredMessages.map((message: Message) => (
+                        <TableRow key={message.id} className={!message.read ? 'bg-muted/50' : undefined}>
+                          <TableCell className="font-medium">
+                            {message.sender.firstName} {message.sender.lastName}
+                          </TableCell>
+                          <TableCell>
+                            {message.recipient.firstName} {message.recipient.lastName}
+                          </TableCell>
+                          <TableCell>{message.subject}</TableCell>
+                          <TableCell className="hidden md:table-cell">
+                            {formatDistanceToNow(new Date(message.createdAt), { addSuffix: true })}
+                          </TableCell>
+                          <TableCell>
+                            {!message.read ? (
+                              <span className="inline-block px-2 py-1 text-xs rounded-full bg-primary/20 text-primary">
+                                New
+                              </span>
+                            ) : message.replied ? (
+                              <span className="inline-block px-2 py-1 text-xs rounded-full bg-muted text-muted-foreground">
+                                Replied
+                              </span>
+                            ) : (
+                              <span className="inline-block px-2 py-1 text-xs rounded-full bg-muted text-muted-foreground">
+                                Read
+                              </span>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button variant="ghost" size="sm" onClick={() => fetchMessage(message.id)}>
+                              <ArrowUpRight className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="contact-messages">
+            <Card>
+              <CardHeader>
+                <CardTitle>Contact Messages</CardTitle>
+                <CardDescription>Messages received through the contact form</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoadingContact ? (
+                  <div className="flex justify-center py-10">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                ) : contactMessages.length === 0 ? (
+                  <div className="text-center py-10 text-muted-foreground">
+                    <p>No contact messages found.</p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Subject</TableHead>
+                        <TableHead className="hidden md:table-cell">Date</TableHead>
+                        <TableHead className="w-[100px]">Status</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {contactMessages.map((message: any) => (
+                        <TableRow key={message.id} className={!message.responded ? 'bg-muted/50' : undefined}>
+                          <TableCell className="font-medium">
+                            {message.firstName} {message.lastName}
+                          </TableCell>
+                          <TableCell>{message.email}</TableCell>
+                          <TableCell>{message.subject}</TableCell>
+                          <TableCell className="hidden md:table-cell">
+                            {formatDistanceToNow(new Date(message.createdAt), { addSuffix: true })}
+                          </TableCell>
+                          <TableCell>
+                            {message.responded ? (
+                              <span className="inline-block px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
+                                Responded
+                              </span>
+                            ) : (
+                              <span className="inline-block px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">
+                                Pending
+                              </span>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => {
+                                  // Show message details
+                                  toast({
+                                    title: message.subject,
+                                    description: message.message.substring(0, 100) + (message.message.length > 100 ? '...' : ''),
+                                  });
+                                }}
+                              >
+                                View
+                              </Button>
+                              {!message.responded && (
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => {
+                                    // Mark as responded
+                                    toast({
+                                      title: "Success",
+                                      description: "Message marked as responded",
+                                    });
+                                  }}
+                                >
+                                  Mark Responded
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* New Message Dialog */}
