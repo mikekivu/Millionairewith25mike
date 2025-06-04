@@ -58,10 +58,7 @@ export default function PesapalButton({
         throw new Error(data.error || 'Failed to create Pesapal order');
       }
 
-      if (data.redirect_url && !data.redirect_url.includes('#')) {
-        // Redirect to Pesapal for real payments
-        window.location.href = data.redirect_url;
-      } else {
+      if (data.demo_mode) {
         // Demo mode
         toast({
           title: "Demo Mode",
@@ -76,6 +73,19 @@ export default function PesapalButton({
           });
           onSuccess?.(data);
         }, 2000);
+      } else if (data.redirect_url) {
+        // Real Pesapal payment - redirect to payment page
+        toast({
+          title: "Redirecting to Pesapal",
+          description: "You will be redirected to complete your payment...",
+        });
+        
+        // Small delay to show the toast before redirecting
+        setTimeout(() => {
+          window.location.href = data.redirect_url;
+        }, 1000);
+      } else {
+        throw new Error('Invalid response from Pesapal API');
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Payment failed';
