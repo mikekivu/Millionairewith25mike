@@ -328,19 +328,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async updateInvestment(id: number, data: Partial<Investment>): Promise<Investment | null> {
-    try {
-      const [updated] = await db
-        .update(investments)
-        .set(data)
-        .where(eq(investments.id, id))
-        .returning();
-      return updated || null;
-    } catch (error) {
-      console.error("Error updating investment:", error);
-      throw error;
-    }
-  }
+  
 
   async getTransactionByReference(reference: string): Promise<Transaction | null> {
     const [transaction] = await db

@@ -2,7 +2,7 @@
 import { storage } from './storage';
 import { Decimal } from 'decimal.js';
 
-export class ProfitProcessor {
+export class InvestmentProfitProcessor {
   private intervalId: NodeJS.Timeout | null = null;
   private isRunning = false;
 
@@ -107,4 +107,4 @@ export class ProfitProcessor {
 }
 
 // Singleton instance
-export const profitProcessor = new ProfitProcessor();
+export const profitProcessor = new InvestmentProfitProcessor();
