@@ -269,25 +269,23 @@ export default function AdminMembers() {
                 )}
               </DropdownMenuItem>
               
+              <DropdownMenuItem
+                onClick={() => handleEditWallet(user)}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><path d="M2 6h20"></path><path d="M2 10h20"></path><path d="M2 14h20"></path><path d="M2 18h9"></path></svg>
+                Edit Wallet Balance
+              </DropdownMenuItem>
+
               {isSuperAdmin && (
-                <>
-                  <DropdownMenuItem
-                    onClick={() => toast({
-                      title: "View Transactions",
-                      description: `Viewing all transactions for ${user.firstName} ${user.lastName}`,
-                    })}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><path d="M16 2H8"></path><path d="M9 1v3"></path><path d="M15 1v3"></path><path d="M12 7v5"></path><path d="M16 13l-4 4-4-4"></path><path d="M19 17a7.06 7.06 0 0 1-12.28 4"></path><path d="M5 17a7.07 7.07 0 0 1 1.28-4"></path><path d="M10.5 9.5L12 7l1.5 2.5"></path></svg>
-                    Transaction History
-                  </DropdownMenuItem>
-                  
-                  <DropdownMenuItem
-                    onClick={() => handleEditWallet(user)}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><path d="M2 6h20"></path><path d="M2 10h20"></path><path d="M2 14h20"></path><path d="M2 18h9"></path></svg>
-                    Edit Wallet Balance
-                  </DropdownMenuItem>
-                </>
+                <DropdownMenuItem
+                  onClick={() => toast({
+                    title: "View Transactions",
+                    description: `Viewing all transactions for ${user.firstName} ${user.lastName}`,
+                  })}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2"><path d="M16 2H8"></path><path d="M9 1v3"></path><path d="M15 1v3"></path><path d="M12 7v5"></path><path d="M16 13l-4 4-4-4"></path><path d="M19 17a7.06 7.06 0 0 1-12.28 4"></path><path d="M5 17a7.07 7.07 0 0 1 1.28-4"></path><path d="M10.5 9.5L12 7l1.5 2.5"></path></svg>
+                  Transaction History
+                </DropdownMenuItem>
               )}
               
               <DropdownMenuItem 
