@@ -111,7 +111,7 @@ export default function Register() {
                 <div className="border-t border-gray-100 pt-4 mt-auto">
                   <div className="flex items-center space-x-2 text-sm text-gray-600">
                     <div className="bg-orange-500 w-3 h-3 rounded-full"></div>
-                    <p>Starting with just $25, watch your investments grow</p>
+                    <p>Starting with just $100, watch your investments grow</p>
                   </div>
                   <div className="flex items-center space-x-2 text-sm text-gray-600 mt-2">
                     <div className="bg-yellow-500 w-3 h-3 rounded-full"></div>

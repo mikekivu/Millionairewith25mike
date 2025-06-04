@@ -38,7 +38,7 @@ export default function Hero() {
             <div>
               <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 mb-6">
                 <TrendingUp className="h-4 w-4 mr-2" />
-                Start with just $25 and grow your wealth
+                Start with just $100 and grow your wealth
               </div>
 
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold font-heading leading-tight">
@@ -69,7 +69,7 @@ export default function Hero() {
               <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg">
                 <div className="flex gap-2 items-center text-blue-600 font-semibold mb-1">
                   <DollarSign className="h-4 w-4" />
-                  <span className="text-lg">$25</span>
+                  <span className="text-lg">$100</span>
                 </div>
                 <p className="text-sm text-gray-600">Minimum deposit to start</p>
               </div>
