@@ -328,8 +328,6 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  
-
   async getTransactionByReference(reference: string): Promise<Transaction | null> {
     const [transaction] = await db
       .select()

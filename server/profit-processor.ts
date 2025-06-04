@@ -2,7 +2,11 @@
 import { storage } from './storage';
 import { Decimal } from 'decimal.js';
 
-export class InvestmentProfitProcessor {
+export class ProfitProcessor {
+  // Base class for profit processing
+}
+
+export class InvestmentProfitProcessor extends ProfitProcessor {
   private intervalId: NodeJS.Timeout | null = null;
   private isRunning = false;
 
