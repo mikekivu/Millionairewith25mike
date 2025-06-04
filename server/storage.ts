@@ -846,8 +846,7 @@ export class MemStorage implements IStorage {
       totalInvested,
       totalEarnings,
       referralEarnings,
-      ```tool_code
-activeInvestments,
+      activeInvestments,
       referralCount
     };
   }
