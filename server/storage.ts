@@ -965,7 +965,7 @@ export class MemStorage implements IStorage {
 }
 
 import { DatabaseStorage } from "./database-storage";
-import { InvestmentProfitProcessor } from "./investment-profit-processor";
+import { InvestmentProfitProcessor } from "./profit-processor";
 
 // Use the database storage implementation
 export const storage = new DatabaseStorage();

@@ -1024,6 +1024,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Public Routes
 
+  // Heartbeat Route
+  app.post("/api/heartbeat", (req, res) => {
+    res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+  });
+
   // Contact Route
   app.post("/api/contact", async (req, res) => {
     try {
