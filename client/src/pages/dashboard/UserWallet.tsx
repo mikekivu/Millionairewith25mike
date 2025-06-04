@@ -91,31 +91,31 @@ export default function UserWallet() {
   const isValidWithdrawAmount = withdrawAmount && parseFloat(withdrawAmount) > 0 && parseFloat(withdrawAmount) <= walletBalance;
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-4xl mx-auto p-4 space-y-6">
       <div className="flex items-center gap-2">
         <Wallet className="h-6 w-6" />
         <h1 className="text-2xl font-bold">Wallet</h1>
       </div>
 
       {/* Wallet Balance Card */}
-      <Card className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <Card className="bg-gradient-to-r from-blue-600 to-purple-600 text-white max-w-md mx-auto">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg">
             <Wallet className="h-5 w-5" />
             Current Balance
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold">
+          <div className="text-2xl md:text-3xl font-bold">
             {formatCurrency(walletBalance, 'USD')}
           </div>
-          <p className="text-blue-100 mt-2">Available for investment and withdrawal</p>
+          <p className="text-blue-100 mt-2 text-sm">Available for investment and withdrawal</p>
         </CardContent>
       </Card>
 
       {/* Deposit and Withdraw Tabs */}
-      <Tabs defaultValue="deposit" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+      <Tabs defaultValue="deposit" className="w-full max-w-4xl mx-auto">
+        <TabsList className="grid w-full grid-cols-3 max-w-md mx-auto">
           <TabsTrigger value="deposit">Deposit</TabsTrigger>
           <TabsTrigger value="withdraw">Withdraw</TabsTrigger>
           <TabsTrigger value="history">History</TabsTrigger>
