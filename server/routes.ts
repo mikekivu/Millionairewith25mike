@@ -196,7 +196,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Get all admin users
         const allUsers = await storage.getAllUsers();
         const adminUsers = allUsers.filter(u => u.role === 'admin');
-        
+
         // Create notification for each admin about new registration
         for (const admin of adminUsers) {
           await storage.createNotification({
@@ -343,10 +343,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.error('Session destruction error:', err);
         }
       });
-      
+
       // Clear session cookies
       res.clearCookie('connect.sid');
-      
+
       console.log('User logged out successfully');
       res.status(200).json({ message: "Logged out successfully" });
     } catch (error) {
@@ -515,7 +515,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Deduct from user's wallet first
       const newBalance = walletBalance - amount;
       console.log(`Deducting from wallet - Old balance: ${walletBalance}, New balance: ${newBalance}`);
-      
+
       await storage.updateUser(userId, { 
         walletBalance: newBalance.toString() 
       });
@@ -564,13 +564,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   router.post('/user/deposits', authMiddleware, async (req, res) => {
     try {
       const userId = req.session.userId;
-      
+
       // Check if this is a demo user
       const isDemoUser = await storage.isDemoUser(userId);
-      
+
       // For demo users, auto-complete deposits instantly
       const transactionStatus = isDemoUser ? "completed" : "pending";
-      
+
       const validatedData = insertTransactionSchema.parse({
         ...req.body,
         userId,
@@ -584,7 +584,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // If demo user, add money immediately and create notifications
       if (isDemoUser) {
         await storage.updateUserWallet(userId, validatedData.amount, 'add');
-        
+
         // Create success notification for demo user
         await storage.createNotification({
           userId,
@@ -601,7 +601,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         // Get user info
         const user = await storage.getUser(userId);
-        
+
         // Notify user about deposit initiation
         await storage.createNotification({
           userId,
@@ -616,7 +616,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Notify admins about new deposit
         const allUsers = await storage.getAllUsers();
         const adminUsers = allUsers.filter(u => u.role === 'admin');
-        
+
         for (const admin of adminUsers) {
           await storage.createNotification({
             userId: admin.id,
@@ -672,7 +672,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Check if this is a demo user
       const isDemoUser = await storage.isDemoUser(userId);
-      
+
       // For demo users, auto-complete withdrawals instantly
       const transactionStatus = isDemoUser ? "completed" : "pending";
       const description = isDemoUser 
@@ -694,7 +694,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // If demo user, deduct money immediately and add notifications
       if (isDemoUser) {
         await storage.updateUserWallet(userId, amount, 'subtract');
-        
+
         // Create success notification for demo user
         await storage.createNotification({
           userId,
@@ -712,7 +712,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Get all admin users
         const allUsers = await storage.getAllUsers();
         const adminUsers = allUsers.filter(u => u.role === 'admin');
-        
+
         // Create notification for each admin
         for (const admin of adminUsers) {
           await storage.createNotification({
@@ -808,7 +808,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Demo Pesapal payment page simulation
   app.get("/api/pesapal/demo-payment", async (req, res) => {
     const { OrderTrackingId } = req.query;
-    
+
     if (!OrderTrackingId) {
       return res.status(400).send('Missing OrderTrackingId');
     }
@@ -961,27 +961,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
             <div class="payment-methods" id="paymentMethods">
                 <div class="section-title">Choose Payment Method:</div>
-                
+
                 <div class="payment-option" onclick="processPayment('visa')">
                     <span class="payment-icon">💳</span>
                     <span class="payment-text">Visa Card</span>
                 </div>
-                
+
                 <div class="payment-option" onclick="processPayment('mastercard')">
                     <span class="payment-icon">💳</span>
                     <span class="payment-text">Mastercard</span>
                 </div>
-                
+
                 <div class="payment-option" onclick="processPayment('mpesa')">
                     <span class="payment-icon">📱</span>
                     <span class="payment-text">M-Pesa</span>
                 </div>
-                
+
                 <div class="payment-option" onclick="processPayment('airtel')">
                     <span class="payment-icon">📱</span>
                     <span class="payment-text">Airtel Money</span>
                 </div>
-                
+
                 <div class="payment-option" onclick="processPayment('equity')">
                     <span class="payment-icon">🏦</span>
                     <span class="payment-text">Equity Bank</span>
@@ -1010,10 +1010,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 // Hide payment methods and show processing
                 document.getElementById('paymentMethods').style.display = 'none';
                 document.getElementById('processing').style.display = 'block';
-                
+
                 // Simulate payment processing time (2-4 seconds)
                 const processingTime = Math.random() * 2000 + 2000;
-                
+
                 setTimeout(() => {
                     // Redirect back to callback with success
                     window.location.href = '/api/pesapal/callback?OrderTrackingId=${OrderTrackingId}&demo=true&method=' + method + '&status=completed';
@@ -1023,7 +1023,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     </body>
     </html>
     `;
-    
+
     res.send(html);
   });
 
@@ -1390,7 +1390,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/withdrawals-history", authMiddleware, adminMiddleware, async (req, res) => {
     try {
       const adminId = req.session.userId;
-      
+
       // Get admin withdrawal transactions
       const allTransactions = await storage.getUserTransactions(adminId);
       const adminWithdrawals = allTransactions
@@ -1570,10 +1570,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/process-profits", authMiddleware, adminMiddleware, async (req, res) => {
     try {
       const { profitProcessor } = await import('./profit-processor');
-      
+
       // Manually trigger profit processing
       await (profitProcessor as any).processCompletedInvestments();
-      
+
       res.status(200).json({
         message: "Manual profit processing completed successfully"
       });
@@ -1588,7 +1588,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { status } = req.query;
       let withdrawals = await storage.getTransactionsByType("withdrawal");
-      
+
       if (status && status !== 'all') {
         withdrawals = withdrawals.filter(w => w.status === status);
       }
@@ -1772,7 +1772,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create notifications for transaction status updates
       try {
         const user = await storage.getUser(transaction.userId);
-        
+
         if (transaction.type === "deposit" && status === "completed") {
           // Notify user about successful deposit
           await storage.createNotification({

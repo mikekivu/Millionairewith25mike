@@ -13,7 +13,7 @@ async function createDemoUser() {
     const existingDemoUser = await db
       .select()
       .from(users)
-      .where(eq(users.email, "demo@richlance.com"))
+      .where(eq(users.email, "kelvinjohn0001@gmail.com"))
       .limit(1);
 
     if (existingDemoUser.length > 0) {
@@ -23,6 +23,10 @@ async function createDemoUser() {
       const [updatedUser] = await db
         .update(users)
         .set({
+          username: "KelvinJohn",
+          email: "kelvinjohn0001@gmail.com",
+          firstName: "Kelvin",
+          lastName: "John",
           walletBalance: "10000.00000000", // $10,000 demo money
           role: "demo_user",
           active: true
@@ -40,17 +44,17 @@ async function createDemoUser() {
 
     // Create demo user
     const [demoUser] = await db.insert(users).values({
-      username: "demo_user",
+      username: "KelvinJohn",
       password: hashedPassword,
-      email: "demo@richlance.com",
-      firstName: "Demo",
-      lastName: "User",
-      country: "Demo Country",
-      phoneNumber: "+1234567890",
+      email: "kelvinjohn0001@gmail.com",
+      firstName: "Kelvin",
+      lastName: "John",
+      country: "Kenya",
+      phoneNumber: "+254712345678",
       walletBalance: "10000.00000000", // Start with $10,000 demo money
       active: true,
       role: "demo_user", // Special role for demo user
-      referralCode: "DEMO" + nanoid(8),
+      referralCode: "KELVIN" + nanoid(8),
     }).returning();
 
     console.log('Demo user created successfully:', demoUser.email);
@@ -58,8 +62,8 @@ async function createDemoUser() {
     // Create welcome notification for demo user
     await db.insert(notifications).values({
       userId: demoUser.id,
-      title: "Welcome Demo User!",
-      message: "Your demo account is ready with $10,000 virtual money. You can invest, withdraw, and test all features safely.",
+      title: "Welcome to MillionareWith$25!",
+      message: "Your account is ready with $10,000. Start exploring investment opportunities and earn great returns!",
       type: "welcome",
       entityId: demoUser.id,
       entityType: "user",
