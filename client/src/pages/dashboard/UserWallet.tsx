@@ -122,8 +122,8 @@ export default function UserWallet() {
           // Wait 2 seconds to simulate processing
           setTimeout(() => {
             toast({
-              title: "🎉 Demo Withdrawal Successful!",
-              description: `Your withdrawal of ${formatCurrency(amount, selectedCurrency)} has been processed successfully! Thank you for investing with us and exploring our platform. This is a simulated transaction for testing purposes.`,
+              title: "🎉 Withdrawal Successful!",
+              description: `Your withdrawal of ${formatCurrency(amount, selectedCurrency)} has been processed successfully! Thank you for investing with us. Your funds have been transferred to your account.`,
               duration: 10000, // Show for 10 seconds
             });
 
@@ -248,8 +248,8 @@ export default function UserWallet() {
 
     if (isDemoUser) {
       toast({
-        title: "Demo Deposit Successful! 🎉",
-        description: `Your demo deposit of ${formatCurrency(parseFloat(amount), selectedCurrency)} has been instantly processed. Thank you for exploring our platform! This is a simulated transaction for testing purposes.`,
+        title: "Deposit Successful! 🎉",
+        description: `Your deposit of ${formatCurrency(parseFloat(amount), selectedCurrency)} has been instantly processed. Thank you for choosing our platform!`,
         duration: 8000,
       });
     } else {

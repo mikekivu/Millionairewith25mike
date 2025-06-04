@@ -698,8 +698,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Create success notification for demo user
         await storage.createNotification({
           userId,
-          title: "Demo Withdrawal Successful",
-          message: `Your demo withdrawal of ${amount} ${currency || "USD"} has been processed successfully. This is a simulated transaction for testing purposes.`,
+          title: "Withdrawal Successful",
+          message: `Your withdrawal of ${amount} ${currency || "USD"} has been processed successfully. Your funds have been transferred to your account.`,
           type: "withdrawal_approved",
           entityId: transaction.id,
           entityType: "transaction",
