@@ -214,7 +214,8 @@ export class DatabaseStorage implements IStorage {
       }
     }
 
-    // If it's a withdrawal, subtract from user's wallet
+    // If it's a withdrawal and completed, subtract from user's wallet
+    // Note: For pending withdrawals, balance is only deducted when admin approves
     if (transaction.type === "withdrawal" && transaction.status === "completed") {
       const user = await this.getUser(transaction.userId);
       if (user) {

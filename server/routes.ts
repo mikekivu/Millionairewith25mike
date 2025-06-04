@@ -520,6 +520,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.session.userId;
       const { amount, currency, paymentMethod, transactionDetails } = req.body;
 
+      // Validate minimum withdrawal amount
+      const withdrawAmount = parseFloat(amount);
+      if (withdrawAmount < 10) {
+        return res.status(400).json({ message: "Minimum withdrawal amount is $10.00" });
+      }
+
       // Check if user has enough balance
       const user = await storage.getUser(userId);
       if (!user) {
@@ -527,22 +533,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const walletBalance = parseFloat(user.walletBalance);
-      if (walletBalance < parseFloat(amount)) {
+      if (walletBalance < withdrawAmount) {
         return res.status(400).json({ message: "Insufficient wallet balance" });
       }
 
+      // Create withdrawal request (pending status)
       const transaction = await storage.createTransaction({
         userId,
         type: "withdrawal",
         amount,
         currency: currency || "USD",
         status: "pending",
-        paymentMethod,
-        transactionDetails
+        paymentMethod: paymentMethod || "manual",
+        transactionDetails: transactionDetails || `Withdrawal request for ${amount} ${currency || "USD"}`,
+        description: `Withdrawal request - Pending admin approval`
       });
 
+      // Create notification for admin about new withdrawal request
+      try {
+        // Get all admin users
+        const allUsers = await storage.getAllUsers();
+        const adminUsers = allUsers.filter(u => u.role === 'admin');
+        
+        // Create notification for each admin
+        for (const admin of adminUsers) {
+          await storage.createNotification({
+            userId: admin.id,
+            title: "New Withdrawal Request",
+            message: `User ${user.firstName} ${user.lastName} has requested a withdrawal of ${amount} ${currency || "USD"}`,
+            type: "withdrawal_request",
+            entityId: transaction.id,
+            entityType: "transaction",
+            link: "/admin/withdrawals"
+          });
+        }
+      } catch (notifError) {
+        console.error("Failed to create admin notification:", notifError);
+        // Don't fail the whole request if notification fails
+      }
+
+      // Create notification for user about submission
+      try {
+        await storage.createNotification({
+          userId,
+          title: "Withdrawal Request Submitted",
+          message: `Your withdrawal request for ${amount} ${currency || "USD"} has been submitted for admin approval`,
+          type: "withdrawal_submitted",
+          entityId: transaction.id,
+          entityType: "transaction",
+          link: "/dashboard/transactions"
+        });
+      } catch (notifError) {
+        console.error("Failed to create user notification:", notifError);
+      }
+
       res.status(201).json({ 
-        message: "Withdrawal request submitted", 
+        message: "Withdrawal request submitted successfully. You will be notified once it's reviewed by our admin team.", 
         transaction 
       });
     } catch (error) {
@@ -1124,6 +1170,129 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin withdrawal management routes
+  app.get("/api/admin/withdrawals", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const { status } = req.query;
+      let withdrawals = await storage.getTransactionsByType("withdrawal");
+      
+      if (status && status !== 'all') {
+        withdrawals = withdrawals.filter(w => w.status === status);
+      }
+
+      // Enrich with user information
+      const enrichedWithdrawals = await Promise.all(
+        withdrawals.map(async (withdrawal) => {
+          const user = await storage.getUser(withdrawal.userId);
+          return {
+            ...withdrawal,
+            user: user ? {
+              id: user.id,
+              firstName: user.firstName,
+              lastName: user.lastName,
+              email: user.email,
+              username: user.username
+            } : null
+          };
+        })
+      );
+
+      // Sort by created date, most recent first
+      enrichedWithdrawals.sort((a, b) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+
+      res.status(200).json(enrichedWithdrawals);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  app.patch("/api/admin/withdrawals/:id", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const withdrawalId = parseInt(req.params.id);
+      const { status, notes } = req.body;
+
+      if (!["completed", "failed"].includes(status)) {
+        return res.status(400).json({ message: "Invalid status. Must be 'completed' or 'failed'" });
+      }
+
+      // Get the withdrawal transaction
+      const withdrawal = await storage.getTransaction(withdrawalId);
+      if (!withdrawal) {
+        return res.status(404).json({ message: "Withdrawal not found" });
+      }
+
+      if (withdrawal.type !== "withdrawal") {
+        return res.status(400).json({ message: "Transaction is not a withdrawal" });
+      }
+
+      if (withdrawal.status !== "pending") {
+        return res.status(400).json({ message: "Withdrawal has already been processed" });
+      }
+
+      // If approving withdrawal, deduct from user's wallet
+      if (status === "completed") {
+        const user = await storage.getUser(withdrawal.userId);
+        if (!user) {
+          return res.status(404).json({ message: "User not found" });
+        }
+
+        const walletBalance = parseFloat(user.walletBalance);
+        const withdrawAmount = parseFloat(withdrawal.amount);
+
+        if (walletBalance < withdrawAmount) {
+          return res.status(400).json({ 
+            message: "User no longer has sufficient balance for this withdrawal" 
+          });
+        }
+
+        // Deduct from wallet
+        const newBalance = walletBalance - withdrawAmount;
+        await storage.updateUser(withdrawal.userId, { 
+          walletBalance: newBalance.toString() 
+        });
+
+        // Notify user of approval
+        await storage.createNotification({
+          userId: withdrawal.userId,
+          title: "Withdrawal Approved",
+          message: `Your withdrawal request for ${withdrawal.amount} ${withdrawal.currency} has been approved and processed`,
+          type: "withdrawal_approved",
+          entityId: withdrawal.id,
+          entityType: "transaction",
+          link: "/dashboard/transactions"
+        });
+      } else {
+        // Notify user of rejection
+        await storage.createNotification({
+          userId: withdrawal.userId,
+          title: "Withdrawal Rejected",
+          message: `Your withdrawal request for ${withdrawal.amount} ${withdrawal.currency} has been rejected${notes ? `: ${notes}` : ''}`,
+          type: "withdrawal_rejected",
+          entityId: withdrawal.id,
+          entityType: "transaction",
+          link: "/dashboard/transactions"
+        });
+      }
+
+      // Update transaction
+      const updatedWithdrawal = await storage.updateTransaction(withdrawalId, {
+        status,
+        description: notes || withdrawal.description
+      });
+
+      res.status(200).json({
+        message: `Withdrawal ${status === 'completed' ? 'approved' : 'rejected'} successfully`,
+        withdrawal: updatedWithdrawal
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+
   app.put("/api/admin/transactions/:id", authMiddleware, adminMiddleware, async (req, res) => {
     try {
       const transactionId = parseInt(req.params.id);
@@ -1133,11 +1302,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid transaction status" });
       }
 
-      const updatedTransaction = await storage.updateTransaction(transactionId, { status });
-
-      if (!updatedTransaction) {
+      // Get the transaction first
+      const transaction = await storage.getTransaction(transactionId);
+      if (!transaction) {
         return res.status(404).json({ message: "Transaction not found" });
       }
+
+      // If it's a withdrawal being approved, handle the wallet deduction
+      if (transaction.type === "withdrawal" && status === "completed" && transaction.status === "pending") {
+        const user = await storage.getUser(transaction.userId);
+        if (!user) {
+          return res.status(404).json({ message: "User not found" });
+        }
+
+        const walletBalance = parseFloat(user.walletBalance);
+        const withdrawAmount = parseFloat(transaction.amount);
+
+        // Check if user still has sufficient balance
+        if (walletBalance < withdrawAmount) {
+          return res.status(400).json({ 
+            message: "User no longer has sufficient balance for this withdrawal" 
+          });
+        }
+
+        // Deduct from user's wallet
+        const newBalance = walletBalance - withdrawAmount;
+        await storage.updateUser(transaction.userId, { 
+          walletBalance: newBalance.toString() 
+        });
+
+        // Create notification for user about approval
+        await storage.createNotification({
+          userId: transaction.userId,
+          title: "Withdrawal Approved",
+          message: `Your withdrawal request for ${transaction.amount} ${transaction.currency} has been approved and processed`,
+          type: "withdrawal_approved",
+          entityId: transaction.id,
+          entityType: "transaction",
+          link: "/dashboard/transactions"
+        });
+      } else if (transaction.type === "withdrawal" && status === "failed" && transaction.status === "pending") {
+        // Create notification for user about rejection
+        await storage.createNotification({
+          userId: transaction.userId,
+          title: "Withdrawal Rejected",
+          message: `Your withdrawal request for ${transaction.amount} ${transaction.currency} has been rejected`,
+          type: "withdrawal_rejected",
+          entityId: transaction.id,
+          entityType: "transaction",
+          link: "/dashboard/transactions"
+        });
+      }
+
+      const updatedTransaction = await storage.updateTransaction(transactionId, { status });
 
       res.status(200).json({ 
         message: "Transaction status updated successfully", 

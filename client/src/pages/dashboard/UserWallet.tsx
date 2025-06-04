@@ -71,18 +71,45 @@ export default function UserWallet() {
     });
   };
 
-  const handleFakeWithdrawal = () => {
+  const handleWithdrawalRequest = async () => {
+    if (!isValidWithdrawAmount) return;
+
     setIsWithdrawing(true);
 
-    // Show notification immediately that they need to contact admin
-    toast({
-      title: "Withdrawal Processing",
-      description: "For security reasons, withdrawals require manual verification. Please contact admin to process your withdrawal request.",
-      variant: "default",
-    });
+    try {
+      const response = await fetch('/api/user/withdrawals', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: withdrawAmount,
+          currency: selectedCurrency,
+          paymentMethod: 'manual',
+          transactionDetails: `Withdrawal request for ${formatCurrency(parseFloat(withdrawAmount), selectedCurrency)}`
+        }),
+      });
 
-    // Keep the loading state active indefinitely
-    // No actual withdrawal processing occurs
+      if (response.ok) {
+        toast({
+          title: "Withdrawal Request Submitted",
+          description: "Your withdrawal request has been submitted for admin approval. You will be notified once it's processed.",
+        });
+        setWithdrawAmount('');
+        fetchTransactions(); // Refresh transaction history
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to submit withdrawal request');
+      }
+    } catch (error) {
+      toast({
+        title: "Request Failed",
+        description: error instanceof Error ? error.message : "Failed to submit withdrawal request. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsWithdrawing(false);
+    }
   };
 
   const walletBalance = parseFloat(user?.walletBalance || '0');
@@ -398,15 +425,15 @@ export default function UserWallet() {
                     </div>
 
                     <Button 
-                      onClick={handleFakeWithdrawal}
-                      disabled={isWithdrawing}
+                      onClick={handleWithdrawalRequest}
+                      disabled={isWithdrawing || !isValidWithdrawAmount}
                       className="w-full"
                       size="lg"
                     >
                       {isWithdrawing ? (
                         <>
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          Processing Withdrawal Request...
+                          Submitting Request...
                         </>
                       ) : (
                         <>
@@ -415,24 +442,6 @@ export default function UserWallet() {
                         </>
                       )}
                     </Button>
-
-                    {isWithdrawing && (
-                      <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                        <div className="flex items-start gap-3">
-                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600 mt-1"></div>
-                          <div>
-                            <h4 className="font-medium text-blue-800">Withdrawal Under Review</h4>
-                            <p className="text-sm text-blue-700 mt-1">
-                              Your withdrawal request is being processed by our admin team. This may take 1-3 business days.
-                              You will receive an email notification once the withdrawal is approved and processed.
-                            </p>
-                            <p className="text-sm text-blue-700 mt-2 font-medium">
-                              For urgent matters, please contact our admin team directly.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
               )}
