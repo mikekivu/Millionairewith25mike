@@ -69,6 +69,11 @@ export default function AdminSidebar() {
       href: '/admin/messages',
       icon: <MailQuestion className="h-5 w-5" />,
     },
+    {
+      title: 'Admin Withdraw',
+      href: '/admin/withdraw',
+      icon: <DollarSign className="h-5 w-5" />,
+    },
   ];
 
   const handleLogout = async () => {

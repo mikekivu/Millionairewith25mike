@@ -39,7 +39,7 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
       <Route path="/terms" component={Terms} />
-      
+
       {/* User Dashboard Routes */}
       <Route path="/dashboard">
         {() => (
@@ -104,7 +104,7 @@ function Router() {
           </ProtectedRoute>
         )}
       </Route>
-      
+
       {/* Admin Dashboard Routes */}
       <Route path="/admin">
         {() => (
@@ -155,7 +155,7 @@ function Router() {
           </AdminRoute>
         )}
       </Route>
-      
+
       {/* Fallback to 404 */}
       <Route component={NotFound} />
     </Switch>

@@ -908,6 +908,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin withdrawal routes
+  app.post("/api/admin/withdraw", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const { amount, currency, method, destination, notes } = req.body;
+      const adminId = req.session.userId;
+
+      // Validate input
+      if (!amount || !method || !destination) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      if (parseFloat(amount) <= 0) {
+        return res.status(400).json({ message: "Amount must be greater than 0" });
+      }
+
+      // Create admin withdrawal transaction
+      const withdrawal = await storage.createTransaction({
+        userId: adminId,
+        type: "admin_withdrawal",
+        amount,
+        currency: currency || "USD",
+        status: "completed", // Admin withdrawals are auto-approved
+        paymentMethod: method,
+        transactionDetails: `Admin withdrawal to ${method}: ${destination}`,
+        description: notes || `Admin withdrawal via ${method}`
+      });
+
+      res.status(201).json({
+        message: "Withdrawal created successfully",
+        withdrawal
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  app.get("/api/admin/withdrawals-history", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const adminId = req.session.userId;
+      
+      // Get admin withdrawal transactions
+      const allTransactions = await storage.getUserTransactions(adminId);
+      const adminWithdrawals = allTransactions
+        .filter(tx => tx.type === "admin_withdrawal")
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+      res.status(200).json(adminWithdrawals);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+
   app.get("/api/admin/users", authMiddleware, adminMiddleware, async (req, res) => {
     try {
       const users = await storage.getAllUsers();
