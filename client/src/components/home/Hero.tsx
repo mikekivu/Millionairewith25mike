@@ -85,7 +85,7 @@ export default function Hero() {
               <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-4 rounded-lg">
                 <div className="flex gap-2 items-center text-emerald-600 font-semibold mb-1">
                   <Users className="h-4 w-4" />
-                  <span className="text-lg">5 Levels</span>
+                  <span className="text-lg">Refer and get $20</span>
                 </div>
                 <p className="text-sm text-gray-600">Referral commissions</p>
               </div>
