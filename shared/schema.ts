@@ -300,7 +300,7 @@ export type RegisterInput = z.infer<typeof registerSchema>;
 
 export const insertTransactionSchemaZod = z.object({
   userId: z.number(),
-  type: z.enum(["deposit", "withdrawal", "investment", "profit", "referral_bonus"]),
+  type: z.enum(["deposit", "withdrawal", "investment", "profit", "referral_bonus", "admin_adjustment"]),
   amount: z.string(),
   currency: z.string().default("USD"),
   status: z.enum(["pending", "completed", "failed"]).default("pending"),

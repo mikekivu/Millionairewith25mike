@@ -188,7 +188,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllInvestments(): Promise<Investment[]> {
-    return db.select().from(investments);
+    try {
+      return await db.select().from(investments);
+    } catch (error) {
+      console.error("Error getting all investments:", error);
+      throw error;
+    }
   }
 
   async updateInvestment(id: number, investmentData: Partial<Investment>): Promise<Investment | undefined> {
@@ -309,17 +314,32 @@ export class DatabaseStorage implements IStorage {
     }).from(transactions).where(eq(transactions.type, type));
   }
 
-  async updateTransaction(id: number, updates: Partial<Transaction>): Promise<Transaction | undefined> {
-    const [updated] = await db
-      .update(transactions)
-      .set({
-        ...updates,
-        updatedAt: new Date(),
-      })
-      .where(eq(transactions.id, id))
-      .returning();
+  async updateTransaction(id: number, data: Partial<Transaction>): Promise<Transaction | null> {
+    try {
+      const [updated] = await db
+        .update(transactions)
+        .set(data)
+        .where(eq(transactions.id, id))
+        .returning();
+      return updated || null;
+    } catch (error) {
+      console.error("Error updating transaction:", error);
+      throw error;
+    }
+  }
 
-    return updated || undefined;
+  async updateInvestment(id: number, data: Partial<Investment>): Promise<Investment | null> {
+    try {
+      const [updated] = await db
+        .update(investments)
+        .set(data)
+        .where(eq(investments.id, id))
+        .returning();
+      return updated || null;
+    } catch (error) {
+      console.error("Error updating investment:", error);
+      throw error;
+    }
   }
 
   async getTransactionByReference(reference: string): Promise<Transaction | null> {

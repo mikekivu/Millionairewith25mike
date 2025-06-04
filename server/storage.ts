@@ -842,7 +842,8 @@ export class MemStorage implements IStorage {
       totalInvested,
       totalEarnings,
       referralEarnings,
-      activeInvestments,
+      ```tool_code
+activeInvestments,
       referralCount
     };
   }
@@ -930,6 +931,11 @@ export class MemStorage implements IStorage {
 }
 
 import { DatabaseStorage } from "./database-storage";
+import { InvestmentProfitProcessor } from "./investment-profit-processor";
 
 // Use the database storage implementation
 export const storage = new DatabaseStorage();
+
+// Start the investment profit processor
+const investmentProfitProcessor = new InvestmentProfitProcessor(storage);
+investmentProfitProcessor.start();

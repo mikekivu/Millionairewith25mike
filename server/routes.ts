@@ -488,6 +488,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Minimum investment check
+      if (amount < 100) {
+        return res.status(400).json({ 
+          message: "Minimum investment amount is $100" 
+        });
+      }
+
       // Check if user has enough balance
       const user = await storage.getUser(userId);
       if (!user) {
@@ -499,15 +506,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Insufficient wallet balance" });
       }
 
-      // Calculate end date based on hours
+      // Calculate end date (12 hours for automatic 400% profit)
       const endDate = new Date();
-      endDate.setHours(endDate.getHours() + plan.durationHours);
+      endDate.setHours(endDate.getHours() + 12);
+
+      // Deduct from user's wallet first
+      const newBalance = walletBalance - amount;
+      await storage.updateUser(userId, { 
+        walletBalance: newBalance.toString() 
+      });
 
       // Create investment
       const investment = await storage.createInvestment({
         ...validatedData,
         endDate,
         status: "active"
+      });
+
+      // Create investment transaction record
+      await storage.createTransaction({
+        userId,
+        type: 'investment',
+        amount: amount.toString(),
+        currency: 'USD',
+        status: 'completed',
+        paymentMethod: 'wallet',
+        transactionDetails: `Investment in ${plan.name} plan`,
+        description: `Invested ${amount} USD in ${plan.name}`,
+        investmentId: investment.id
       });
 
       res.status(201).json({ 
@@ -1475,6 +1501,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Admin manual profit processing (for testing)
+  app.post("/api/admin/process-profits", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const { profitProcessor } = await import('./profit-processor');
+      
+      // Manually trigger profit processing
+      await (profitProcessor as any).processCompletedInvestments();
+      
+      res.status(200).json({
+        message: "Manual profit processing completed successfully"
+      });
+    } catch (error) {
+      console.error("Error in manual profit processing:", error);
+      res.status(500).json({ message: "Server error during profit processing" });
     }
   });
 
