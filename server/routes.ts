@@ -942,7 +942,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 color: #2d5016;
             }
             .security-icon {
-                color: #28a745;```text
+                color: #28a745;
                 margin-right: 8px;
             }
         </style>
