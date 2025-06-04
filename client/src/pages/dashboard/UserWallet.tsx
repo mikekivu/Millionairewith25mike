@@ -64,9 +64,10 @@ export default function UserWallet() {
   };
 
   const handlePaymentError = (error: string) => {
+    console.error("Payment error:", error);
     toast({
       title: "Payment Failed",
-      description: error,
+      description: error || "An error occurred while processing your payment. Please try again.",
       variant: "destructive",
     });
   };

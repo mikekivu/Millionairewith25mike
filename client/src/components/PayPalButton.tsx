@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { CreditCard, Loader2 } from 'lucide-react';
@@ -53,7 +52,7 @@ export default function PayPalButton({
 
       // Find approval URL
       const approvalUrl = data.links?.find((link: any) => link.rel === 'approve')?.href;
-      
+
       if (approvalUrl && approvalUrl !== '#') {
         // Redirect to PayPal for real payments
         window.location.href = approvalUrl;
