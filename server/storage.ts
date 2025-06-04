@@ -79,6 +79,10 @@ export interface IStorage {
   markUserMessageAsRead(id: number): Promise<UserMessage | undefined>;
   markUserMessageAsReplied(id: number): Promise<UserMessage | undefined>;
 
+  // Demo User Management
+  isDemoUser(userId: number): Promise<boolean>;
+  updateUserWallet(userId: number, amount: string, operation: 'add' | 'subtract' | 'set'): Promise<User | undefined>;
+
   // Notifications Management
   createNotification(notification: InsertNotification): Promise<Notification>;
   getNotification(id: number): Promise<Notification | undefined>;
@@ -874,6 +878,37 @@ activeInvestments,
     const referralTree = await this.buildReferralPerformanceTree(userId, 0, 5); // Max 5 levels deep
 
     return referralTree;
+  }
+
+  // Demo User Management
+  async isDemoUser(userId: number): Promise<boolean> {
+    const user = await this.getUser(userId);
+    return user?.role === "demo_user";
+  }
+
+  async updateUserWallet(userId: number, amount: string, operation: 'add' | 'subtract' | 'set'): Promise<User | undefined> {
+    const user = await this.getUser(userId);
+    if (!user) return undefined;
+
+    const currentBalance = parseFloat(user.walletBalance);
+    const changeAmount = parseFloat(amount);
+    let newBalance: number;
+
+    switch (operation) {
+      case 'add':
+        newBalance = currentBalance + changeAmount;
+        break;
+      case 'subtract':
+        newBalance = Math.max(0, currentBalance - changeAmount);
+        break;
+      case 'set':
+        newBalance = changeAmount;
+        break;
+      default:
+        return undefined;
+    }
+
+    return this.updateUser(userId, { walletBalance: newBalance.toString() });
   }
 
   private async buildReferralPerformanceTree(userId: number, currentLevel: number, maxLevel: number): Promise<any> {

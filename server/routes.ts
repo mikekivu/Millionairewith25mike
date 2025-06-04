@@ -556,14 +556,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
   router.post('/user/deposits', authMiddleware, async (req, res) => {
     try {
       const userId = req.session.userId;
+      
+      // Check if this is a demo user
+      const isDemoUser = await storage.isDemoUser(userId);
+      
+      // For demo users, auto-complete deposits instantly
+      const transactionStatus = isDemoUser ? "completed" : "pending";
+      
       const validatedData = insertTransactionSchema.parse({
         ...req.body,
         userId,
         type: "deposit",
-        status: "pending"
+        status: transactionStatus,
+        paymentMethod: isDemoUser ? "demo_deposit" : req.body.paymentMethod
       });
 
       const transaction = await storage.createTransaction(validatedData);
+
+      // If demo user, add money immediately and create notifications
+      if (isDemoUser) {
+        await storage.updateUserWallet(userId, validatedData.amount, 'add');
+        
+        // Create success notification for demo user
+        await storage.createNotification({
+          userId,
+          title: "Demo Deposit Successful",
+          message: `Your demo deposit of ${validatedData.amount} ${validatedData.currency} has been processed successfully. This is a simulated transaction for testing purposes.`,
+          type: "deposit_completed",
+          entityId: transaction.id,
+          entityType: "transaction",
+          link: "/dashboard/transactions"
+        });
+      }
 
       // Create notifications for deposit
       try {
@@ -638,17 +662,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Insufficient wallet balance" });
       }
 
-      // Create withdrawal request (pending status)
+      // Check if this is a demo user
+      const isDemoUser = await storage.isDemoUser(userId);
+      
+      // For demo users, auto-complete withdrawals instantly
+      const transactionStatus = isDemoUser ? "completed" : "pending";
+      const description = isDemoUser 
+        ? `Demo withdrawal - Automatically processed`
+        : `Withdrawal request - Pending admin approval`;
+
+      // Create withdrawal request
       const transaction = await storage.createTransaction({
         userId,
         type: "withdrawal",
         amount,
         currency: currency || "USD",
-        status: "pending",
-        paymentMethod: paymentMethod || "manual",
+        status: transactionStatus,
+        paymentMethod: paymentMethod || (isDemoUser ? "demo_withdrawal" : "manual"),
         transactionDetails: transactionDetails || `Withdrawal request for ${amount} ${currency || "USD"}`,
-        description: `Withdrawal request - Pending admin approval`
+        description
       });
+
+      // If demo user, deduct money immediately and add notifications
+      if (isDemoUser) {
+        await storage.updateUserWallet(userId, amount, 'subtract');
+        
+        // Create success notification for demo user
+        await storage.createNotification({
+          userId,
+          title: "Demo Withdrawal Successful",
+          message: `Your demo withdrawal of ${amount} ${currency || "USD"} has been processed successfully. This is a simulated transaction for testing purposes.`,
+          type: "withdrawal_approved",
+          entityId: transaction.id,
+          entityType: "transaction",
+          link: "/dashboard/transactions"
+        });
+      }
 
       // Create notification for admin about new withdrawal request
       try {

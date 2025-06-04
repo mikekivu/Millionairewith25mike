@@ -830,4 +830,35 @@ export class DatabaseStorage implements IStorage {
 
     return treeNode;
   }
+
+  // Demo User Management
+  async isDemoUser(userId: number): Promise<boolean> {
+    const user = await this.getUser(userId);
+    return user?.role === "demo_user";
+  }
+
+  async updateUserWallet(userId: number, amount: string, operation: 'add' | 'subtract' | 'set'): Promise<User | undefined> {
+    const user = await this.getUser(userId);
+    if (!user) return undefined;
+
+    const currentBalance = parseFloat(user.walletBalance);
+    const changeAmount = parseFloat(amount);
+    let newBalance: number;
+
+    switch (operation) {
+      case 'add':
+        newBalance = currentBalance + changeAmount;
+        break;
+      case 'subtract':
+        newBalance = Math.max(0, currentBalance - changeAmount);
+        break;
+      case 'set':
+        newBalance = changeAmount;
+        break;
+      default:
+        return undefined;
+    }
+
+    return this.updateUser(userId, { walletBalance: newBalance.toString() });
+  }
 }
