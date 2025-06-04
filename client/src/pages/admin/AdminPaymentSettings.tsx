@@ -226,6 +226,19 @@ export default function AdminPaymentSettings() {
                       <span className="font-medium">Transaction Fee</span>
                       <span className="text-sm">2.9% + $0.30</span>
                     </div>
+                    <div className="pt-2 border-t">
+                      <h4 className="font-medium mb-2">API Credentials</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Client ID:</span>
+                          <span className="font-mono text-xs">{process.env.PAYPAL_CLIENT_ID ? '••••••••••••' + process.env.PAYPAL_CLIENT_ID.slice(-4) : 'Not Set'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Client Secret:</span>
+                          <span className="font-mono text-xs">{process.env.PAYPAL_CLIENT_SECRET ? '••••••••••••' + process.env.PAYPAL_CLIENT_SECRET.slice(-4) : 'Not Set'}</span>
+                        </div>
+                      </div>
+                    </div>
                     <div className="pt-2">
                       <p className="text-sm text-muted-foreground">
                         PayPal integration is configured and ready for transactions. 
@@ -256,6 +269,19 @@ export default function AdminPaymentSettings() {
                     <div className="flex items-center justify-between">
                       <span className="font-medium">Transaction Fee</span>
                       <span className="text-sm">3.5%</span>
+                    </div>
+                    <div className="pt-2 border-t">
+                      <h4 className="font-medium mb-2">API Credentials</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Consumer Key:</span>
+                          <span className="font-mono text-xs">{process.env.PESAPAL_CONSUMER_KEY ? '••••••••••••' + process.env.PESAPAL_CONSUMER_KEY.slice(-4) : 'Not Set'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Consumer Secret:</span>
+                          <span className="font-mono text-xs">{process.env.PESAPAL_CONSUMER_SECRET ? '••••••••••••' + process.env.PESAPAL_CONSUMER_SECRET.slice(-4) : 'Not Set'}</span>
+                        </div>
+                      </div>
                     </div>
                     <div className="pt-2">
                       <p className="text-sm text-muted-foreground">
@@ -335,6 +361,12 @@ export default function AdminPaymentSettings() {
                       <div className="space-y-2 text-sm">
                         {method.instructions && (
                           <p className="text-muted-foreground">{method.instructions}</p>
+                        )}
+                        {method.credentials && (
+                          <div className="border-t pt-2">
+                            <p className="text-xs text-muted-foreground">Credentials:</p>
+                            <p className="font-mono text-xs">{method.credentials.length > 20 ? method.credentials.substring(0, 20) + '...' : method.credentials}</p>
+                          </div>
                         )}
                         {method.minAmount && method.maxAmount && (
                           <p className="text-xs text-muted-foreground">
