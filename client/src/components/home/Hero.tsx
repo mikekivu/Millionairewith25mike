@@ -77,9 +77,9 @@ export default function Hero() {
               <div className="bg-gradient-to-br from-cyan-50 to-cyan-100 p-4 rounded-lg">
                 <div className="flex gap-2 items-center text-cyan-600 font-semibold mb-1">
                   <TrendingUp className="h-4 w-4" />
-                  <span className="text-lg">12%</span>
+                  <span className="text-lg">400%</span>
                 </div>
-                <p className="text-sm text-gray-600">Monthly ROI</p>
+                <p className="text-sm text-gray-600">12hr ROI</p>
               </div>
 
               <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-4 rounded-lg">

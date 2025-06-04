@@ -65,10 +65,10 @@ export default function ReferralProgram() {
 
               <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-6 mb-6">
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-green-600 mb-2">$20</div>
-                  <div className="text-lg font-medium text-green-800">Per Successful Referral</div>
-                  <div className="text-sm text-green-600 mt-2">Paid instantly to your account</div>
-                </div>
+                    <div className="text-4xl font-bold text-green-600 mb-2">$20</div>
+                    <div className="text-lg font-medium text-green-800">Referral Commission</div>
+                    <div className="text-sm text-green-600 mt-2">Paid instantly to your account</div>
+                  </div>
               </div>
 
               <div className="space-y-4">
