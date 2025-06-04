@@ -724,55 +724,211 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(400).send('Missing OrderTrackingId');
     }
 
+    // Get transaction details to show amount
+    let transaction = null;
+    try {
+      transaction = await storage.getTransactionByReference(OrderTrackingId as string);
+    } catch (error) {
+      console.error('Error getting transaction:', error);
+    }
+
+    const displayAmount = transaction ? `${transaction.currency} ${transaction.amount}` : 'Payment';
+
     // Simple HTML page that simulates Pesapal payment options
     const html = `
     <!DOCTYPE html>
     <html>
     <head>
-        <title>Pesapal Payment - Demo</title>
+        <title>Pesapal Payment Gateway - Demo</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <style>
-            body { font-family: Arial, sans-serif; max-width: 500px; margin: 50px auto; padding: 20px; }
-            .payment-option { border: 1px solid #ddd; margin: 10px 0; padding: 15px; cursor: pointer; border-radius: 5px; }
-            .payment-option:hover { background-color: #f5f5f5; }
-            h1 { color: #1a5f7a; text-align: center; }
-            .amount { font-size: 24px; font-weight: bold; color: #2d5016; text-align: center; margin: 20px 0; }
+            body { 
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+                max-width: 600px; 
+                margin: 50px auto; 
+                padding: 20px; 
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+                color: #333;
+            }
+            .container {
+                background: white;
+                border-radius: 10px;
+                padding: 30px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            }
+            .header {
+                text-align: center;
+                margin-bottom: 30px;
+            }
+            .logo {
+                font-size: 28px;
+                font-weight: bold;
+                color: #2c5aa0;
+                margin-bottom: 10px;
+            }
+            .subtitle {
+                color: #666;
+                font-size: 16px;
+            }
+            .amount-display {
+                background: #f8f9fa;
+                border: 2px solid #e9ecef;
+                border-radius: 8px;
+                padding: 20px;
+                text-align: center;
+                margin: 20px 0;
+            }
+            .amount-text {
+                font-size: 24px;
+                font-weight: bold;
+                color: #2c5aa0;
+                margin-bottom: 5px;
+            }
+            .amount-subtitle {
+                color: #666;
+                font-size: 14px;
+            }
+            .payment-methods {
+                margin: 30px 0;
+            }
+            .section-title {
+                font-size: 18px;
+                font-weight: 600;
+                margin-bottom: 15px;
+                color: #333;
+            }
+            .payment-option { 
+                border: 2px solid #e9ecef; 
+                margin: 12px 0; 
+                padding: 18px 20px; 
+                cursor: pointer; 
+                border-radius: 8px; 
+                transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
+                background: white;
+            }
+            .payment-option:hover { 
+                background-color: #f8f9fa; 
+                border-color: #2c5aa0;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(44, 90, 160, 0.15);
+            }
+            .payment-icon {
+                font-size: 24px;
+                margin-right: 15px;
+                width: 30px;
+            }
+            .payment-text {
+                font-size: 16px;
+                font-weight: 500;
+            }
+            .processing {
+                display: none;
+                text-align: center;
+                padding: 40px;
+            }
+            .spinner {
+                border: 4px solid #f3f3f3;
+                border-top: 4px solid #2c5aa0;
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                animation: spin 1s linear infinite;
+                margin: 0 auto 20px;
+            }
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+            .security-note {
+                background: #e8f5e8;
+                border: 1px solid #c3e6c3;
+                border-radius: 6px;
+                padding: 15px;
+                margin-top: 30px;
+                font-size: 14px;
+                color: #2d5016;
+            }
+            .security-icon {
+                color: #28a745;
+                margin-right: 8px;
+            }
         </style>
     </head>
     <body>
-        <h1>🏦 Pesapal Payment Gateway</h1>
-        <div class="amount">Choose your payment method:</div>
-        
-        <div class="payment-option" onclick="processPayment('visa')">
-            💳 Visa Card
-        </div>
-        
-        <div class="payment-option" onclick="processPayment('mastercard')">
-            💳 Mastercard
-        </div>
-        
-        <div class="payment-option" onclick="processPayment('mpesa')">
-            📱 M-Pesa
-        </div>
-        
-        <div class="payment-option" onclick="processPayment('airtel')">
-            📱 Airtel Money
-        </div>
-        
-        <div class="payment-option" onclick="processPayment('bank')">
-            🏦 Bank Transfer
+        <div class="container">
+            <div class="header">
+                <div class="logo">🏦 Pesapal</div>
+                <div class="subtitle">Secure Payment Gateway</div>
+            </div>
+
+            <div class="amount-display">
+                <div class="amount-text">${displayAmount}</div>
+                <div class="amount-subtitle">Amount to Pay</div>
+            </div>
+
+            <div class="payment-methods" id="paymentMethods">
+                <div class="section-title">Choose Payment Method:</div>
+                
+                <div class="payment-option" onclick="processPayment('visa')">
+                    <span class="payment-icon">💳</span>
+                    <span class="payment-text">Visa Card</span>
+                </div>
+                
+                <div class="payment-option" onclick="processPayment('mastercard')">
+                    <span class="payment-icon">💳</span>
+                    <span class="payment-text">Mastercard</span>
+                </div>
+                
+                <div class="payment-option" onclick="processPayment('mpesa')">
+                    <span class="payment-icon">📱</span>
+                    <span class="payment-text">M-Pesa</span>
+                </div>
+                
+                <div class="payment-option" onclick="processPayment('airtel')">
+                    <span class="payment-icon">📱</span>
+                    <span class="payment-text">Airtel Money</span>
+                </div>
+                
+                <div class="payment-option" onclick="processPayment('equity')">
+                    <span class="payment-icon">🏦</span>
+                    <span class="payment-text">Equity Bank</span>
+                </div>
+
+                <div class="payment-option" onclick="processPayment('kcb')">
+                    <span class="payment-icon">🏦</span>
+                    <span class="payment-text">KCB Bank</span>
+                </div>
+            </div>
+
+            <div class="processing" id="processing">
+                <div class="spinner"></div>
+                <div>Processing your payment...</div>
+                <div style="font-size: 14px; color: #666; margin-top: 10px;">Please wait while we redirect you.</div>
+            </div>
+
+            <div class="security-note">
+                <span class="security-icon">🔒</span>
+                Your payment is secured with 256-bit SSL encryption
+            </div>
         </div>
 
         <script>
             function processPayment(method) {
-                alert('Processing payment via ' + method + '...\\n\\nIn a real integration, this would redirect to the actual payment processor.');
+                // Hide payment methods and show processing
+                document.getElementById('paymentMethods').style.display = 'none';
+                document.getElementById('processing').style.display = 'block';
                 
-                // Simulate payment processing
+                // Simulate payment processing time (2-4 seconds)
+                const processingTime = Math.random() * 2000 + 2000;
+                
                 setTimeout(() => {
                     // Redirect back to callback with success
-                    window.location.href = '/api/pesapal/callback?OrderTrackingId=${OrderTrackingId}&demo=true&method=' + method;
-                }, 2000);
+                    window.location.href = '/api/pesapal/callback?OrderTrackingId=${OrderTrackingId}&demo=true&method=' + method + '&status=completed';
+                }, processingTime);
             }
         </script>
     </body>

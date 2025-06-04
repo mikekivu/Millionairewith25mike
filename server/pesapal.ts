@@ -249,7 +249,7 @@ export async function handlePesapalCallback(req: Request, res: Response) {
       // Demo mode or missing credentials - check if it's a demo request
       if (req.query.demo === 'true') {
         console.log('Demo mode: marking transaction as completed');
-        transactionStatus = 'completed';
+        transactionStatus = req.query.status === 'completed' ? 'completed' : 'completed'; // Always complete in demo
         statusVerified = false;
       } else {
         console.log('No API credentials: marking transaction as pending');

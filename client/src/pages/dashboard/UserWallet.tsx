@@ -142,60 +142,53 @@ export default function UserWallet() {
   };
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const paymentStatus = params.get('status');
-    const paymentMethod = params.get('payment');
-    const trackingId = params.get('tracking_id');
-    const verified = params.get('verified');
-    const error = params.get('error');
+    const urlParams = new URLSearchParams(window.location.search);
+    const paymentStatus = urlParams.get('status');
+    const paymentMethod = urlParams.get('payment');
+    const trackingId = urlParams.get('tracking_id');
+    const errorParam = urlParams.get('error');
 
     if (paymentStatus && paymentMethod) {
       if (paymentStatus === 'completed') {
         toast({
           title: "Payment Successful",
-          description: `Your ${paymentMethod} payment has been completed successfully.${trackingId ? ` Reference: ${trackingId}` : ''}`,
+          description: `Your ${paymentMethod} payment has been completed successfully. Your wallet will be updated shortly.`,
         });
-        // Refresh user data to show updated balance
-        if (user?.id) {
-          setTimeout(() => {
-            refetchUser();
-          }, 1000);
-        }
       } else if (paymentStatus === 'failed') {
-        let errorMsg = `Your ${paymentMethod} payment could not be completed.`;
-        if (error === 'missing_tracking_id') {
-          errorMsg = 'Payment verification failed: Missing tracking information.';
-        } else if (error === 'callback_error') {
-          errorMsg = 'Payment processing error occurred. Please contact support.';
+        let errorMessage = "Payment failed. Please try again.";
+        if (errorParam === 'missing_tracking_id') {
+          errorMessage = "Payment failed: Missing tracking information. Please contact support if this continues.";
+        } else if (errorParam === 'callback_error') {
+          errorMessage = "Payment processing error occurred. Please contact support if your payment was deducted.";
+        } else if (errorParam === 'processing_error') {
+          errorMessage = "Payment processing error. If amount was deducted, please contact support.";
         }
 
         toast({
           title: "Payment Failed",
-          description: errorMsg,
+          description: errorMessage,
           variant: "destructive",
+          duration: 8000, // Show longer for failed payments
         });
       } else if (paymentStatus === 'pending') {
         toast({
           title: "Payment Pending",
-          description: `Your ${paymentMethod} payment is being processed. Please wait for confirmation.`,
-        });
-      } else if (paymentStatus === 'demo') {
-        toast({
-          title: "Demo Mode",
-          description: `${paymentMethod} payment completed successfully in demo mode.`,
+          description: `Your ${paymentMethod} payment is being processed. You will receive a notification once it's confirmed.`,
         });
       }
 
-      // Clear URL parameters after a short delay
+      // Clean up URL parameters after a short delay to ensure toast is shown
       setTimeout(() => {
-        window.history.replaceState({}, '', '/dashboard/wallet');
-      }, 3000);
-    }
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+      }, 1000);
 
-    if (user?.id) {
-      refetchUser();
+      // Refresh transactions to show the latest status
+      setTimeout(() => {
+        fetchTransactions();
+      }, 2000);
     }
-  }, [user?.id, toast, refetchUser]);
+  }, [toast]);
 
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-6">
