@@ -1,0 +1,22 @@
+
+{
+  "name": "Prosperity Groups",
+  "short_name": "PG",
+  "description": "Investment platform with high ROI and referral system",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "icons": [
+    {
+      "src": "/src/assets/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/src/assets/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
