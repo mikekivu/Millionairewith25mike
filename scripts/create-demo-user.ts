@@ -78,8 +78,8 @@ async function createDemoUser() {
         amount: "5000.00000000",
         currency: "USD",
         status: "completed" as const,
-        paymentMethod: "demo_deposit",
-        transactionDetails: "Initial demo deposit",
+        paymentMethod: "paypal",
+        transactionDetails: "Initial deposit via PayPal",
         createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) // 7 days ago
       },
       {
@@ -88,8 +88,8 @@ async function createDemoUser() {
         amount: "5000.00000000", 
         currency: "USD",
         status: "completed" as const,
-        paymentMethod: "demo_deposit",
-        transactionDetails: "Second demo deposit",
+        paymentMethod: "pesapal",
+        transactionDetails: "Deposit via Pesapal",
         createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) // 3 days ago
       }
     ];

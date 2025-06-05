@@ -576,7 +576,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId,
         type: "deposit",
         status: transactionStatus,
-        paymentMethod: isDemoUser ? "demo_deposit" : req.body.paymentMethod
+        paymentMethod: req.body.paymentMethod || "bank_transfer"
       });
 
       const transaction = await storage.createTransaction(validatedData);
@@ -676,7 +676,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // For demo users, auto-complete withdrawals instantly
       const transactionStatus = isDemoUser ? "completed" : "pending";
       const description = isDemoUser 
-        ? `Demo withdrawal - Automatically processed`
+        ? `Withdrawal processed successfully`
         : `Withdrawal request - Pending admin approval`;
 
       // Create withdrawal request
@@ -686,7 +686,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         amount,
         currency: currency || "USD",
         status: transactionStatus,
-        paymentMethod: paymentMethod || (isDemoUser ? "demo_withdrawal" : "manual"),
+        paymentMethod: paymentMethod || "bank_transfer",
         transactionDetails: transactionDetails || `Withdrawal request for ${amount} ${currency || "USD"}`,
         description
       });
