@@ -691,10 +691,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         description
       });
 
-      // If demo user, deduct money immediately and add notifications
+      // If demo user, add success notification (wallet already deducted in createTransaction)
       if (isDemoUser) {
-        await storage.updateUserWallet(userId, amount, 'subtract');
-
         // Create success notification for demo user
         await storage.createNotification({
           userId,
