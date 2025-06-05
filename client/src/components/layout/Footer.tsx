@@ -222,11 +222,6 @@ export default function Footer() {
             <p className="text-base text-gray-400 mb-2">
               &copy; {new Date().getFullYear()} ProsperityGroups. All rights reserved.
             </p>
-            <div className="border-t border-gray-800 pt-4">
-              <p className="text-sm text-gray-500">
-                Developed & Designed By <span className="text-orange-400 font-semibold">Web Expert Solutions</span>
-              </p>
-            </div>
           </div>
         </div>
       </div>
