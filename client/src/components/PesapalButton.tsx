@@ -61,15 +61,13 @@ export default function PesapalButton({
       if (data.redirect_url) {
         // Show different messages for demo vs live mode
         const isDemoMode = data.demo_mode || data.redirect_url.includes('/demo-payment');
-        
+
         toast({
           title: "Redirecting to Pesapal",
-          description: isDemoMode ? 
-            "Redirecting to Pesapal demo payment page where you can choose from Visa, Mastercard, M-Pesa, and other payment methods." :
-            "Redirecting to Pesapal secure payment gateway. Choose from various payment methods including cards and mobile money.",
+          description: "Redirecting to Pesapal secure payment page where you can choose from Visa, Mastercard, M-Pesa, or other payment methods.",
           duration: 3000,
         });
-        
+
         // Small delay to show the toast, then redirect
         setTimeout(() => {
           window.location.href = data.redirect_url;
