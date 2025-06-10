@@ -850,12 +850,33 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getSystemSetting(key: string): Promise<SystemSetting | undefined> {
-    const [setting] = await db.select().from(systemSettings).where(eq(systemSettings.key, key));
-    return setting;
+    try {
+      const [setting] = await db.select().from(systemSettings).where(eq(systemSettings.key, key));
+      return setting;
+    } catch (error: any) {
+      if (error.code === '42P01') { // Table doesn't exist
+        console.log('system_settings table does not exist, creating it...');
+        await this.createSystemSettingsTable();
+        // Try again after creating table
+        const [setting] = await db.select().from(systemSettings).where(eq(systemSettings.key, key));
+        return setting;
+      }
+      throw error;
+    }
   }
 
   async getAllSystemSettings(): Promise<SystemSetting[]> {
-    return db.select().from(systemSettings);
+    try {
+      return db.select().from(systemSettings);
+    } catch (error: any) {
+      if (error.code === '42P01') { // Table doesn't exist
+        console.log('system_settings table does not exist, creating it...');
+        await this.createSystemSettingsTable();
+        // Try again after creating table
+        return db.select().from(systemSettings);
+      }
+      throw error;
+    }
   }
 
   async setSystemSetting(key: string, value: string, description?: string): Promise<SystemSetting> {
@@ -887,6 +908,32 @@ export class DatabaseStorage implements IStorage {
       }
     } catch (error) {
       console.error('Error in setSystemSetting:', error);
+      throw error;
+    }
+  }
+
+  private async createSystemSettingsTable(): Promise<void> {
+    try {
+      await db.execute(`
+        CREATE TABLE IF NOT EXISTS system_settings (
+          id SERIAL PRIMARY KEY,
+          key TEXT NOT NULL UNIQUE,
+          value TEXT NOT NULL,
+          description TEXT,
+          updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+        );
+      `);
+      
+      // Insert default payment_mode setting
+      await db.execute(`
+        INSERT INTO system_settings (key, value, description)
+        VALUES ('payment_mode', 'sandbox', 'Payment gateway environment mode (live or sandbox)')
+        ON CONFLICT (key) DO NOTHING;
+      `);
+      
+      console.log('✅ system_settings table created and initialized');
+    } catch (error) {
+      console.error('Failed to create system_settings table:', error);
       throw error;
     }
   }
