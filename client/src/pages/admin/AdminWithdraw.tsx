@@ -317,7 +317,7 @@ export default function AdminWithdraw() {
                               {withdrawal.status}
                             </Badge>
                             <div className="text-sm text-muted-foreground mt-1">
-                              {withdrawal.method.toUpperCase()}
+                              {(withdrawal.method || withdrawal.paymentMethod || 'N/A').toUpperCase()}
                             </div>
                           </div>
                         </div>
