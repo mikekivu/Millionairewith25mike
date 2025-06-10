@@ -945,6 +945,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
         </style>
     </head>
+    ```
     <body>
         <div class="container">
             <div class="header">
@@ -1845,7 +1846,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error(error);
-      res.status(500).json({ message: "Server error" });
+      res.status(500.json({ message: "Server error" });
     }
   });
 
@@ -2017,9 +2018,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         // Check if PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET environment variables are set
         const configured = !!(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET);
+        const hasLiveCredentials = process.env.PAYPAL_CLIENT_ID && 
+          process.env.PAYPAL_CLIENT_SECRET && 
+          !process.env.PAYPAL_CLIENT_ID.includes('sandbox');
+        const environment = hasLiveCredentials ? 'live' : 'sandbox';
 
         res.status(200).json({
           configured,
+          environment,
           clientId: process.env.PAYPAL_CLIENT_ID || '',
           // Don't send back the actual secret, just indicate if it's set
           clientSecret: process.env.PAYPAL_CLIENT_SECRET ? '••••••••••••••••' : '',
@@ -2390,7 +2396,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     });
 
-   
+
     const httpServer = createServer(app);
 
     return httpServer;

@@ -1,4 +1,3 @@
-
 import { Request, Response } from "express";
 import { storage } from "./storage";
 
@@ -10,7 +9,13 @@ async function getPaypalBaseUrl() {
   try {
     const paymentMode = await storage.getSystemSetting('payment_mode');
     console.log('PayPal checking payment mode:', paymentMode);
-    const isLive = paymentMode?.value === 'live';
+
+    // Check for live credentials
+    const hasLiveCredentials = PAYPAL_CLIENT_ID &&
+      PAYPAL_CLIENT_SECRET &&
+      !PAYPAL_CLIENT_ID.includes('sandbox');
+
+    const isLive = hasLiveCredentials || paymentMode?.value === 'live'; // consider payment_mode as well
     const baseUrl = isLive ? 'https://api.paypal.com' : 'https://api.sandbox.paypal.com';
     console.log('PayPal using base URL:', baseUrl, 'for mode:', paymentMode?.value);
     return baseUrl;
@@ -31,7 +36,7 @@ export async function getClientToken() {
     // Get access token
     const auth = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`).toString('base64');
     const baseUrl = await getPaypalBaseUrl();
-    
+
     const response = await fetch(`${baseUrl}/v1/oauth2/token`, {
       method: 'POST',
       headers: {
@@ -91,7 +96,7 @@ export async function createPaypalOrder(req: Request, res: Response) {
     if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
       // Demo mode
       const orderId = `PAYPAL_DEMO_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
+
       // Create pending transaction
       await storage.createTransaction({
         userId,
@@ -118,7 +123,7 @@ export async function createPaypalOrder(req: Request, res: Response) {
     // Real PayPal integration
     const accessToken = await getClientToken();
     const baseUrl = await getPaypalBaseUrl();
-    
+
     const orderData = {
       intent: intent.toUpperCase(),
       purchase_units: [{
@@ -187,7 +192,7 @@ export async function capturePaypalOrder(req: Request, res: Response) {
       if (transaction) {
         // Update transaction status
         await storage.updateTransaction(transaction.id, { status: "completed" });
-        
+
         if (transaction.type === 'deposit') {
           // Add funds to wallet
           await storage.updateUserWallet(transaction.userId, transaction.amount, 'add');
@@ -207,7 +212,7 @@ export async function capturePaypalOrder(req: Request, res: Response) {
     // Real PayPal integration
     const accessToken = await getClientToken();
     const baseUrl = await getPaypalBaseUrl();
-    
+
     const response = await fetch(`${baseUrl}/v2/checkout/orders/${orderID}/capture`, {
       method: 'POST',
       headers: {
@@ -223,14 +228,14 @@ export async function capturePaypalOrder(req: Request, res: Response) {
       const transaction = await storage.getTransactionByReference(orderID);
       if (transaction) {
         await storage.updateTransaction(transaction.id, { status: "completed" });
-        
+
         if (transaction.type === 'deposit') {
           await storage.updateUserWallet(transaction.userId, transaction.amount, 'add');
         } else if (transaction.type === 'withdrawal') {
           await storage.updateUserWallet(transaction.userId, transaction.amount, 'subtract');
         }
       }
-      
+
       res.status(200).json(captureData);
     } else {
       console.error("PayPal capture failed:", captureData);
