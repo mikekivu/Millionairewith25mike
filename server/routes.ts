@@ -1843,11 +1843,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: "Payment setting created successfully",
         setting: newSetting
       });
-      } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Server error" });
-      }```text
-    });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
 
     app.put("/api/admin/payment-settings/:id", authMiddleware, adminMiddleware, async (req, res) => {
       try {
