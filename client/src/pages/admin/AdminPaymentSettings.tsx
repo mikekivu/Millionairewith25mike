@@ -452,6 +452,121 @@ export default function AdminPaymentSettings() {
 
             <Card className="mb-8">
               <CardHeader>
+                <CardTitle>Payment Mode Configuration</CardTitle>
+                <CardDescription>
+                  Switch between sandbox (testing) and live (production) mode for all payment gateways
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="space-y-1">
+                      <h4 className="font-medium">Current Payment Mode</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {(() => {
+                          const paymentMode = systemSettings?.find((s: any) => s.key === 'payment_mode');
+                          const mode = paymentMode?.value || 'sandbox';
+                          return mode === 'live' 
+                            ? 'Live mode - Real money transactions will be processed'
+                            : 'Sandbox mode - Test environment for safe testing';
+                        })()}
+                      </p>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <Badge variant={(() => {
+                        const paymentMode = systemSettings?.find((s: any) => s.key === 'payment_mode');
+                        return paymentMode?.value === 'live' ? 'destructive' : 'secondary';
+                      })()}>
+                        {(() => {
+                          const paymentMode = systemSettings?.find((s: any) => s.key === 'payment_mode');
+                          return paymentMode?.value === 'live' ? 'LIVE' : 'SANDBOX';
+                        })()}
+                      </Badge>
+                      <Switch
+                        checked={(() => {
+                          const paymentMode = systemSettings?.find((s: any) => s.key === 'payment_mode');
+                          return paymentMode?.value === 'live';
+                        })()}
+                        onCheckedChange={(checked) => {
+                          const newMode = checked ? 'live' : 'sandbox';
+                          
+                          if (checked) {
+                            const confirmed = confirm(
+                              '⚠️ WARNING: You are about to switch to LIVE mode!\n\n' +
+                              'This means:\n' +
+                              '• Real money will be processed\n' +
+                              '• PayPal and Pesapal will use live environments\n' +
+                              '• All transactions will be real\n\n' +
+                              'Are you sure you want to continue?'
+                            );
+                            
+                            if (!confirmed) return;
+                          }
+
+                          // Call API to update system setting
+                          fetch('/api/admin/system-settings/payment_mode', {
+                            method: 'PUT',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              'Authorization': `Bearer ${localStorage.getItem('token')}`
+                            },
+                            body: JSON.stringify({
+                              value: newMode,
+                              description: 'Payment gateway environment mode (live or sandbox)'
+                            })
+                          })
+                          .then(response => response.json())
+                          .then(() => {
+                            queryClient.invalidateQueries({ queryKey: ['admin', 'system-settings'] });
+                            toast({
+                              title: "Payment Mode Updated",
+                              description: `Payment mode switched to ${newMode.toUpperCase()}${newMode === 'live' ? ' - BE CAREFUL, real money will be processed!' : ' - Safe for testing'}`,
+                              variant: newMode === 'live' ? 'destructive' : 'default'
+                            });
+                          })
+                          .catch(error => {
+                            console.error('Error updating payment mode:', error);
+                            toast({
+                              title: "Error",
+                              description: "Failed to update payment mode",
+                              variant: "destructive"
+                            });
+                          });
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <h4 className="font-medium">Mode Information</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <h5 className="font-medium text-green-800">🧪 Sandbox Mode</h5>
+                        <ul className="text-sm text-green-700 mt-1 space-y-1">
+                          <li>• Safe for testing and development</li>
+                          <li>• No real money processed</li>
+                          <li>• PayPal uses sandbox environment</li>
+                          <li>• Pesapal uses demo environment</li>
+                        </ul>
+                      </div>
+                      
+                      <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                        <h5 className="font-medium text-red-800">🔴 Live Mode</h5>
+                        <ul className="text-sm text-red-700 mt-1 space-y-1">
+                          <li>• ⚠️ Real money will be processed</li>
+                          <li>• PayPal uses live environment</li>
+                          <li>• Pesapal uses live environment</li>
+                          <li>• All transactions are real</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="mb-8">
+              <CardHeader>
                 <CardTitle>Transaction Limits</CardTitle>
                 <CardDescription>
                   Configure minimum and maximum transaction limits

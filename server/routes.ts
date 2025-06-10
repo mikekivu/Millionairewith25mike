@@ -2135,6 +2135,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { key } = req.params;
       const { value, description } = req.body;
 
+      // Special handling for payment_mode to update environment accordingly
+      if (key === 'payment_mode') {
+        console.log(`Admin switching payment mode to: ${value}`);
+        
+        // Log the change for audit purposes
+        const adminId = req.session.userId;
+        const admin = await storage.getUser(adminId);
+        console.log(`Payment mode changed to ${value} by admin: ${admin?.email}`);
+        
+        // You could also create a transaction record for audit trail
+        try {
+          await storage.createTransaction({
+            userId: adminId,
+            type: "admin_action",
+            amount: "0",
+            currency: "USD",
+            status: "completed",
+            paymentMethod: "admin",
+            transactionDetails: `Payment mode switched to ${value}`,
+            description: `Admin ${admin?.email} switched payment mode to ${value.toUpperCase()}`
+          });
+        } catch (auditError) {
+          console.error("Failed to create audit trail:", auditError);
+        }
+      }
+
       const setting = await storage.setSystemSetting(key, value, description);
       res.json({ message: "System setting updated successfully", setting });
     } catch (error) {
