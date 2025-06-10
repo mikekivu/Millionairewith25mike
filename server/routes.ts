@@ -565,37 +565,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session.userId;
 
-      // Check if this is a demo user
-      const isDemoUser = await storage.isDemoUser(userId);
-
-      // For demo users, auto-complete deposits instantly
-      const transactionStatus = isDemoUser ? "completed" : "pending";
-
+      // All deposits start as pending - no automatic completion
       const validatedData = insertTransactionSchema.parse({
         ...req.body,
         userId,
         type: "deposit",
-        status: transactionStatus,
+        status: "pending", // Always start as pending
         paymentMethod: req.body.paymentMethod || "bank_transfer"
       });
 
       const transaction = await storage.createTransaction(validatedData);
 
-      // If demo user, add money immediately and create notifications
-      if (isDemoUser) {
-        await storage.updateUserWallet(userId, validatedData.amount, 'add');
-
-        // Create success notification for demo user
-        await storage.createNotification({
-          userId,
-          title: "Deposit Successful",
-          message: `Your deposit of ${validatedData.amount} ${validatedData.currency} has been processed successfully. Thank you for choosing our platform!`,
-          type: "deposit_completed",
-          entityId: transaction.id,
-          entityType: "transaction",
-          link: "/dashboard/transactions"
-        });
-      }
+      // DO NOT add money to wallet automatically - only when payment is actually received
 
       // Create notifications for deposit
       try {
@@ -1719,8 +1700,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Transaction not found" });
       }
 
-      // If it's a withdrawal being approved, handle the wallet deduction
-      if (transaction.type === "withdrawal" && status === "completed" && transaction.status === "pending") {
+      // Handle wallet updates based on transaction type and status
+      if (transaction.type === "deposit" && status === "completed" && transaction.status === "pending") {
+        // Deposit approved - add money to wallet
+        const user = await storage.getUser(transaction.userId);
+        if (user) {
+          const currentBalance = parseFloat(user.walletBalance);
+          const depositAmount = parseFloat(transaction.amount);
+          const newBalance = currentBalance + depositAmount;
+          
+          await storage.updateUser(transaction.userId, { 
+            walletBalance: newBalance.toString() 
+          });
+
+          // Notify user of successful deposit
+          await storage.createNotification({
+            userId: transaction.userId,
+            title: "Deposit Completed",
+            message: `Your deposit of ${transaction.amount} ${transaction.currency} has been successfully processed and added to your wallet`,
+            type: "deposit_completed",
+            entityId: transaction.id,
+            entityType: "transaction",
+            link: "/dashboard/transactions"
+          });
+        }
+      } else if (transaction.type === "withdrawal" && status === "completed" && transaction.status === "pending") {
         const user = await storage.getUser(transaction.userId);
         if (!user) {
           return res.status(404).json({ message: "User not found" });
@@ -1759,6 +1763,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           title: "Withdrawal Rejected",
           message: `Your withdrawal request for ${transaction.amount} ${transaction.currency} has been rejected`,
           type: "withdrawal_rejected",
+          entityId: transaction.id,
+          entityType: "transaction",
+          link: "/dashboard/transactions"
+        });
+      } else if (transaction.type === "deposit" && status === "failed" && transaction.status === "pending") {
+        // Notify user about failed deposit
+        await storage.createNotification({
+          userId: transaction.userId,
+          title: "Deposit Failed",
+          message: `Your deposit of ${transaction.amount} ${transaction.currency} could not be processed. Please contact support if you believe this is an error.`,
+          type: "deposit_failed",
           entityId: transaction.id,
           entityType: "transaction",
           link: "/dashboard/transactions"

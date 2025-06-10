@@ -243,23 +243,13 @@ export default function UserWallet() {
   }, [toast]);
 
   const handleDepositSuccess = async (transactionId: string, amount: string) => {
-    // Check if this is a demo user
-    const isDemoUser = user?.role === 'demo_user';
+    toast({
+      title: "Payment Submitted",
+      description: `Your payment of ${formatCurrency(parseFloat(amount), selectedCurrency)} has been submitted and is being verified. Your wallet will be updated once the payment is confirmed.`,
+      duration: 8000,
+    });
 
-    if (isDemoUser) {
-      toast({
-        title: "Deposit Successful! 🎉",
-        description: `Your deposit of ${formatCurrency(parseFloat(amount), selectedCurrency)} has been instantly processed. Thank you for choosing our platform!`,
-        duration: 8000,
-      });
-    } else {
-      toast({
-        title: "Deposit Successful",
-        description: `Your deposit of ${formatCurrency(parseFloat(amount), selectedCurrency)} has been processed successfully.`,
-      });
-    }
-
-    // Refresh user data to show updated balance
+    // Refresh user data (though balance won't change until admin approval)
     await refetchUser();
 
     // Clear the deposit amount

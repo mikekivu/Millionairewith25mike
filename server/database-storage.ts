@@ -211,7 +211,7 @@ export class DatabaseStorage implements IStorage {
   async createTransaction(transaction: InsertTransaction): Promise<Transaction> {
     const [newTransaction] = await db.insert(transactions).values(transaction).returning();
 
-    // If it's a deposit, add to user's wallet
+    // Only add to wallet if deposit is completed (real payment received)
     if (transaction.type === "deposit" && transaction.status === "completed") {
       const user = await this.getUser(transaction.userId);
       if (user) {
