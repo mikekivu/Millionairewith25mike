@@ -847,4 +847,14 @@ export class DatabaseStorage implements IStorage {
 
     return this.updateUser(userId, { walletBalance: newBalance.toString() });
   }
+
+  async getSystemSetting(key: string) {
+    // Removed pool from here.
+    return null;
+  }
+
+  async getAllSystemSettings() {
+     // Removed pool from here.
+     return null;
+  }
 }

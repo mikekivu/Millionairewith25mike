@@ -837,8 +837,7 @@ export class MemStorage implements IStorage {
     const earningsTransactions = userTransactions.filter(tx => 
       (tx.type === "investment" && tx.status === "completed" && parseFloat(tx.amount) > 0)
     );
-    const totalEarnings = earningsTransactions.reduce((sum, tx) => sum + parseFloat(tx.amount), 0).toString();
-
+    const totalEarnings = earningsTransactions.reduce((sum, tx) => sum + parseFloat(tx.amount), 0).toString();<previous_generation>```text
     const referralTransactions = userTransactions.filter(tx => 
       tx.type === "referral" && tx.status === "completed"
     );
