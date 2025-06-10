@@ -948,8 +948,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     <body>
         <div class="container">
             <div class="header">
-                <div class="logo">```python
-🏦 Pesapal</div>
+                <div class="logo">🏦 Pesapal</div>
                 <div class="subtitle">Secure Payment Gateway</div>
             </div>
 
