@@ -458,7 +458,7 @@ export default function AdminPaymentSettings() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <div className="space-y-4">
                     <h4 className="font-medium">Deposit Limits</h4>
                     <div className="grid grid-cols-2 gap-4">
@@ -494,7 +494,7 @@ export default function AdminPaymentSettings() {
                 <p>Loading payment methods...</p>
               </div>
             ) : paymentMethods && Array.isArray(paymentMethods) && paymentMethods.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                 {paymentMethods.map((method: PaymentMethod) => (
                   <Card key={method.id} className={!method.active ? "opacity-75" : ""}>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

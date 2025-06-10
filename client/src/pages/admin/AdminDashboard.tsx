@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import DashboardLayout from '@/components/layout/DashboardLayout';
+import { Button } from '@/components/ui/button';
+import AdminSidebar from '@/components/dashboard/AdminSidebar';
 import { AdminStatsCards } from '@/components/dashboard/StatsCards';
 import { DataTable } from '@/components/dashboard/DataTable';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { ColumnDef } from '@tanstack/react-table';
+import { Menu } from 'lucide-react';
 import {
   LineChart,
   Line,
@@ -47,6 +49,8 @@ interface Transaction {
 }
 
 export default function AdminDashboard() {
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  
   // Fetch admin dashboard stats
   const { data: dashboardStats, isLoading: isLoadingStats } = useQuery({
     queryKey: ['/api/admin/dashboard'],
@@ -173,45 +177,73 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <DashboardLayout>
+    <>
       <Helmet>
         <title>Admin Dashboard - ProsperityGroups</title>
         <meta name="description" content="Manage the ProsperityGroups platform and view system statistics." />
       </Helmet>
 
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-2xl md:text-3xl font-bold mb-6">Admin Dashboard</h1>
+      <div className="min-h-screen flex">
+        {/* Mobile Header */}
+        <div className="md:hidden fixed top-0 left-0 right-0 z-30 bg-white border-b shadow-sm">
+          <div className="flex items-center justify-between p-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsMobileSidebarOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            <h1 className="text-lg font-bold">Admin Dashboard</h1>
+            <div></div>
+          </div>
+        </div>
+
+        {/* Sidebar */}
+        <AdminSidebar 
+          isMobileOpen={isMobileSidebarOpen}
+          onMobileClose={() => setIsMobileSidebarOpen(false)}
+        />
+
+        {/* Main Content */}
+        <div className="flex-1 bg-gray-50 pt-16 md:pt-0 overflow-auto">
+          <div className="p-4 md:p-8">
+            <div className="max-w-7xl mx-auto">
+              {/* Desktop Header */}
+              <div className="hidden md:block">
+                <h1 className="text-2xl md:text-3xl font-bold mb-6">Admin Dashboard</h1>
+              </div>
             
             {/* Stats Cards */}
             <AdminStatsCards stats={dashboardStats || {}} isLoading={isLoadingStats} />
             
             {/* Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
-              <Card className="lg:col-span-2">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6 mt-6 md:mt-8">
+              <Card className="xl:col-span-2">
                 <CardHeader>
-                  <CardTitle>Financial Overview</CardTitle>
-                  <CardDescription>Platform financial activity over the last 6 months</CardDescription>
+                  <CardTitle className="text-lg md:text-xl">Financial Overview</CardTitle>
+                  <CardDescription className="text-sm">Platform financial activity over the last 6 months</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-80">
+                  <div className="h-64 md:h-80">
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart
                         data={chartData}
                         margin={{
                           top: 5,
-                          right: 30,
-                          left: 20,
+                          right: 15,
+                          left: 10,
                           bottom: 5,
                         }}
                       >
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" />
-                        <YAxis />
+                        <XAxis dataKey="name" fontSize={12} />
+                        <YAxis fontSize={12} />
                         <Tooltip formatter={(value) => `${formatCurrency(value, 'USDT')}`} />
                         <Legend />
-                        <Line type="monotone" dataKey="deposits" stroke="#3B82F6" activeDot={{ r: 8 }} />
-                        <Line type="monotone" dataKey="withdrawals" stroke="#EF4444" />
-                        <Line type="monotone" dataKey="investments" stroke="#10B981" />
+                        <Line type="monotone" dataKey="deposits" stroke="#3B82F6" activeDot={{ r: 6 }} strokeWidth={2} />
+                        <Line type="monotone" dataKey="withdrawals" stroke="#EF4444" strokeWidth={2} />
+                        <Line type="monotone" dataKey="investments" stroke="#10B981" strokeWidth={2} />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
@@ -220,11 +252,11 @@ export default function AdminDashboard() {
               
               <Card>
                 <CardHeader>
-                  <CardTitle>Investment Distribution</CardTitle>
-                  <CardDescription>Distribution by investment plan</CardDescription>
+                  <CardTitle className="text-lg md:text-xl">Investment Distribution</CardTitle>
+                  <CardDescription className="text-sm">Distribution by investment plan</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-80">
+                  <div className="h-64 md:h-80">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
@@ -233,9 +265,10 @@ export default function AdminDashboard() {
                           cy="50%"
                           labelLine={false}
                           label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                          outerRadius={80}
+                          outerRadius={60}
                           fill="#8884d8"
                           dataKey="value"
+                          fontSize={12}
                         >
                           {pieData.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -249,27 +282,27 @@ export default function AdminDashboard() {
               </Card>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mt-6 md:mt-8">
               <Card>
                 <CardHeader>
-                  <CardTitle>Monthly Transactions</CardTitle>
-                  <CardDescription>Breakdown of transaction types</CardDescription>
+                  <CardTitle className="text-lg md:text-xl">Monthly Transactions</CardTitle>
+                  <CardDescription className="text-sm">Breakdown of transaction types</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-80">
+                  <div className="h-64 md:h-80">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart
                         data={chartData}
                         margin={{
                           top: 5,
-                          right: 30,
-                          left: 20,
+                          right: 15,
+                          left: 10,
                           bottom: 5,
                         }}
                       >
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" />
-                        <YAxis />
+                        <XAxis dataKey="name" fontSize={12} />
+                        <YAxis fontSize={12} />
                         <Tooltip formatter={(value) => `${formatCurrency(value, 'USDT')}`} />
                         <Legend />
                         <Bar dataKey="deposits" fill="#3B82F6" />
@@ -282,27 +315,27 @@ export default function AdminDashboard() {
               
               <Card>
                 <CardHeader>
-                  <CardTitle>User Growth</CardTitle>
-                  <CardDescription>New user registrations over time</CardDescription>
+                  <CardTitle className="text-lg md:text-xl">User Growth</CardTitle>
+                  <CardDescription className="text-sm">New user registrations over time</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-80">
+                  <div className="h-64 md:h-80">
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart
                         data={chartData.map(d => ({ ...d, users: Math.floor(Math.random() * 500) + 100 }))}
                         margin={{
                           top: 5,
-                          right: 30,
-                          left: 20,
+                          right: 15,
+                          left: 10,
                           bottom: 5,
                         }}
                       >
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" />
-                        <YAxis />
+                        <XAxis dataKey="name" fontSize={12} />
+                        <YAxis fontSize={12} />
                         <Tooltip />
                         <Legend />
-                        <Line type="monotone" dataKey="users" stroke="#8884d8" activeDot={{ r: 8 }} />
+                        <Line type="monotone" dataKey="users" stroke="#8884d8" activeDot={{ r: 6 }} strokeWidth={2} />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
@@ -311,28 +344,30 @@ export default function AdminDashboard() {
             </div>
             
             {/* Recent Users and Transactions */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mt-6 md:mt-8">
               <Card>
                 <CardHeader>
-                  <CardTitle>Recent Users</CardTitle>
-                  <CardDescription>Newly registered platform users</CardDescription>
+                  <CardTitle className="text-lg md:text-xl">Recent Users</CardTitle>
+                  <CardDescription className="text-sm">Newly registered platform users</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="px-2 md:px-6">
                   {isLoadingStats ? (
                     <div className="flex justify-center py-8">
-                      <p>Loading recent users...</p>
+                      <p className="text-sm">Loading recent users...</p>
                     </div>
                   ) : dashboardStats?.recentUsers ? (
-                    <DataTable 
-                      columns={userColumns} 
-                      data={dashboardStats.recentUsers} 
-                      searchColumn="firstName"
-                      showPagination={false}
-                      pageSize={5}
-                    />
+                    <div className="overflow-x-auto">
+                      <DataTable 
+                        columns={userColumns} 
+                        data={dashboardStats.recentUsers} 
+                        searchColumn="firstName"
+                        showPagination={false}
+                        pageSize={5}
+                      />
+                    </div>
                   ) : (
                     <div className="text-center py-8">
-                      <p className="text-muted-foreground">No recent users found</p>
+                      <p className="text-muted-foreground text-sm">No recent users found</p>
                     </div>
                   )}
                 </CardContent>
@@ -340,31 +375,36 @@ export default function AdminDashboard() {
               
               <Card>
                 <CardHeader>
-                  <CardTitle>Recent Transactions</CardTitle>
-                  <CardDescription>Latest financial activities on the platform</CardDescription>
+                  <CardTitle className="text-lg md:text-xl">Recent Transactions</CardTitle>
+                  <CardDescription className="text-sm">Latest financial activities on the platform</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="px-2 md:px-6">
                   {isLoadingStats ? (
                     <div className="flex justify-center py-8">
-                      <p>Loading recent transactions...</p>
+                      <p className="text-sm">Loading recent transactions...</p>
                     </div>
                   ) : dashboardStats?.recentTransactions ? (
-                    <DataTable 
-                      columns={transactionColumns} 
-                      data={dashboardStats.recentTransactions} 
-                      searchColumn="type"
-                      showPagination={false}
-                      pageSize={5}
-                    />
+                    <div className="overflow-x-auto">
+                      <DataTable 
+                        columns={transactionColumns} 
+                        data={dashboardStats.recentTransactions} 
+                        searchColumn="type"
+                        showPagination={false}
+                        pageSize={5}
+                      />
+                    </div>
                   ) : (
                     <div className="text-center py-8">
-                      <p className="text-muted-foreground">No recent transactions found</p>
+                      <p className="text-muted-foreground text-sm">No recent transactions found</p>
                     </div>
                   )}
                 </CardContent>
               </Card>
             </div>
+            </div>
+          </div>
+        </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 }
