@@ -7,7 +7,8 @@ import {
   paymentSettings, PaymentSetting, InsertPaymentSetting,
   contactMessages, ContactMessage, InsertContactMessage,
   userMessages, UserMessage, InsertUserMessage,
-  notifications, Notification, InsertNotification
+  notifications, Notification, InsertNotification,
+  systemSettings, SystemSetting
 } from "@shared/schema";
 import { db } from "./db";
 import { nanoid } from "nanoid";
@@ -848,13 +849,45 @@ export class DatabaseStorage implements IStorage {
     return this.updateUser(userId, { walletBalance: newBalance.toString() });
   }
 
-  async getSystemSetting(key: string) {
-    // Removed pool from here.
-    return null;
+  async getSystemSetting(key: string): Promise<SystemSetting | undefined> {
+    const [setting] = await db.select().from(systemSettings).where(eq(systemSettings.key, key));
+    return setting;
   }
 
-  async getAllSystemSettings() {
-     // Removed pool from here.
-     return null;
+  async getAllSystemSettings(): Promise<SystemSetting[]> {
+    return db.select().from(systemSettings);
+  }
+
+  async setSystemSetting(key: string, value: string, description?: string): Promise<SystemSetting> {
+    try {
+      const existingSetting = await this.getSystemSetting(key);
+
+      if (existingSetting) {
+        // Update existing setting
+        const [updatedSetting] = await db
+          .update(systemSettings)
+          .set({ 
+            value, 
+            description: description || existingSetting.description 
+          })
+          .where(eq(systemSettings.key, key))
+          .returning();
+        return updatedSetting;
+      } else {
+        // Create new setting
+        const [newSetting] = await db
+          .insert(systemSettings)
+          .values({ 
+            key, 
+            value, 
+            description: description || `System setting: ${key}` 
+          })
+          .returning();
+        return newSetting;
+      }
+    } catch (error) {
+      console.error('Error in setSystemSetting:', error);
+      throw error;
+    }
   }
 }

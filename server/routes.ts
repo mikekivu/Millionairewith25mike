@@ -948,7 +948,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     <body>
         <div class="container">
             <div class="header">
-                <div class="logo">🏦 Pesapal</div>
+                <div class="logo">```python
+🏦 Pesapal</div>
                 <div class="subtitle">Secure Payment Gateway</div>
             </div>
 
@@ -2114,7 +2115,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     });
 
-    app.get("/api/admin/contact-messages", authMiddleware, adminMiddleware, async (req, res) => {
+    // System settings endpoints
+  app.get("/api/admin/system-settings", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const settings = await storage.getAllSystemSettings();
+      res.json(settings);
+    } catch (error) {
+      console.error('Error fetching system settings:', error);
+      res.status(500).json({ message: "Failed to fetch system settings" });
+    }
+  });
+
+  app.put("/api/admin/system-settings/:key", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const { key } = req.params;
+      const { value, description } = req.body;
+
+      const setting = await storage.setSystemSetting(key, value, description);
+      res.json({ message: "System setting updated successfully", setting });
+    } catch (error) {
+      console.error('Error updating system setting:', error);
+      res.status(500).json({ message: "Failed to update system setting" });
+    }
+  });
+
+  // Admin contact messages endpoints
+  app.get("/api/admin/contact-messages", authMiddleware, adminMiddleware, async (req, res) => {
       try {
         const messages = await storage.getAllContactMessages();
         res.status(200).json(messages);
@@ -2365,48 +2391,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     });
 
-    // System settings routes
-    app.get("/api/admin/system-settings", authMiddleware, adminMiddleware, async (req, res) => {
-      try {
-        const settings = await storage.getAllSystemSettings();
-        res.status(200).json(settings);
-      } catch (error) {
-        console.error("Failed to get system settings:", error);
-        res.status(500).json({ message: "Failed to get system settings" });
-      }
-    });
-
-    app.post("/api/admin/system-settings", authMiddleware, adminMiddleware, async (req, res) => {
-      try {
-        const { key, value, description } = req.body;
-
-        if (!key || value === undefined) {
-          return res.status(400).json({ message: "Key and value are required" });
-        }
-
-        const setting = await storage.setSystemSetting(key, value, description);
-        res.status(201).json(setting);
-      } catch (error) {
-        console.error("Failed to set system setting:", error);
-        res.status(500).json({ message: "Failed to set system setting" });
-      }
-    });
-
-    app.get("/api/admin/system-settings/:key", authMiddleware, adminMiddleware, async (req, res) => {
-      try {
-        const { key } = req.params;
-        const setting = await storage.getSystemSetting(key);
-
-        if (!setting) {
-          return res.status(404).json({ message: "Setting not found" });
-        }
-
-        res.status(200).json(setting);
-      } catch (error) {
-        console.error("Failed to get system setting:", error);
-        res.status(500).json({ message: "Failed to get system setting" });
-      }
-    });
+   
     const httpServer = createServer(app);
 
     return httpServer;

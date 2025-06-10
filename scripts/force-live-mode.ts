@@ -1,27 +1,24 @@
 
-import { storage } from '../server/storage';
+import { DatabaseStorage } from '../server/database-storage';
 
 async function forceLiveMode() {
   try {
     console.log('Force setting payment mode to live...');
     
+    // Use DatabaseStorage directly
+    const storage = new DatabaseStorage();
+    
     // First check if the setting exists
     const currentSetting = await storage.getSystemSetting('payment_mode');
     console.log('Current setting:', currentSetting);
     
-    // Delete any existing payment_mode setting and recreate it
-    try {
-      await storage.setSystemSetting(
-        'payment_mode',
-        'live',
-        'Payment gateway environment mode (live or sandbox)'
-      );
-    } catch (error) {
-      console.log('Error setting system setting, trying alternative approach:', error);
-    }
+    // Set the payment mode to live
+    const newSetting = await storage.setSystemSetting(
+      'payment_mode',
+      'live',
+      'Payment gateway environment mode (live or sandbox)'
+    );
     
-    // Verify the setting was saved
-    const newSetting = await storage.getSystemSetting('payment_mode');
     console.log('New setting after update:', newSetting);
     
     if (newSetting?.value === 'live') {
