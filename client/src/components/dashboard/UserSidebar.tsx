@@ -25,7 +25,7 @@ interface NavItem {
   icon: React.ReactNode;
 }
 
-function UserSidebar() {
+export default function UserSidebar() {
   const [location, navigate] = useLocation();
   const { user, logout } = useAuth();
   const { toast } = useToast();
