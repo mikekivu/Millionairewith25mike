@@ -81,6 +81,15 @@ export default function AdminPaymentSettings() {
     },
   });
 
+  const { data: systemSettings } = useQuery({
+    queryKey: ['admin', 'system-settings'],
+    queryFn: async () => {
+      const response = await apiRequest('GET', '/api/admin/system-settings');
+      if (!response.ok) throw new Error('Failed to fetch system settings');
+      return response.json();
+    },
+  });
+
   const toggleStatusMutation = useMutation({
     mutationFn: async ({ settingId, active }: { settingId: number; active: boolean }) => {
       const response = await apiRequest('PATCH', `/api/admin/payment-settings/${settingId}/status`, { active });
@@ -311,7 +320,15 @@ export default function AdminPaymentSettings() {
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="font-medium">Environment</span>
-                      <Badge variant="secondary">Live</Badge>
+                      <Badge variant={(() => {
+                        const paymentMode = systemSettings?.find((s: any) => s.key === 'payment_mode');
+                        return paymentMode?.value === 'live' ? 'default' : 'secondary';
+                      })()}>
+                        {(() => {
+                          const paymentMode = systemSettings?.find((s: any) => s.key === 'payment_mode');
+                          return paymentMode?.value === 'live' ? 'Live' : 'Sandbox';
+                        })()}
+                      </Badge>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="font-medium">Transaction Fee</span>
@@ -375,7 +392,15 @@ export default function AdminPaymentSettings() {
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="font-medium">Environment</span>
-                      <Badge variant="secondary">Live</Badge>
+                      <Badge variant={(() => {
+                        const paymentMode = systemSettings?.find((s: any) => s.key === 'payment_mode');
+                        return paymentMode?.value === 'live' ? 'default' : 'secondary';
+                      })()}>
+                        {(() => {
+                          const paymentMode = systemSettings?.find((s: any) => s.key === 'payment_mode');
+                          return paymentMode?.value === 'live' ? 'Live' : 'Sandbox';
+                        })()}
+                      </Badge>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="font-medium">Transaction Fee</span>
@@ -825,8 +850,7 @@ export default function AdminPaymentSettings() {
             </DialogFooter>
           </form>
         </DialogContent>
-      </Dialog>
-
+      </Dialog
       {/* Pesapal Configuration Modal */}
       <Dialog open={isPesapalConfigOpen} onOpenChange={setIsPesapalConfigOpen}>
         <DialogContent className="sm:max-w-[500px]">

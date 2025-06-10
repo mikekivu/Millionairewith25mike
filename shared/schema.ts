@@ -94,6 +94,15 @@ export const paymentSettings = pgTable("payment_settings", {
   payment_method: text("payment_method").notNull(), // For compatibility - same as method
 });
 
+// System Settings
+export const systemSettings = pgTable("system_settings", {
+  id: serial("id").primaryKey(),
+  key: text("key").notNull().unique(),
+  value: text("value").notNull(),
+  description: text("description"),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 // Contact Messages
 export const contactMessages = pgTable("contact_messages", {
   id: serial("id").primaryKey(),
@@ -238,6 +247,7 @@ export const insertContactMessageSchema = createInsertSchema(contactMessages).om
 // New schemas for user messages and notifications
 export const insertUserMessageSchema = createInsertSchema(userMessages).omit({ id: true, createdAt: true, read: true, replied: true });
 export const insertNotificationSchema = createInsertSchema(notifications).omit({ id: true, createdAt: true, status: true });
+export const insertSystemSettingSchema = createInsertSchema(systemSettings).omit({ id: true, updatedAt: true });
 
 // Types
 export type User = typeof users.$inferSelect;
@@ -266,6 +276,9 @@ export type InsertUserMessage = z.infer<typeof insertUserMessageSchema>;
 
 export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;
+
+export type SystemSetting = typeof systemSettings.$inferSelect;
+export type InsertSystemSetting = z.infer<typeof insertSystemSettingSchema>;
 
 // Auth Schemas
 export const loginSchema = z.object({

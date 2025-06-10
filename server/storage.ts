@@ -7,7 +7,8 @@ import {
   paymentSettings, PaymentSetting, InsertPaymentSetting,
   contactMessages, ContactMessage, InsertContactMessage,
   userMessages, UserMessage, InsertUserMessage,
-  notifications, Notification, InsertNotification
+  notifications, Notification, InsertNotification,
+  systemSettings, SystemSetting, InsertSystemSetting
 } from "@shared/schema";
 import { nanoid } from "nanoid";
 import { addDays } from "date-fns";
@@ -96,6 +97,11 @@ export interface IStorage {
 
   // Network visualization
   getNetworkPerformance(userId: number): Promise<any>;
+
+  // System settings
+  getSystemSetting(key: string): Promise<SystemSetting | undefined>;
+  setSystemSetting(key: string, value: string, description?: string): Promise<SystemSetting>;
+  getAllSystemSettings(): Promise<SystemSetting[]>;
 }
 
 export interface DashboardStats {
@@ -128,6 +134,7 @@ export class MemStorage implements IStorage {
   private contactMessages: Map<number, ContactMessage>;
   private userMessages: Map<number, UserMessage>;
   private notifications: Map<number, Notification>;
+  private systemSettings: Map<string, SystemSetting>;
 
   private userId: number;
   private planId: number;
@@ -149,6 +156,7 @@ export class MemStorage implements IStorage {
     this.contactMessages = new Map();
     this.userMessages = new Map();
     this.notifications = new Map();
+    this.systemSettings = new Map();
 
     this.userId = 1;
     this.planId = 1;
@@ -961,6 +969,29 @@ export class MemStorage implements IStorage {
     }
 
     return treeNode;
+  }
+
+  // System settings
+  async getSystemSetting(key: string): Promise<SystemSetting | undefined> {
+    return this.systemSettings.get(key);
+  }
+
+  async setSystemSetting(key: string, value: string, description?: string): Promise<SystemSetting> {
+    const existingSetting = await this.getSystemSetting(key);
+    const id = key;
+    if (existingSetting) {
+      const updatedSetting = { ...existingSetting, value, description: description || existingSetting.description };
+      this.systemSettings.set(key, updatedSetting);
+      return updatedSetting;
+    } else {
+      const newSetting: SystemSetting = { key, value, description, id };
+      this.systemSettings.set(key, newSetting);
+      return newSetting;
+    }
+  }
+
+  async getAllSystemSettings(): Promise<SystemSetting[]> {
+    return Array.from(this.systemSettings.values());
   }
 }
 

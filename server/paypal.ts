@@ -5,9 +5,20 @@ import { storage } from "./storage";
 // PayPal API configuration
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
 const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
-const PAYPAL_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://api.paypal.com' 
-  : 'https://api.sandbox.paypal.com';
+
+async function getPaypalBaseUrl() {
+  try {
+    const { storage } = await import('./storage');
+    const paymentMode = await storage.getSystemSetting('payment_mode');
+    const isLive = paymentMode?.value === 'live';
+    return isLive ? 'https://api.paypal.com' : 'https://api.sandbox.paypal.com';
+  } catch (error) {
+    // Fallback to environment-based detection
+    return process.env.NODE_ENV === 'production' 
+      ? 'https://api.paypal.com' 
+      : 'https://api.sandbox.paypal.com';
+  }
+}
 
 export async function getClientToken() {
   if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
@@ -18,8 +29,9 @@ export async function getClientToken() {
   try {
     // Get access token
     const auth = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`).toString('base64');
+    const baseUrl = await getPaypalBaseUrl();
     
-    const response = await fetch(`${PAYPAL_BASE_URL}/v1/oauth2/token`, {
+    const response = await fetch(`${baseUrl}/v1/oauth2/token`, {
       method: 'POST',
       headers: {
         'Authorization': `Basic ${auth}`,
@@ -104,6 +116,7 @@ export async function createPaypalOrder(req: Request, res: Response) {
 
     // Real PayPal integration
     const accessToken = await getClientToken();
+    const baseUrl = await getPaypalBaseUrl();
     
     const orderData = {
       intent: intent.toUpperCase(),
@@ -123,7 +136,7 @@ export async function createPaypalOrder(req: Request, res: Response) {
       }
     };
 
-    const response = await fetch(`${PAYPAL_BASE_URL}/v2/checkout/orders`, {
+    const response = await fetch(`${baseUrl}/v2/checkout/orders`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -192,8 +205,9 @@ export async function capturePaypalOrder(req: Request, res: Response) {
 
     // Real PayPal integration
     const accessToken = await getClientToken();
+    const baseUrl = await getPaypalBaseUrl();
     
-    const response = await fetch(`${PAYPAL_BASE_URL}/v2/checkout/orders/${orderID}/capture`, {
+    const response = await fetch(`${baseUrl}/v2/checkout/orders/${orderID}/capture`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

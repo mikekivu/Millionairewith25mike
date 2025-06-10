@@ -948,6 +948,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     <body>
         <div class="container">
             <div class="header">
+                <previous_generation>```text
                 <div class="logo">🏦 Pesapal</div>
                 <div class="subtitle">Secure Payment Gateway</div>
             </div>
@@ -1846,7 +1847,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Server error" });
-      }
+      }```text
     });
 
     app.put("/api/admin/payment-settings/:id", authMiddleware, adminMiddleware, async (req, res) => {
@@ -2362,6 +2363,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Server error" });
+      }
+    });
+
+    // System settings routes
+    app.get("/api/admin/system-settings", authMiddleware, adminMiddleware, async (req, res) => {
+      try {
+        const settings = await storage.getAllSystemSettings();
+        res.status(200).json(settings);
+      } catch (error) {
+        console.error("Failed to get system settings:", error);
+        res.status(500).json({ message: "Failed to get system settings" });
+      }
+    });
+
+    app.post("/api/admin/system-settings", authMiddleware, adminMiddleware, async (req, res) => {
+      try {
+        const { key, value, description } = req.body;
+
+        if (!key || value === undefined) {
+          return res.status(400).json({ message: "Key and value are required" });
+        }
+
+        const setting = await storage.setSystemSetting(key, value, description);
+        res.status(201).json(setting);
+      } catch (error) {
+        console.error("Failed to set system setting:", error);
+        res.status(500).json({ message: "Failed to set system setting" });
+      }
+    });
+
+    app.get("/api/admin/system-settings/:key", authMiddleware, adminMiddleware, async (req, res) => {
+      try {
+        const { key } = req.params;
+        const setting = await storage.getSystemSetting(key);
+
+        if (!setting) {
+          return res.status(404).json({ message: "Setting not found" });
+        }
+
+        res.status(200).json(setting);
+      } catch (error) {
+        console.error("Failed to get system setting:", error);
+        res.status(500).json({ message: "Failed to get system setting" });
       }
     });
     const httpServer = createServer(app);

@@ -5,9 +5,20 @@ import { storage } from './storage';
 // Pesapal API configuration
 const PESAPAL_CONSUMER_KEY = process.env.PESAPAL_CONSUMER_KEY;
 const PESAPAL_CONSUMER_SECRET = process.env.PESAPAL_CONSUMER_SECRET;
-const PESAPAL_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://pay.pesapal.com/v3' 
-  : 'https://cybqa.pesapal.com/pesapalv3';
+
+async function getPesapalBaseUrl() {
+  try {
+    const { storage } = await import('./storage');
+    const paymentMode = await storage.getSystemSetting('payment_mode');
+    const isLive = paymentMode?.value === 'live';
+    return isLive ? 'https://pay.pesapal.com/v3' : 'https://cybqa.pesapal.com/pesapalv3';
+  } catch (error) {
+    // Fallback to environment-based detection
+    return process.env.NODE_ENV === 'production' 
+      ? 'https://pay.pesapal.com/v3' 
+      : 'https://cybqa.pesapal.com/pesapalv3';
+  }
+}
 
 export async function createPesapalOrder(req: Request, res: Response) {
   try {
@@ -75,7 +86,8 @@ export async function createPesapalOrder(req: Request, res: Response) {
     // Real Pesapal integration
     try {
       // Get authentication token first
-      const authResponse = await fetch(`${PESAPAL_BASE_URL}/api/Auth/RequestToken`, {
+      const baseUrl = await getPesapalBaseUrl();
+      const authResponse = await fetch(`${baseUrl}/api/Auth/RequestToken`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -133,7 +145,7 @@ export async function createPesapalOrder(req: Request, res: Response) {
         }
       };
 
-      const submitResponse = await fetch(`${PESAPAL_BASE_URL}/api/Transactions/SubmitOrderRequest`, {
+      const submitResponse = await fetch(`${baseUrl}/api/Transactions/SubmitOrderRequest`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -194,7 +206,8 @@ export async function handlePesapalCallback(req: Request, res: Response) {
     if (PESAPAL_CONSUMER_KEY && PESAPAL_CONSUMER_SECRET) {
       try {
         // Get authentication token
-        const authResponse = await fetch(`${PESAPAL_BASE_URL}/api/Auth/RequestToken`, {
+        const baseUrl = await getPesapalBaseUrl();
+        const authResponse = await fetch(`${baseUrl}/api/Auth/RequestToken`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -211,7 +224,7 @@ export async function handlePesapalCallback(req: Request, res: Response) {
           const token = authData.token;
 
           // Get transaction status
-          const statusResponse = await fetch(`${PESAPAL_BASE_URL}/api/Transactions/GetTransactionStatus?orderTrackingId=${OrderTrackingId}`, {
+          const statusResponse = await fetch(`${baseUrl}/api/Transactions/GetTransactionStatus?orderTrackingId=${OrderTrackingId}`, {
             method: 'GET',
             headers: {
               'Accept': 'application/json',
