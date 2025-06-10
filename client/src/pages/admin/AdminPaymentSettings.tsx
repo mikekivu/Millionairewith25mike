@@ -850,7 +850,7 @@ export default function AdminPaymentSettings() {
             </DialogFooter>
           </form>
         </DialogContent>
-      </Dialog
+      </Dialog>
       {/* Pesapal Configuration Modal */}
       <Dialog open={isPesapalConfigOpen} onOpenChange={setIsPesapalConfigOpen}>
         <DialogContent className="sm:max-w-[500px]">
