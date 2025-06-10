@@ -105,6 +105,7 @@ function UserSidebar() {
   };
 
   return (
+    <>
     <div className="h-screen flex flex-col bg-gradient-to-b from-blue-900 to-blue-950 text-white shadow-xl overflow-hidden">
       <div className="flex-1 flex flex-col overflow-y-auto">
         <div className="p-6">
@@ -171,8 +172,7 @@ function UserSidebar() {
           Logout
         </Button>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
-
-export default UserSidebar;

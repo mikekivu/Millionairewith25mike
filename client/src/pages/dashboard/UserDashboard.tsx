@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { useAuth } from '@/lib/auth';
-import { TrendingUp, Users, DollarSign, Clock, Share2 } from 'lucide-react';
+import { TrendingUp, Users, DollarSign, Clock, Share2, Menu } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import UserSidebar from '@/components/dashboard/UserSidebar';
 import { UserStatsCards } from '@/components/dashboard/StatsCards';
@@ -15,6 +15,7 @@ import ReferralTools from '@/components/dashboard/ReferralTools';
 export default function UserDashboard() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const { data: dashboardStats, isLoading: isLoadingStats } = useQuery({
     queryKey: ['/api/user/dashboard'],
@@ -49,11 +50,12 @@ export default function UserDashboard() {
 
   if (isLoadingStats) {
     return (
-      <div className="min-h-screen flex flex-col md:flex-row">
-        <div className="w-full md:w-64 lg:w-72">
-          <UserSidebar />
-        </div>
-        <div className="flex-1 bg-gray-50 p-4 md:p-8">
+      <div className="min-h-screen flex">
+        <UserSidebar 
+          isMobileOpen={isMobileSidebarOpen}
+          onMobileClose={() => setIsMobileSidebarOpen(false)}
+        />
+        <div className="flex-1 bg-gray-50 md:ml-0">
           <div className="max-w-7xl mx-auto">
             <div className="animate-pulse">
               <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
@@ -76,16 +78,36 @@ export default function UserDashboard() {
         <meta name="description" content="Manage your ProsperityGroups investments and track your portfolio performance." />
       </Helmet>
 
-      <div className="min-h-screen flex flex-col md:flex-row">
-        <div className="w-full md:w-64 lg:w-72">
-          <UserSidebar />
+      <div className="min-h-screen flex">
+        {/* Mobile Header */}
+        <div className="md:hidden fixed top-0 left-0 right-0 z-30 bg-white border-b shadow-sm">
+          <div className="flex items-center justify-between p-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsMobileSidebarOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            <h1 className="text-lg font-bold">Dashboard</h1>
+            <div></div>
+          </div>
         </div>
 
-        <div className="flex-1 bg-gray-50 p-4 md:p-8 overflow-auto">
+        {/* Sidebar */}
+        <UserSidebar 
+          isMobileOpen={isMobileSidebarOpen}
+          onMobileClose={() => setIsMobileSidebarOpen(false)}
+        />
+
+        {/* Main Content */}
+        <div className="flex-1 bg-gray-50 pt-16 md:pt-0 p-4 md:p-8 overflow-auto">
           <div className="max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-6">
-              <h1 className="text-2xl md:text-3xl font-bold">
-                Welcome back, {user?.firstName || user?.username || 'User'}!
+              <h1 className="text-xl md:text-2xl lg:text-3xl font-bold">
+                <span className="hidden md:inline">Welcome back, </span>
+                <span className="md:hidden">Hi, </span>
+                {user?.firstName || user?.username || 'User'}!
               </h1>
             </div>
 

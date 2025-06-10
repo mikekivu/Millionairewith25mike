@@ -1,14 +1,16 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { Helmet } from 'react-helmet';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { formatCurrency, formatDate } from '@/lib/utils';
+import { useAuth } from '@/lib/auth';
+import { History, TrendingUp, Users, Download, Menu } from 'lucide-react';
 import UserSidebar from '@/components/dashboard/UserSidebar';
 import { DataTable } from '@/components/dashboard/DataTable';
-import { formatCurrency, formatDate, getTransactionStatusColor } from '@/lib/utils';
 import { ColumnDef } from '@tanstack/react-table';
-import { History, ArrowUpRight, ArrowDownRight, TrendingUp, Users } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 interface Transaction {
   id: number;
@@ -24,6 +26,9 @@ interface Transaction {
 }
 
 export default function UserTransactions() {
+  const { user } = useAuth();
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
   const { data: transactions, isLoading } = useQuery<Transaction[]>({
     queryKey: ['/api/user/transactions'],
     staleTime: 60000, // 1 minute
@@ -56,7 +61,7 @@ export default function UserTransactions() {
       cell: ({ row }) => {
         const type = row.getValue('type') as string;
         const icon = getTransactionIcon(type);
-        
+
         return (
           <div className="flex items-center">
             <div className="mr-2">{icon}</div>
@@ -75,7 +80,7 @@ export default function UserTransactions() {
         const isPositive = ['deposit', 'referral'].includes(type);
         const textColor = isPositive ? 'text-green-600' : 'text-red-600';
         const prefix = isPositive ? '+' : '-';
-        
+
         return <span className={`font-medium ${textColor}`}>{prefix}{formatCurrency(amount, currency)}</span>;
       },
     },
@@ -129,18 +134,18 @@ export default function UserTransactions() {
         <div className="w-full md:w-64 lg:w-72">
           <UserSidebar />
         </div>
-        
+
         <div className="flex-1 bg-gray-50 p-4 md:p-8 overflow-auto">
           <div className="max-w-7xl mx-auto">
             <h1 className="text-2xl md:text-3xl font-bold mb-6">Transactions</h1>
-            
+
             <Tabs defaultValue="all" className="w-full mb-6">
               <TabsList>
                 <TabsTrigger value="all" className="flex items-center">
                   <History className="mr-2 h-4 w-4" />
                   All
                 </TabsTrigger>
-                
+
                 <TabsTrigger value="investments" className="flex items-center">
                   <TrendingUp className="mr-2 h-4 w-4 text-blue-600" />
                   Investments ({investmentCount})
@@ -150,7 +155,7 @@ export default function UserTransactions() {
                   Referrals ({referralCount})
                 </TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="all">
                 <Card>
                   <CardHeader>
@@ -179,9 +184,9 @@ export default function UserTransactions() {
                   </CardContent>
                 </Card>
               </TabsContent>
-              
-              
-              
+
+
+
               <TabsContent value="investments">
                 <Card>
                   <CardHeader>
@@ -210,7 +215,7 @@ export default function UserTransactions() {
                   </CardContent>
                 </Card>
               </TabsContent>
-              
+
               <TabsContent value="referrals">
                 <Card>
                   <CardHeader>
