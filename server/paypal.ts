@@ -8,15 +8,16 @@ const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
 
 async function getPaypalBaseUrl() {
   try {
-    const { storage } = await import('./storage');
     const paymentMode = await storage.getSystemSetting('payment_mode');
+    console.log('PayPal checking payment mode:', paymentMode);
     const isLive = paymentMode?.value === 'live';
-    return isLive ? 'https://api.paypal.com' : 'https://api.sandbox.paypal.com';
+    const baseUrl = isLive ? 'https://api.paypal.com' : 'https://api.sandbox.paypal.com';
+    console.log('PayPal using base URL:', baseUrl, 'for mode:', paymentMode?.value);
+    return baseUrl;
   } catch (error) {
-    // Fallback to environment-based detection
-    return process.env.NODE_ENV === 'production' 
-      ? 'https://api.paypal.com' 
-      : 'https://api.sandbox.paypal.com';
+    console.log('Error getting payment mode, using sandbox:', error);
+    // Fallback to sandbox for safety
+    return 'https://api.sandbox.paypal.com';
   }
 }
 
