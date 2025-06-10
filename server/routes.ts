@@ -948,7 +948,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     <body>
         <div class="container">
             <div class="header">
-                <previous_generation>```text
                 <div class="logo">🏦 Pesapal</div>
                 <div class="subtitle">Secure Payment Gateway</div>
             </div>
