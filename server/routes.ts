@@ -945,9 +945,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
         </style>
     </head>
-    ```
     <body>
-        <div class="container">
+        <div className="container">
             <div class="header">
                 <div class="logo">🏦 Pesapal</div>
                 <div class="subtitle">Secure Payment Gateway</div>
