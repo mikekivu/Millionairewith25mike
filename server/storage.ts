@@ -639,6 +639,10 @@ export class MemStorage implements IStorage {
     return updatedTransaction;
   }
 
+  async getTransactionByReference(reference: string): Promise<Transaction | undefined> {
+    return Array.from(this.transactions.values()).find(tx => tx.paymentReference === reference);
+  }
+
   // Referral Management
   async createReferral(referral: InsertReferral): Promise<Referral> {
     const id = this.referralId++;
@@ -759,6 +763,104 @@ export class MemStorage implements IStorage {
     const updatedMessage = { ...existingMessage, responded: true };
     this.contactMessages.set(id, updatedMessage);
     return updatedMessage;
+  }
+
+  // User Messages Management
+  async createUserMessage(message: InsertUserMessage): Promise<UserMessage> {
+    const id = this.userMessageId++;
+    const newMessage: UserMessage = { ...message, id, createdAt: new Date(), read: false, replied: false };
+    this.userMessages.set(id, newMessage);
+
+    // Create notification for the recipient
+    await this.createNotification({
+      userId: message.recipientId,
+      title: "New Message",
+      message: "You have received a new message",
+      type: "message",
+      entityId: newMessage.id,
+      entityType: "message",
+      link: "/dashboard/messages"
+    });
+
+    return newMessage;
+  }
+
+  async getUserMessage(id: number): Promise<UserMessage | undefined> {
+    return this.userMessages.get(id);
+  }
+
+  async getUserSentMessages(userId: number): Promise<UserMessage[]> {
+    return Array.from(this.userMessages.values())
+      .filter(msg => msg.senderId === userId)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async getUserReceivedMessages(userId: number): Promise<UserMessage[]> {
+    return Array.from(this.userMessages.values())
+      .filter(msg => msg.recipientId === userId)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async markUserMessageAsRead(id: number): Promise<UserMessage | undefined> {
+    const existingMessage = await this.getUserMessage(id);
+    if (!existingMessage) {
+      return undefined;
+    }
+
+    const updatedMessage = { ...existingMessage, read: true };
+    this.userMessages.set(id, updatedMessage);
+    return updatedMessage;
+  }
+
+  async markUserMessageAsReplied(id: number): Promise<UserMessage | undefined> {
+    const existingMessage = await this.getUserMessage(id);
+    if (!existingMessage) {
+      return undefined;
+    }
+
+    const updatedMessage = { ...existingMessage, replied: true };
+    this.userMessages.set(id, updatedMessage);
+    return updatedMessage;
+  }
+
+  // Notifications Management
+  async createNotification(notification: InsertNotification): Promise<Notification> {
+    const id = this.notificationId++;
+    const newNotification: Notification = { 
+      ...notification, 
+      id, 
+      createdAt: new Date(), 
+      status: "unread" 
+    };
+    this.notifications.set(id, newNotification);
+    return newNotification;
+  }
+
+  async getNotification(id: number): Promise<Notification | undefined> {
+    return this.notifications.get(id);
+  }
+
+  async getUserNotifications(userId: number): Promise<Notification[]> {
+    return Array.from(this.notifications.values())
+      .filter(notif => notif.userId === userId)
+      .sort((a, b) { new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime() });
+  }
+
+  async getUnreadUserNotifications(userId: number): Promise<Notification[]> {
+    return Array.from(this.notifications.values())
+      .filter(notif => notif.userId === userId && notif.status === "unread")
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async markNotificationAsRead(id: number): Promise<Notification | undefined> {
+    const existingNotification = await this.getNotification(id);
+    if (!existingNotification) {
+      return undefined;
+    }
+
+    const updatedNotification = { ...existingNotification, status: "read" };
+    this.notifications.set(id, updatedNotification);
+    return updatedNotification;
   }
 
   // Helper functions
@@ -995,957 +1097,19 @@ export class MemStorage implements IStorage {
   }
 }
 
-// Use the database storage implementation
-import { DatabaseStorage } from "./database-storage";
-export const storage = new DatabaseStorage();
-
-// The profit processor is already started in server/index.ts
-
-import { eq } from "drizzle-orm";
-import { db } from "./db";
-
-export class DatabaseStorage implements IStorage {
-  async getUser(id: number): Promise<User | undefined> {
-    try {
-      const user = await db.query.users.findFirst({
-        where: eq(users.id, id),
-      });
-      return user || undefined;
-    } catch (error) {
-      console.error("Error getting user:", error);
-      throw error;
-    }
-  }
-
-  async getUserByEmail(email: string): Promise<User | null> {
-    try {
-      const user = await db.query.users.findFirst({
-        where: eq(users.email, email),
-      });
-      return user || null;
-    } catch (error) {
-      console.error("Error getting user by email:", error);
-      throw error;
-    }
-  }
-
-  async getUserByUsername(username: string): Promise<User | null> {
-    try {
-      const user = await db.query.users.findFirst({
-        where: eq(users.username, username),
-      });
-      return user || null;
-    } catch (error) {
-      console.error("Error getting user by username:", error);
-      throw error;
-    }
-  }
-
-  async getUserByReferralCode(referralCode: string): Promise<User | null> {
-    try {
-      const user = await db.query.users.findFirst({
-        where: eq(users.referralCode, referralCode),
-      });
-      return user || null;
-    } catch (error) {
-      console.error("Error getting user by referral code:", error);
-      throw error;
-    }
-  }
-
-  async createUser(user: InsertUser): Promise<User> {
-    try {
-      const newUser = await db.insert(users).values(user).returning().get();
-      return newUser;
-    } catch (error) {
-      console.error("Error creating user:", error);
-      throw error;
-    }
-  }
-
-  async updateUser(id: number, user: Partial<User>): Promise<User | null> {
-    try {
-      const updatedUser = await db
-        .update(users)
-        .set(user)
-        .where(eq(users.id, id))
-        .returning()
-        .get();
-      return updatedUser || null;
-    } catch (error) {
-      console.error("Error updating user:", error);
-      throw error;
-    }
-  }
-
-  async getAllUsers(): Promise<User[]> {
-    try {
-      const allUsers = await db.query.users.findMany();
-      return allUsers;
-    } catch (error) {
-      console.error("Error getting all users:", error);
-      throw error;
-    }
-  }
-
-  async getUserReferrals(userId: number): Promise<User[]> {
-    // This requires a more complex query to fetch users referred by the given user.
-    // You might need to use a separate table for referrals to make this efficient.
-    // For now, let's assume you have a 'referrals' table with 'referrerId' and 'referredId' columns.
-    try {
-      const referredUsers = await db.query.users.findMany({
-        where: eq(users.referredBy, userId),
-      });
-      return referredUsers;
-    } catch (error) {
-      console.error("Error getting user referrals:", error);
-      throw error;
-    }
-  }
-
-  async toggleUserStatus(id: number, active: boolean): Promise<User | null> {
-    try {
-      const updatedUser = await db
-        .update(users)
-        .set({ active: active })
-        .where(eq(users.id, id))
-        .returning()
-        .get();
-      return updatedUser || null;
-    } catch (error) {
-      console.error("Error toggling user status:", error);
-      throw error;
-    }
-  }
-
-  async deleteUser(id: number): Promise<boolean> {
-    try {
-      await db.delete(users).where(eq(users.id, id));
-      return true;
-    } catch (error) {
-      console.error("Error deleting user:", error);
-      return false;
-    }
-  }
-
-  async createPlan(plan: InsertPlan): Promise<Plan> {
-    try {
-      const newPlan = await db.insert(plans).values(plan).returning().get();
-      return newPlan;
-    } catch (error) {
-      console.error("Error creating plan:", error);
-      throw error;
-    }
-  }
-
-  async getPlan(id: number): Promise<Plan | null> {
-    try {
-      const plan = await db.query.plans.findFirst({
-        where: eq(plans.id, id),
-      });
-      return plan || null;
-    } catch (error) {
-      console.error("Error getting plan:", error);
-      throw error;
-    }
-  }
-
-  async getAllPlans(): Promise<Plan[]> {
-    try {
-      const allPlans = await db.query.plans.findMany();
-      return allPlans;
-    } catch (error) {
-      console.error("Error getting all plans:", error);
-      throw error;
-    }
-  }
-
-  async getActivePlans(): Promise<Plan[]> {
-    try {
-      const activePlans = await db.query.plans.findMany({
-        where: eq(plans.active, true),
-      });
-      return activePlans;
-    } catch (error) {
-      console.error("Error getting active plans:", error);
-      throw error;
-    }
-  }
-
-  async updatePlan(id: number, plan: Partial<Plan>): Promise<Plan | null> {
-    try {
-      const updatedPlan = await db
-        .update(plans)
-        .set(plan)
-        .where(eq(plans.id, id))
-        .returning()
-        .get();
-      return updatedPlan || null;
-    } catch (error) {
-      console.error("Error updating plan:", error);
-      throw error;
-    }
-  }
-
-  async togglePlanStatus(id: number, active: boolean): Promise<Plan | null> {
-    try {
-      const updatedPlan = await db
-        .update(plans)
-        .set({ active: active })
-        .where(eq(plans.id, id))
-        .returning()
-        .get();
-      return updatedPlan || null;
-    } catch (error) {
-      console.error("Error toggling plan status:", error);
-      throw error;
-    }
-  }
-
-  async deletePlan(id: number): Promise<boolean> {
-    try {
-      await db.delete(plans).where(eq(plans.id, id));
-      return true;
-    } catch (error) {
-      console.error("Error deleting plan:", error);
-      return false;
-    }
-  }
-
-  async createInvestment(investment: InsertInvestment): Promise<Investment> {
-    try {
-      const newInvestment = await db.insert(investments).values(investment).returning().get();
-      return newInvestment;
-    } catch (error) {
-      console.error("Error creating investment:", error);
-      throw error;
-    }
-  }
-
-  async getInvestment(id: number): Promise<Investment | null> {
-    try {
-      const investment = await db.query.investments.findFirst({
-        where: eq(investments.id, id),
-      });
-      return investment || null;
-    } catch (error) {
-      console.error("Error getting investment:", error);
-      throw error;
-    }
-  }
-
-  async getUserInvestments(userId: number): Promise<Investment[]> {
-    try {
-      const userInvestments = await db.query.investments.findMany({
-        where: eq(investments.userId, userId),
-      });
-      return userInvestments;
-    } catch (error) {
-      console.error("Error getting user investments:", error);
-      throw error;
-    }
-  }
-
-  async getAllInvestments(): Promise<Investment[]> {
-    try {
-      const allInvestments = await db.query.investments.findMany();
-      return allInvestments;
-    } catch (error) {
-      console.error("Error getting all investments:", error);
-      throw error;
-    }
-  }
-
-  async updateInvestment(id: number, investment: Partial<Investment>): Promise<Investment | null> {
-    try {
-      const updatedInvestment = await db
-        .update(investments)
-        .set(investment)
-        .where(eq(investments.id, id))
-        .returning()
-        .get();
-      return updatedInvestment || null;
-    } catch (error) {
-      console.error("Error updating investment:", error);
-      throw error;
-    }
-  }
-
-  async createTransaction(transaction: InsertTransaction): Promise<Transaction> {
-    try {
-      const newTransaction = await db.insert(transactions).values(transaction).returning().get();
-      return newTransaction;
-    } catch (error) {
-      console.error("Error creating transaction:", error);
-      throw error;
-    }
-  }
-
-  async getTransaction(id: number): Promise<Transaction | null> {
-    try {
-      const transaction = await db.query.transactions.findFirst({
-        where: eq(transactions.id, id),
-      });
-      return transaction || null;
-    } catch (error) {
-      console.error("Error getting transaction:", error);
-      throw error;
-    }
-  }
-
-  async getUserTransactions(userId: number): Promise<Transaction[]> {
-    try {
-      const userTransactions = await db.query.transactions.findMany({
-        where: eq(transactions.userId, userId),
-      });
-      return userTransactions;
-    } catch (error) {
-      console.error("Error getting user transactions:", error);
-      throw error;
-    }
-  }
-
-  async getAllTransactions(): Promise<Transaction[]> {
-    try {
-      const allTransactions = await db.query.transactions.findMany();
-      return allTransactions;
-    } catch (error) {
-      console.error("Error getting all transactions:", error);
-      throw error;
-    }
-  }
-
-  async getTransactionsByType(type: string): Promise<Transaction[]> {
-    try {
-      const transactionsByType = await db.query.transactions.findMany({
-        where: eq(transactions.type, type),
-      });
-      return transactionsByType;
-    } catch (error) {
-      console.error("Error getting transactions by type:", error);
-      throw error;
-    }
-  }
-
-  async updateTransaction(id: number, transaction: Partial<Transaction>): Promise<Transaction | null> {
-    try {
-      const updatedTransaction = await db
-        .update(transactions)
-        .set(transaction)
-        .where(eq(transactions.id, id))
-        .returning()
-        .get();
-      return updatedTransaction || null;
-    } catch (error) {
-      console.error("Error updating transaction:", error);
-      throw error;
-    }
-  }
-
-  async getTransactionByReference(reference: string): Promise<Transaction | null> {
-    try {
-      const transaction = await db.query.transactions.findFirst({
-        where: eq(transactions.reference, reference),
-      });
-      return transaction || null;
-    } catch (error) {
-      console.error("Error getting transaction by reference:", error);
-      throw error;
-    }
-  }
-
-  async createReferral(referral: InsertReferral): Promise<Referral> {
-    try {
-      const newReferral = await db.insert(referrals).values(referral).returning().get();
-      return newReferral;
-    } catch (error) {
-      console.error("Error creating referral:", error);
-      throw error;
-    }
-  }
-
-  async getReferral(id: number): Promise<Referral | null> {
-    try {
-      const referral = await db.query.referrals.findFirst({
-        where: eq(referrals.id, id),
-      });
-      return referral || null;
-    } catch (error) {
-      console.error("Error getting referral:", error);
-      throw error;
-    }
-  }
-
-  async getUserReferralsByLevel(userId: number, level: number): Promise<Referral[]> {
-    try {
-      const userReferrals = await db.query.referrals.findMany({
-        where: eq(referrals.referrerId, userId),
-      });
-      return userReferrals;
-    } catch (error) {
-      console.error("Error getting user referrals by level:", error);
-      throw error;
-    }
-  }
-
-  async getAllUserReferrals(userId: number): Promise<Referral[]> {
-    try {
-      const allUserReferrals = await db.query.referrals.findMany({
-        where: eq(referrals.referrerId, userId),
-      });
-      return allUserReferrals;
-    } catch (error) {
-      console.error("Error getting all user referrals:", error);
-      throw error;
-    }
-  }
-
-  async updateReferral(id: number, referral: Partial<Referral>): Promise<Referral | null> {
-    try {
-      const updatedReferral = await db
-        .update(referrals)
-        .set(referral)
-        .where(eq(referrals.id, id))
-        .returning()
-        .get();
-      return updatedReferral || null;
-    } catch (error) {
-      console.error("Error updating referral:", error);
-      throw error;
-    }
-  }
-
-  async createPaymentSetting(setting: InsertPaymentSetting): Promise<PaymentSetting> {
-    try {
-      const newSetting = await db.insert(paymentSettings).values(setting).returning().get();
-      return newSetting;
-    } catch (error) {
-      console.error("Error creating payment setting:", error);
-      throw error;
-    }
-  }
-
-  async getPaymentSetting(id: number): Promise<PaymentSetting | null> {
-    try {
-      const paymentSetting = await db.query.paymentSettings.findFirst({
-        where: eq(paymentSettings.id, id),
-      });
-      return paymentSetting || null;
-    } catch (error) {
-      console.error("Error getting payment setting:", error);
-      throw error;
-    }
-  }
-
-  async getPaymentSettingByMethod(method: string): Promise<PaymentSetting | null> {
-    try {
-      const paymentSetting = await db.query.paymentSettings.findFirst({
-        where: eq(paymentSettings.method, method),
-      });
-      return paymentSetting || null;
-    } catch (error) {
-      console.error("Error getting payment setting by method:", error);
-      throw error;
-    }
-  }
-
-  async getAllPaymentSettings(): Promise<PaymentSetting[]> {
-    try {
-      const allPaymentSettings = await db.query.paymentSettings.findMany();
-      return allPaymentSettings;
-    } catch (error) {
-      console.error("Error getting all payment settings:", error);
-      throw error;
-    }
-  }
-
-  async updatePaymentSetting(id: number, setting: Partial<PaymentSetting>): Promise<PaymentSetting | null> {
-    try {
-      const updatedPaymentSetting = await db
-        .update(paymentSettings)
-        .set(setting)
-        .where(eq(paymentSettings.id, id))
-        .returning()
-        .get();
-      return updatedPaymentSetting || null;
-    } catch (error) {
-      console.error("Error updating payment setting:", error);
-      throw error;
-    }
-  }
-
-  async togglePaymentMethod(id: number, active: boolean): Promise<PaymentSetting | null> {
-    try {
-      const updatedPaymentSetting = await db
-        .update(paymentSettings)
-        .set({ active: active })
-        .where(eq(paymentSettings.id, id))
-        .returning()
-        .get();
-      return updatedPaymentSetting || null;
-    } catch (error) {
-      console.error("Error toggling payment method:", error);
-      throw error;
-    }
-  }
-
-  async createContactMessage(message: InsertContactMessage): Promise<ContactMessage> {
-    try {
-      const newContactMessage = await db.insert(contactMessages).values(message).returning().get();
-      return newContactMessage;
-    } catch (error) {
-      console.error("Error creating contact message:", error);
-      throw error;
-    }
-  }
-
-  async getContactMessage(id: number): Promise<ContactMessage | null> {
-    try {
-      const contactMessage = await db.query.contactMessages.findFirst({
-        where: eq(contactMessages.id, id),
-      });
-      return contactMessage || null;
-    } catch (error) {
-      console.error("Error getting contact message:", error);
-      throw error;
-    }
-  }
-
-  async getAllContactMessages(): Promise<ContactMessage[]> {
-    try {
-      const allContactMessages = await db.query.contactMessages.findMany();
-      return allContactMessages;
-    } catch (error) {
-      console.error("Error getting all contact messages:", error);
-      throw error;
-    }
-  }
-
-  async markMessageAsResponded(id: number): Promise<ContactMessage | null> {
-    try {
-      const updatedContactMessage = await db
-        .update(contactMessages)
-        .set({ responded: true })
-        .where(eq(contactMessages.id, id))
-        .returning()
-        .get();
-      return updatedContactMessage || null;
-    } catch (error) {
-      console.error("Error marking message as responded:", error);
-      throw error;
-    }
-  }
-
-  async createUserMessage(message: InsertUserMessage): Promise<UserMessage> {
-    try {
-      const newUserMessage = await db.insert(userMessages).values(message).returning().get();
-      return newUserMessage;
-    } catch (error) {
-      console.error("Error creating user message:", error);
-      throw error;
-    }
-  }
-
-  async getUserMessage(id: number): Promise<UserMessage | null> {
-    try {
-      const userMessage = await db.query.userMessages.findFirst({
-        where: eq(userMessages.id, id),
-      });
-      return userMessage || null;
-    } catch (error) {
-      console.error("Error getting user message:", error);
-      throw error;
-    }
-  }
-
-  async getUserSentMessages(userId: number): Promise<UserMessage[]> {
-    try {
-      const userSentMessages = await db.query.userMessages.findMany({
-        where: eq(userMessages.senderId, userId),
-      });
-      return userSentMessages;
-    } catch (error) {
-      console.error("Error getting user sent messages:", error);
-      throw error;
-    }
-  }
-
-  async getUserReceivedMessages(userId: number): Promise<UserMessage[]> {
-    try {
-      const userReceivedMessages = await db.query.userMessages.findMany({
-        where: eq(userMessages.receiverId, userId),
-      });
-      return userReceivedMessages;
-    } catch (error) {
-      console.error("Error getting user received messages:", error);
-      throw error;
-    }
-  }
-
-  async markUserMessageAsRead(id: number): Promise<UserMessage | null> {
-    try {
-      const updatedUserMessage = await db
-        .update(userMessages)
-        .set({ isRead: true })
-        .where(eq(userMessages.id, id))
-        .returning()
-        .get();
-      return updatedUserMessage || null;
-    } catch (error) {
-      console.error("Error marking user message as read:", error);
-      throw error;
-    }
-  }
-
-  async markUserMessageAsReplied(id: number): Promise<UserMessage | null> {
-    try {
-      const updatedUserMessage = await db
-        .update(userMessages)
-        .set({ isReplied: true })
-        .where(eq(userMessages.id, id))
-        .returning()
-        .get();
-      return updatedUserMessage || null;
-    } catch (error) {
-      console.error("Error marking user message as replied:", error);
-      throw error;
-    }
-  }
-
-  async isDemoUser(userId: number): Promise<boolean> {
-    try {
-      const user = await db.query.users.findFirst({
-        where: eq(users.id, userId),
-      });
-      return user?.role === "demo_user" || false;
-    } catch (error) {
-      console.error("Error checking if user is demo user:", error);
-      return false;
-    }
-  }
-
-  async updateUserWallet(userId: number, amount: string, operation: 'add' | 'subtract' | 'set'): Promise<User | null> {
-    try {
-      const user = await this.getUser(userId);
-      if (!user) return null;
-
-      let newBalance: string;
-      const currentBalance = parseFloat(user.walletBalance);
-      const changeAmount = parseFloat(amount);
-
-      switch (operation) {
-        case 'add':
-          newBalance = (currentBalance + changeAmount).toString();
-          break;
-        case 'subtract':
-          newBalance = Math.max(0, currentBalance - changeAmount).toString();
-          break;
-        case 'set':
-          newBalance = changeAmount.toString();
-          break;
-        default:
-          return null;
-      }
-
-      const updatedUser = await db
-        .update(users)
-        .set({ walletBalance: newBalance })
-        .where(eq(users.id, userId))
-        .returning()
-        .get();
-      return updatedUser || null;
-    } catch (error) {
-      console.error("Error updating user wallet:", error);
-      throw error;
-    }
-  }
-
-  async createNotification(notification: InsertNotification): Promise<Notification> {
-    try {
-      const newNotification = await db.insert(notifications).values(notification).returning().get();
-      return newNotification;
-    } catch (error) {
-      console.error("Error creating notification:", error);
-      throw error;
-    }
-  }
-
-  async getNotification(id: number): Promise<Notification | null> {
-    try {
-      const notification = await db.query.notifications.findFirst({
-        where: eq(notifications.id, id),
-      });
-      return notification || null;
-    } catch (error) {
-      console.error("Error getting notification:", error);
-      throw error;
-    }
-  }
-
-  async getUserNotifications(userId: number): Promise<Notification[]> {
-    try {
-      const userNotifications = await db.query.notifications.findMany({
-        where: eq(notifications.userId, userId),
-      });
-      return userNotifications;
-    } catch (error) {
-      console.error("Error getting user notifications:", error);
-      throw error;
-    }
-  }
-
-  async getUnreadUserNotifications(userId: number): Promise<Notification[]> {
-    try {
-      const unreadUserNotifications = await db.query.notifications.findMany({
-        where: eq(notifications.userId, userId),
-      });
-      return unreadUserNotifications;
-    } catch (error) {
-      console.error("Error getting unread user notifications:", error);
-      throw error;
-    }
-  }
-
-  async markNotificationAsRead(id: number): Promise<Notification | null> {
-    try {
-      const updatedNotification = await db
-        .update(notifications)
-        .set({ isRead: true })
-        .where(eq(notifications.id, id))
-        .returning()
-        .get();
-      return updatedNotification || null;
-    } catch (error) {
-      console.error("Error marking notification as read:", error);
-      throw error;
-    }
-  }
-
-  async getDashboardStats(): Promise<DashboardStats> {
-    try {
-      const allUsers = await this.getAllUsers();
-      const activeUsers = allUsers.filter(user => user.active);
-      const inactiveUsers = allUsers.filter(user => !user.active);
-
-      const allInvestments = await this.getAllInvestments();
-      const totalInvested = allInvestments.reduce((sum, inv) => sum + parseFloat(inv.amount), 0).toString();
-
-      const allDeposits = await this.getTransactionsByType("deposit");
-      const completedDeposits = allDeposits.filter(tx => tx.status === "completed");
-      const totalDeposits = completedDeposits.reduce((sum, tx) => sum + parseFloat(tx.amount), 0).toString();
-
-      const allWithdrawals = await this.getTransactionsByType("withdrawal");
-      const completedWithdrawals = allWithdrawals.filter(tx => tx.status === "completed");
-      const totalWithdrawals = completedWithdrawals.reduce((sum, tx) => sum + parseFloat(tx.amount), 0).toString();
-
-      const allTransactions = await this.getAllTransactions();
-      const recentTransactions = allTransactions
-        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-        .slice(0, 10);
-
-      const recentUsers = allUsers
-        .sort((a, b) => {
-          const aId = a.id;
-          const bId = b.id;
-          return bId - aId; // Sort by ID descending (assuming higher ID = newer)
-        })
-        .slice(0, 10);
-
-      return {
-        totalUsers: allUsers.length,
-        activeUsers: activeUsers.length,
-        inactiveUsers: inactiveUsers.length,
-        totalInvested,
-        totalDeposits,
-        totalWithdrawals,
-        recentTransactions,
-        recentUsers
-      };
-    } catch (error) {
-      console.error("Error getting dashboard stats:", error);
-      throw error;
-    }
-  }
-
-  async getUserDashboardStats(userId: number): Promise<UserDashboardStats> {
-    try {
-      const user = await this.getUser(userId);
-      if (!user) {
-        throw new Error("User not found");
-      }
-
-      const userInvestments = await this.getUserInvestments(userId);
-      const totalInvested = userInvestments.reduce((sum, inv) => sum + parseFloat(inv.amount), 0).toString();
-
-      const userTransactions = await this.getUserTransactions(userId);
-      const earningsTransactions = userTransactions.filter(tx => 
-        (tx.type === "investment" && tx.status === "completed" && parseFloat(tx.amount) > 0)
-      );
-      const totalEarnings = earningsTransactions.reduce((sum, tx) => sum + parseFloat(tx.amount), 0).toString();
-
-      const referralTransactions = userTransactions.filter(tx => 
-        tx.type === "referral" && tx.status === "completed"
-      );
-      const referralEarnings = referralTransactions.reduce((sum, tx) => sum + parseFloat(tx.amount), 0).toString();
-
-      const activeInvestments = userInvestments.filter(inv => inv.status === "active").length;
-
-      const userReferrals = await this.getAllUserReferrals(userId);
-      const referralCount = userReferrals.length;
-
-      return {
-        walletBalance: user.walletBalance,
-        totalInvested,
-        totalEarnings,
-        referralEarnings,
-        activeInvestments,
-        referralCount
-      };
-    } catch (error) {
-      console.error("Error getting user dashboard stats:", error);
-      throw error;
-    }
-  }
-
-  async getNetworkPerformance(userId: number): Promise<any> {
-    try {
-      const user = await this.getUser(userId);
-      if (!user) {
-        throw new Error(`User with id ${userId} not found`);
-      }
-
-      // Get user's direct referrals (level 1)
-      const directReferrals = await this.getUserReferralsByLevel(userId, 1);
-
-      // If no referrals, return just the user
-      if (directReferrals.length === 0) {
-        return {
-          id: userId,
-          name: `${user.firstName} ${user.lastName}`,
-          username: user.username,
-          level: 0,
-          performance: 100, // Root node is always 100%
-          isActive: user.active,
-          children: []
-        };
-      }
-
-      // Build the referral tree recursively
-      const referralTree = await this.buildReferralPerformanceTree(userId, 0, 5); // Max 5 levels deep
-
-      return referralTree;
-    } catch (error) {
-      console.error("Error getting network performance:", error);
-      throw error;
-    }
-  }
-
-  private async buildReferralPerformanceTree(userId: number, currentLevel: number, maxLevel: number): Promise<any> {
-    try {
-      if (currentLevel > maxLevel) return null;
-
-      // Get user info
-      const user = await this.getUser(userId);
-      if (!user) return null;
-
-      // Get direct referrals
-      const directReferrals = await this.getUserReferralsByLevel(userId, 1);
-
-      // Calculate performance score based on wallet balance, activity, etc.
-      const userInvestments = await this.getUserInvestments(userId);
-      const investmentAmount = userInvestments.reduce((sum, inv) => sum + parseFloat(inv.amount), 0);
-      const userTransactions = await this.getUserTransactions(userId);
-      const recentActivity = userTransactions.filter(tx =>
-        new Date(tx.createdAt).getTime() > Date.now() - (30 * 24 * 60 * 60 * 1000) // Last 30 days
-      ).length;
-
-      // Performance formula: active status (50%) + investment amount (30%) + recent activity (20%)
-      let performanceScore = 0;
-      performanceScore += user.active ? 50 : 0;
-      performanceScore += Math.min(investmentAmount / 500, 1) * 30; // Cap at $500 for max score
-      performanceScore += Math.min(recentActivity / 5, 1) * 20; // Cap at 5 activities for max score
-
-      // Build tree node
-      const treeNode = {
-        id: userId,
-        name: `${user.firstName} ${user.lastName}`,
-        username: user.username,
-        level: currentLevel,
-        performance: performanceScore,
-        isActive: user.active,
-        children: []
-      };
-
-      // Process child nodes recursively
-      if (currentLevel < maxLevel && directReferrals.length > 0) {
-        for (const referral of directReferrals) {
-          const childNode = await this.buildReferralPerformanceTree(
-            referral.referredId,
-            currentLevel + 1,
-            maxLevel
-          );
-
-          if (childNode) {
-            treeNode.children.push(childNode);
-          }
-        }
-      }
-
-      return treeNode;
-    } catch (error) {
-      console.error("Error building referral performance tree:", error);
-      return null;
-    }
-  }
-
-  async getSystemSetting(key: string): Promise<SystemSetting | null> {
-    try {
-      const systemSetting = await db.query.systemSettings.findFirst({
-        where: eq(systemSettings.key, key),
-      });
-      return systemSetting || null;
-    } catch (error) {
-      console.error("Error getting system setting:", error);
-      throw error;
-    }
-  }
-
-  async setSystemSetting(key: string, value: string, description?: string): Promise<SystemSetting> {
-    try {
-      // Check if the setting exists
-      const existingSetting = await this.getSystemSetting(key);
-
-      if (existingSetting) {
-        // Update the existing setting
-        const updatedSetting = await db
-          .update(systemSettings)
-          .set({ value: value, description: description || existingSetting.description })
-          .where(eq(systemSettings.key, key))
-          .returning()
-          .get();
-        return updatedSetting;
-      } else {
-        // Insert a new setting
-        const newSetting = await db
-          .insert(systemSettings)
-          .values({ key: key, value: value, description: description })
-          .returning()
-          .get();
-        return newSetting;
-      }
-    } catch (error) {
-      console.error("Error setting system setting:", error);
-      throw error;
-    }
-  }
-
-  async getAllSystemSettings(): Promise<SystemSetting[]> {
-    try {
-      const allSystemSettings = await db.query.systemSettings.findMany();
-      return allSystemSettings;
-    } catch (error) {
-      console.error("Error getting all system settings:", error);
-      throw error;
-    }
-  }
+// Use the database storage implementation if database is available
+let storage: IStorage;
+
+try {
+  // Try to import and use DatabaseStorage
+  const { DatabaseStorage } = await import("./database-storage");
+  storage = new DatabaseStorage();
+  console.log('✅ Using DatabaseStorage (PostgreSQL)');
+} catch (error) {
+  // Fall back to MemStorage if database is not available
+  console.log('⚠️ Database not available, falling back to MemStorage');
+  console.log('Database error:', error.message);
+  storage = new MemStorage();
 }
+
+export { storage };

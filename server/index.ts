@@ -66,6 +66,8 @@ app.use((req, res, next) => {
   // It is the only port that is not firewalled.
   const port = 5000;
   server.listen(port, "0.0.0.0", () => {
-    log(`serving on port ${port}`);
+    log(`Server running on http://0.0.0.0:${port}`);
+    log(`Environment: ${nodeEnv}`);
+    log(`Database: ${process.env.DATABASE_URL ? 'Connected' : 'Using fallback storage'}`);
   });
 })();

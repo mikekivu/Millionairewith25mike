@@ -1048,3 +1048,6 @@ export class DatabaseStorage implements IStorage {
     }
   }
 }
+
+// DatabaseStorage class is defined above and exported
+// The storage instance is created in storage.ts
