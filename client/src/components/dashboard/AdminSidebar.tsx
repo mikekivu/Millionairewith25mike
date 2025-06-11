@@ -82,6 +82,11 @@ export default function AdminSidebar({ isMobileOpen = false, onMobileClose }: Ad
       href: '/admin/withdraw',
       icon: <DollarSign className="h-5 w-5" />,
     },
+    {
+      title: 'Settings',
+      href: '/admin/settings',
+      icon: <Settings className="h-5 w-5" />,
+    },
   ];
 
   const handleLogout = async () => {
@@ -115,7 +120,7 @@ export default function AdminSidebar({ isMobileOpen = false, onMobileClose }: Ad
           onClick={onMobileClose}
         />
       )}
-      
+
       {/* Sidebar */}
       <div className={cn(
         "fixed md:relative inset-y-0 left-0 z-50 w-72 h-screen flex flex-col bg-gradient-to-b from-gray-900 to-gray-950 text-white shadow-xl transform transition-transform duration-300 ease-in-out md:transform-none",

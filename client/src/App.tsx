@@ -24,7 +24,8 @@ import AdminDeposits from "@/pages/admin/AdminDeposits";
 import AdminPlans from "@/pages/admin/AdminPlans";
 import AdminPaymentSettings from "@/pages/admin/AdminPaymentSettings";
 import AdminMessages from "@/pages/admin/AdminMessages";
-import AdminWithdraw from "@/pages/admin/AdminWithdraw";
+import AdminWithdraw from "@/pages/admin/AdminWithdraw';
+import AdminSettings from "@/pages/admin/AdminSettings";
 import Plans from "@/pages/Plans";
 import { ProtectedRoute, AdminRoute } from "@/lib/auth";
 import LiveChat from "@/components/LiveChat";
@@ -160,6 +161,13 @@ function Router() {
         {() => (
           <AdminRoute>
             <AdminWithdraw />
+          </AdminRoute>
+        )}
+      </Route>
+      <Route path="/admin/settings">
+        {() => (
+          <AdminRoute>
+            <AdminSettings />
           </AdminRoute>
         )}
       </Route>
