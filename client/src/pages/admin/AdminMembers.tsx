@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Search, UserPlus, Edit, Trash2, DollarSign, MessageSquare, Eye } from "lucide-react";
-import { apiRequest } from "@/lib/utils";
+import { apiRequest } from "@/lib/queryClient";
 
 interface User {
   id: number;
