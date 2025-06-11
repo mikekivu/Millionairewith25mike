@@ -923,14 +923,14 @@ export class DatabaseStorage implements IStorage {
           updated_at TIMESTAMP NOT NULL DEFAULT NOW()
         );
       `);
-      
+
       // Insert default payment_mode setting
       await db.execute(`
-        INSERT INTO system_settings (key, value, description)
+                INSERT INTO system_settings (key, value, description)
         VALUES ('payment_mode', 'sandbox', 'Payment gateway environment mode (live or sandbox)')
         ON CONFLICT (key) DO NOTHING;
       `);
-      
+
       console.log('✅ system_settings table created and initialized');
     } catch (error) {
       console.error('Failed to create system_settings table:', error);

@@ -1004,15 +1004,15 @@ export const storage = new DatabaseStorage();
 // The profit processor is already started in server/index.ts
 
 import { eq } from "drizzle-orm";
-import { db } from "@server/db";
+import { db } from "./db";
 
 export class DatabaseStorage implements IStorage {
-  async getUser(id: number): Promise<User | null> {
+  async getUser(id: number): Promise<User | undefined> {
     try {
       const user = await db.query.users.findFirst({
         where: eq(users.id, id),
       });
-      return user || null;
+      return user || undefined;
     } catch (error) {
       console.error("Error getting user:", error);
       throw error;
