@@ -995,10 +995,8 @@ export class MemStorage implements IStorage {
   }
 }
 
-import { DatabaseStorage } from "./database-storage";
-import { profitProcessor } from "./profit-processor";
-
 // Use the database storage implementation
+import { DatabaseStorage } from "./database-storage";
 export const storage = new DatabaseStorage();
 
 // The profit processor is already started in server/index.ts

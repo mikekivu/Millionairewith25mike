@@ -14,7 +14,117 @@ import { db } from "./db";
 import { nanoid } from "nanoid";
 import { addDays } from "date-fns";
 import { eq, and, desc } from "drizzle-orm";
-import { IStorage, DashboardStats, UserDashboardStats } from "./storage";
+// Import interfaces directly to avoid circular dependency
+export interface IStorage {
+  // User Management
+  getUser(id: number): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByReferralCode(referralCode: string): Promise<User | undefined>;
+  createUser(user: InsertUser): Promise<User>;
+  updateUser(id: number, user: Partial<User>): Promise<User | undefined>;
+  getAllUsers(): Promise<User[]>;
+  getUserReferrals(userId: number): Promise<User[]>;
+  toggleUserStatus(id: number, active: boolean): Promise<User | undefined>;
+  deleteUser(id: number): Promise<boolean>;
+
+  // Plans Management
+  createPlan(plan: InsertPlan): Promise<Plan>;
+  getPlan(id: number): Promise<Plan | undefined>;
+  getAllPlans(): Promise<Plan[]>;
+  getActivePlans(): Promise<Plan[]>;
+  updatePlan(id: number, plan: Partial<Plan>): Promise<Plan | undefined>;
+  togglePlanStatus(id: number, active: boolean): Promise<Plan | undefined>;
+  deletePlan(id: number): Promise<boolean>;
+
+  // Investments Management
+  createInvestment(investment: InsertInvestment): Promise<Investment>;
+  getInvestment(id: number): Promise<Investment | undefined>;
+  getUserInvestments(userId: number): Promise<Investment[]>;
+  getAllInvestments(): Promise<Investment[]>;
+  updateInvestment(id: number, investment: Partial<Investment>): Promise<Investment | undefined>;
+
+  // Transactions Management
+  createTransaction(transaction: InsertTransaction): Promise<Transaction>;
+  getTransaction(id: number): Promise<Transaction | undefined>;
+  getUserTransactions(userId: number): Promise<Transaction[]>;
+  getAllTransactions(): Promise<Transaction[]>;
+  getTransactionsByType(type: string): Promise<Transaction[]>;
+  updateTransaction(id: number, transaction: Partial<Transaction>): Promise<Transaction | undefined>;
+  getTransactionByReference(reference: string): Promise<Transaction | undefined>;
+
+  // Referral Management
+  createReferral(referral: InsertReferral): Promise<Referral>;
+  getReferral(id: number): Promise<Referral | undefined>;
+  getUserReferralsByLevel(userId: number, level: number): Promise<Referral[]>;
+  getAllUserReferrals(userId: number): Promise<Referral[]>;
+  updateReferral(id: number, referral: Partial<Referral>): Promise<Referral | undefined>;
+
+  // Payment Settings Management
+  createPaymentSetting(setting: InsertPaymentSetting): Promise<PaymentSetting>;
+  getPaymentSetting(id: number): Promise<PaymentSetting | undefined>;
+  getPaymentSettingByMethod(method: string): Promise<PaymentSetting | undefined>;
+  getAllPaymentSettings(): Promise<PaymentSetting[]>;
+  updatePaymentSetting(id: number, setting: Partial<PaymentSetting>): Promise<PaymentSetting | undefined>;
+  togglePaymentMethod(id: number, active: boolean): Promise<PaymentSetting | undefined>;
+
+  // Contact Messages Management
+  createContactMessage(message: InsertContactMessage): Promise<ContactMessage>;
+  getContactMessage(id: number): Promise<ContactMessage | undefined>;
+  getAllContactMessages(): Promise<ContactMessage[]>;
+  markMessageAsResponded(id: number): Promise<ContactMessage | undefined>;
+
+  // User Messages Management
+  createUserMessage(message: InsertUserMessage): Promise<UserMessage>;
+  getUserMessage(id: number): Promise<UserMessage | undefined>;
+  getUserSentMessages(userId: number): Promise<UserMessage[]>;
+  getUserReceivedMessages(userId: number): Promise<UserMessage[]>;
+  markUserMessageAsRead(id: number): Promise<UserMessage | undefined>;
+  markUserMessageAsReplied(id: number): Promise<UserMessage | undefined>;
+
+  // Demo User Management
+  isDemoUser(userId: number): Promise<boolean>;
+  updateUserWallet(userId: number, amount: string, operation: 'add' | 'subtract' | 'set'): Promise<User | undefined>;
+
+  // Notifications Management
+  createNotification(notification: InsertNotification): Promise<Notification>;
+  getNotification(id: number): Promise<Notification | undefined>;
+  getUserNotifications(userId: number): Promise<Notification[]>;
+  getUnreadUserNotifications(userId: number): Promise<Notification[]>;
+  markNotificationAsRead(id: number): Promise<Notification | undefined>;
+
+  // Dashboard statistics
+  getDashboardStats(): Promise<DashboardStats>;
+  getUserDashboardStats(userId: number): Promise<UserDashboardStats>;
+
+  // Network visualization
+  getNetworkPerformance(userId: number): Promise<any>;
+
+  // System settings
+  getSystemSetting(key: string): Promise<SystemSetting | undefined>;
+  setSystemSetting(key: string, value: string, description?: string): Promise<SystemSetting>;
+  getAllSystemSettings(): Promise<SystemSetting[]>;
+}
+
+export interface DashboardStats {
+  totalUsers: number;
+  activeUsers: number;
+  inactiveUsers: number;
+  totalInvested: string;
+  totalDeposits: string;
+  totalWithdrawals: string;
+  recentTransactions: Transaction[];
+  recentUsers: User[];
+}
+
+export interface UserDashboardStats {
+  walletBalance: string;
+  totalInvested: string;
+  totalEarnings: string;
+  referralEarnings: string;
+  activeInvestments: number;
+  referralCount: number;
+}
 
 export class DatabaseStorage implements IStorage {
   // User Management
