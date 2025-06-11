@@ -2027,6 +2027,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     });
 
+    // Admin edit user profile
+    app.put("/api/admin/users/:id/profile", authMiddleware, adminMiddleware, async (req, res) => {
+      try {
+        const userId = parseInt(req.params.id);
+        const { firstName, lastName, email, username, country, phoneNumber, profileImage, role } = req.body;
+
+        // Get the user
+        const user = await storage.getUser(userId);
+        if (!user) {
+          return res.status(404).json({ message: "User not found" });
+        }
+
+        // Check if email is being changed and if it's already in use
+        if (email && email !== user.email) {
+          const existingUser = await storage.getUserByEmail(email);
+          if (existingUser && existingUser.id !== userId) {
+            return res.status(400).json({ message: "Email is already in use by another user" });
+          }
+        }
+
+        // Check if username is being changed and if it's already in use
+        if (username && username !== user.username) {
+          const existingUser = await storage.getUserByUsername(username);
+          if (existingUser && existingUser.id !== userId) {
+            return res.status(400).json({ message: "Username is already in use by another user" });
+          }
+        }
+
+        // Prepare update data
+        const updateData: any = {};
+        if (firstName) updateData.firstName = firstName;
+        if (lastName) updateData.lastName = lastName;
+        if (email) updateData.email = email;
+        if (username) updateData.username = username;
+        if (country !== undefined) updateData.country = country;
+        if (phoneNumber !== undefined) updateData.phoneNumber = phoneNumber;
+        if (profileImage !== undefined) updateData.profileImage = profileImage;
+        if (role && ["user", "admin"].includes(role)) updateData.role = role;
+
+        // Update user profile
+        const updatedUser = await storage.updateUser(userId, updateData);
+
+        if (!updatedUser) {
+          return res.status(404).json({ message: "Failed to update user" });
+        }
+
+        // Create notification for user about profile update
+        await storage.createNotification({
+          userId,
+          title: "Profile Updated",
+          message: "Your profile has been updated by an administrator",
+          type: "profile_update",
+          entityId: userId,
+          entityType: "user",
+          link: "/dashboard/settings"
+        });
+
+        // Return user without password
+        const { password, ...userWithoutPassword } = updatedUser;
+        res.status(200).json({
+          message: "User profile updated successfully",
+          user: userWithoutPassword
+        });
+      } catch (error) {
+        console.error("Error updating user profile:", error);
+        res.status(500).json({ message: "Server error" });
+      }
+    });
+
     // PayPal API Configuration
     app.get("/api/admin/payment-settings/paypal-config", authMiddleware, adminMiddleware, async (req, res) => {
       try {
