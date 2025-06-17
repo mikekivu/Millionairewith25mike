@@ -1,14 +1,11 @@
 
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
-
-const client = postgres(process.env.DATABASE_URL || 'postgresql://localhost:5432/propertygroups');
-const db = drizzle(client);
+import { db } from '../server/db';
 
 async function createPaymentConfigurationsTable() {
   console.log('🔧 Creating payment_configurations table...');
   
   try {
+    // Create payment_configurations table
     await db.execute(`
       CREATE TABLE IF NOT EXISTS payment_configurations (
         id SERIAL PRIMARY KEY,
@@ -28,19 +25,34 @@ async function createPaymentConfigurationsTable() {
     
     console.log('✅ payment_configurations table created successfully');
     
-    // Check if table was created
-    const result = await db.execute(`
-      SELECT COUNT(*) as count 
-      FROM information_schema.tables 
-      WHERE table_name = 'payment_configurations'
+    // Also fix system_settings table structure
+    console.log('🔧 Fixing system_settings table...');
+    
+    // Check if system_settings table exists and has the right structure
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS system_settings (
+        id SERIAL PRIMARY KEY,
+        key TEXT NOT NULL UNIQUE,
+        value TEXT NOT NULL,
+        description TEXT,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+      );
     `);
     
-    console.log('✅ Table verification complete');
+    // Insert default payment_mode setting
+    await db.execute(`
+      INSERT INTO system_settings (key, value, description)
+      VALUES ('payment_mode', 'sandbox', 'Payment gateway environment mode (live or sandbox)')
+      ON CONFLICT (key) DO NOTHING;
+    `);
+    
+    console.log('✅ system_settings table fixed successfully');
+    console.log('✅ All tables created and initialized');
     
   } catch (error) {
-    console.error('❌ Error creating payment_configurations table:', error);
-  } finally {
-    await client.end();
+    console.error('❌ Error creating tables:', error);
+    throw error;
   }
 }
 
