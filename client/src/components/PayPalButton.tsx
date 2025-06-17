@@ -1,108 +1,126 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, Loader2 } from 'lucide-react';
+import { Loader2, CreditCard } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
 
 interface PayPalButtonProps {
   amount: string;
-  currency?: string;
+  currency: string;
   description?: string;
-  onSuccess?: (details: any) => void;
+  userEmail: string;
+  userPhone?: string;
+  userFirstName?: string;
+  userLastName?: string;
+  userId: number;
+  type?: 'deposit' | 'withdrawal';
+  onSuccess?: (data: any) => void;
   onError?: (error: string) => void;
   disabled?: boolean;
-  transactionId: string;
 }
 
 export default function PayPalButton({
   amount,
-  currency = 'USD',
-  description = 'Deposit',
+  currency,
+  description,
+  userEmail,
+  userPhone,
+  userFirstName,
+  userLastName,
+  userId,
+  type = 'deposit',
   onSuccess,
   onError,
-  disabled = false,
-  transactionId
+  disabled = false
 }: PayPalButtonProps) {
-  const { toast } = useToast();
-  const [paypalConfig, setPaypalConfig] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [configLoading, setConfigLoading] = useState(true);
+  const [paypalConfig, setPaypalConfig] = useState<any>(null);
+  const [isConfigured, setIsConfigured] = useState(false);
+  const { toast } = useToast();
 
+  // Fetch PayPal configuration on mount
   useEffect(() => {
+    const fetchPayPalConfig = async () => {
+      try {
+        const response = await fetch('/api/paypal/config');
+        const config = await response.json();
+        console.log('PayPal config received:', config);
+        setPaypalConfig(config);
+        setIsConfigured(config.configured && !config.error);
+      } catch (error) {
+        console.error('Failed to fetch PayPal config:', error);
+        setIsConfigured(false);
+      }
+    };
+
     fetchPayPalConfig();
   }, []);
 
-  const fetchPayPalConfig = async () => {
-    try {
-      setConfigLoading(true);
-      const response = await apiRequest('GET', '/api/paypal/config');
-      if (response.ok) {
-        const config = await response.json();
-        setPaypalConfig(config);
-      } else {
-        setPaypalConfig({ configured: false, error: 'Failed to fetch configuration' });
-      }
-    } catch (error) {
-      console.error('PayPal config error:', error);
-      setPaypalConfig({ configured: false, error: 'Failed to fetch configuration' });
-    } finally {
-      setConfigLoading(false);
-    }
-  };
-
   const handlePayPalPayment = async () => {
-    if (!paypalConfig?.configured) {
-      onError?.('PayPal is not properly configured');
+    if (!isConfigured) {
       toast({
-        title: "Payment Error",
-        description: "PayPal is not properly configured. Please contact support.",
+        title: "PayPal Not Configured",
+        description: "PayPal payment is not properly configured. Please contact support.",
         variant: "destructive",
       });
       return;
     }
 
-    try {
-      setIsLoading(true);
+    setIsLoading(true);
 
+    try {
       // Create PayPal order
-      const orderResponse = await apiRequest('POST', '/api/paypal/create-order', {
-        amount: amount,
-        currency: currency,
-        reference: transactionId
+      const response = await fetch('/api/paypal/create-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({
+          amount,
+          currency,
+          description: description || `${type} via PayPal`,
+          userEmail,
+          userPhone,
+          userFirstName,
+          userLastName,
+          userId,
+          type
+        }),
       });
 
-      if (!orderResponse.ok) {
-        throw new Error('Failed to create PayPal order');
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create PayPal order');
       }
 
-      const orderData = await orderResponse.json();
-      
-      // Find the approval URL
-      const approvalUrl = orderData.links?.find((link: any) => link.rel === 'approve')?.href;
-      
-      if (!approvalUrl) {
-        throw new Error('No approval URL found in PayPal response');
+      if (data.approvalUrl) {
+        // Redirect to PayPal for approval
+        window.location.href = data.approvalUrl;
+      } else {
+        throw new Error('No approval URL received from PayPal');
       }
-
-      // Redirect to PayPal for payment
-      window.location.href = approvalUrl;
-
     } catch (error) {
       console.error('PayPal payment error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Payment failed';
-      onError?.(errorMessage);
+      const errorMessage = error instanceof Error ? error.message : 'PayPal payment failed';
+      
       toast({
         title: "Payment Error",
         description: errorMessage,
         variant: "destructive",
       });
+
+      if (onError) {
+        onError(errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (configLoading) {
+  // Show loading state while fetching config
+  if (paypalConfig === null) {
     return (
       <Button disabled className="w-full">
         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -111,14 +129,16 @@ export default function PayPalButton({
     );
   }
 
-  if (!paypalConfig?.configured) {
+  // Show error state if not configured
+  if (!isConfigured) {
     return (
-      <Button
-        disabled
+      <Button 
+        disabled 
         className="w-full bg-gray-400 cursor-not-allowed"
+        title={paypalConfig?.error || "PayPal is not configured"}
       >
-        <AlertTriangle className="mr-2 h-4 w-4" />
-        PayPal Not Available
+        <CreditCard className="mr-2 h-4 w-4" />
+        PayPal Unavailable
       </Button>
     );
   }
@@ -126,7 +146,7 @@ export default function PayPalButton({
   return (
     <Button
       onClick={handlePayPalPayment}
-      disabled={disabled || isLoading}
+      disabled={disabled || isLoading || !isConfigured}
       className="w-full bg-blue-600 hover:bg-blue-700"
     >
       {isLoading ? (
@@ -136,7 +156,8 @@ export default function PayPalButton({
         </>
       ) : (
         <>
-          💳 Pay with PayPal
+          <CreditCard className="mr-2 h-4 w-4" />
+          Pay with PayPal
         </>
       )}
     </Button>

@@ -10,6 +10,8 @@ import { useToast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/lib/utils';
 import { Wallet, TrendingUp, TrendingDown, History, CreditCard } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
+import PayPalButton from '@/components/PayPalButton';
+import PesapalButton from '@/components/PesapalButton';
 
 export default function UserWallet() {
   const { user, refetch } = useAuth();
@@ -20,6 +22,7 @@ export default function UserWallet() {
   const [transactions, setTransactions] = useState([]);
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
+  const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
 
   useEffect(() => {
     fetchTransactions();
