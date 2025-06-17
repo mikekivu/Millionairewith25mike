@@ -10,12 +10,8 @@ async function getPaypalBaseUrl() {
     const paymentMode = await storage.getSystemSetting('payment_mode');
     console.log('PayPal checking payment mode:', paymentMode);
 
-    // Check for live credentials
-    const hasLiveCredentials = PAYPAL_CLIENT_ID &&
-      PAYPAL_CLIENT_SECRET &&
-      !PAYPAL_CLIENT_ID.includes('sandbox');
-
-    const isLive = hasLiveCredentials || paymentMode?.value === 'live'; // consider payment_mode as well
+    // Use the admin-configured payment mode setting as the primary determinant
+    const isLive = paymentMode?.value === 'live';
     const baseUrl = isLive ? 'https://api.paypal.com' : 'https://api.sandbox.paypal.com';
     console.log('PayPal using base URL:', baseUrl, 'for mode:', paymentMode?.value);
     return baseUrl;

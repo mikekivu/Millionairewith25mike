@@ -8,15 +8,14 @@ const PESAPAL_CONSUMER_SECRET = process.env.PESAPAL_CONSUMER_SECRET;
 
 async function getPesapalBaseUrl() {
   try {
-    const { storage } = await import('./storage');
     const paymentMode = await storage.getSystemSetting('payment_mode');
     const isLive = paymentMode?.value === 'live';
+    console.log('Pesapal using mode:', paymentMode?.value, 'isLive:', isLive);
     return isLive ? 'https://pay.pesapal.com/v3' : 'https://cybqa.pesapal.com/pesapalv3';
   } catch (error) {
-    // Fallback to environment-based detection
-    return process.env.NODE_ENV === 'production' 
-      ? 'https://pay.pesapal.com/v3' 
-      : 'https://cybqa.pesapal.com/pesapalv3';
+    console.log('Error getting payment mode for Pesapal, using sandbox:', error);
+    // Fallback to sandbox for safety
+    return 'https://cybqa.pesapal.com/pesapalv3';
   }
 }
 
