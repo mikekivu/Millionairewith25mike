@@ -1113,7 +1113,6 @@ export class DatabaseStorage implements IStorage {
           key TEXT NOT NULL UNIQUE,
           value TEXT NOT NULL,
           description TEXT,
-          created_at TIMESTAMP NOT NULL DEFAULT NOW(),
           updated_at TIMESTAMP NOT NULL DEFAULT NOW()
         );
       `);

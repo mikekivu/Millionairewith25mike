@@ -100,7 +100,6 @@ export const systemSettings = pgTable("system_settings", {
   key: varchar("key", { length: 255 }).notNull().unique(),
   value: text("value").notNull(),
   description: text("description"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
