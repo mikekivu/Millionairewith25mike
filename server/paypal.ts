@@ -186,7 +186,14 @@ export async function createPayPalOrder(req: Request, res: Response) {
     });
 
     const order = await paypalService.createOrder(amount, currency, reference);
-    res.json(order);
+    
+    // Extract the approval URL from PayPal's response
+    const approvalUrl = order.links?.find((link: any) => link.rel === 'approve')?.href;
+    
+    res.json({
+      ...order,
+      approvalUrl
+    });
   } catch (error) {
     console.error('PayPal order creation error:', error);
     res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to create order' });
