@@ -411,12 +411,26 @@ export default function UserWallet() {
                   </div>
                 )}
 
-                {/* Payment methods section - Disabled */}
-                <div className="grid grid-cols-1 gap-4">
-                  <div className="text-center text-muted-foreground">
-                    <p>Payment operations are currently disabled.</p>
-                    <p className="text-sm">Contact an administrator for balance adjustments.</p>
-                  </div>
+                {/* Payment methods section */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {isValidDepositAmount && (
+                    <>
+                      <PayPalButton
+                        amount={depositAmount}
+                        currency={selectedCurrency}
+                        onSuccess={handleDepositSuccess}
+                        onError={handlePaymentError}
+                        description={`Deposit ${formatCurrency(parseFloat(depositAmount), selectedCurrency)} to wallet`}
+                      />
+                      <PesapalButton
+                        amount={depositAmount}
+                        currency={selectedCurrency}
+                        onSuccess={handleDepositSuccess}
+                        onError={handlePaymentError}
+                        description={`Deposit ${formatCurrency(parseFloat(depositAmount), selectedCurrency)} to wallet`}
+                      />
+                    </>
+                  )}
                 </div>
 
                 {!depositAmount && (
@@ -495,12 +509,22 @@ export default function UserWallet() {
                   </div>
                 )}
 
-                {/* Payment methods section - Disabled */}
+                {/* Withdrawal request button */}
                 <div className="grid grid-cols-1 gap-4">
-                  <div className="text-center text-muted-foreground">
-                    <p>Payment operations are currently disabled.</p>
-                    <p className="text-sm">Contact an administrator for balance adjustments.</p>
-                  </div>
+                  <Button
+                    onClick={handleWithdrawalRequest}
+                    disabled={!isValidWithdrawAmount || isWithdrawing}
+                    className="w-full"
+                  >
+                    {isWithdrawing ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Processing...
+                      </>
+                    ) : (
+                      `Request Withdrawal of ${withdrawAmount ? formatCurrency(parseFloat(withdrawAmount), selectedCurrency) : '$0.00'}`
+                    )}
+                  </Button>
                 </div>
 
                 {!withdrawAmount && (
