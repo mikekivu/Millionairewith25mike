@@ -418,14 +418,24 @@ export default function UserWallet() {
                       <PayPalButton
                         amount={depositAmount}
                         currency={selectedCurrency}
-                        onSuccess={handleDepositSuccess}
+                        userId={user?.id || 0}
+                        userEmail={user?.email || ''}
+                        userPhone={user?.phoneNumber || ''}
+                        userFirstName={user?.firstName || ''}
+                        userLastName={user?.lastName || ''}
+                        onSuccess={handlePaymentSuccess}
                         onError={handlePaymentError}
                         description={`Deposit ${formatCurrency(parseFloat(depositAmount), selectedCurrency)} to wallet`}
                       />
                       <PesapalButton
                         amount={depositAmount}
                         currency={selectedCurrency}
-                        onSuccess={handleDepositSuccess}
+                        userId={user?.id || 0}
+                        userEmail={user?.email || ''}
+                        userPhone={user?.phoneNumber || ''}
+                        userFirstName={user?.firstName || ''}
+                        userLastName={user?.lastName || ''}
+                        onSuccess={handlePaymentSuccess}
                         onError={handlePaymentError}
                         description={`Deposit ${formatCurrency(parseFloat(depositAmount), selectedCurrency)} to wallet`}
                       />
