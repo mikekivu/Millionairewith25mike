@@ -388,103 +388,19 @@ export default function AdminPaymentSettings() {
               </CardContent>
             </Card>
 
-            {isLoading ? (
-              <div className="flex justify-center py-8">
-                <p>Loading payment methods...</p>
-              </div>
-            ) : paymentMethods && Array.isArray(paymentMethods) && paymentMethods.length > 0 ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-                {paymentMethods.map((method: PaymentMethod) => (
-                  <Card key={method.id} className={!method.active ? "opacity-75" : ""}>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <div className="flex items-center">
-                        <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
-                          method.active ? 'bg-primary-100 text-primary-800' : 'bg-gray-100 text-gray-500'
-                        }`}>
-                          <CreditCard className="h-5 w-5" />
-                        </div>
-                        <div className="ml-3">
-                          <CardTitle className="text-xl">{method.name}</CardTitle>
-                          <CardDescription>{method.method}</CardDescription>
-                        </div>
-                      </div>
-                      <Badge variant={method.active ? "default" : "secondary"}>
-                        {method.active ? "Active" : "Inactive"}
-                      </Badge>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2 text-sm">
-                        {method.instructions && (
-                          <p className="text-muted-foreground">{method.instructions}</p>
-                        )}
-                        {method.credentials && (
-                          <div className="border-t pt-2">
-                            <p className="text-xs text-muted-foreground">Credentials:</p>
-                            <p className="font-mono text-xs">{method.credentials.length > 20 ? method.credentials.substring(0, 20) + '...' : method.credentials}</p>
-                          </div>
-                        )}
-                        {method.minAmount && method.maxAmount && (
-                          <p className="text-xs text-muted-foreground">
-                            Limits: ${method.minAmount} - ${method.maxAmount}
-                          </p>
-                        )}
-                      </div>
-                      <div className="flex space-x-2 mt-4">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => toggleStatusMutation.mutate({
-                            settingId: method.id,
-                            active: !method.active
-                          })}
-                        >
-                          {method.active ? "Disable" : "Enable"}
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleEditClick(method);
-                          }}
-                        >
-                          <Edit className="h-4 w-4 mr-1" />
-                          Edit
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            if (confirm('Are you sure you want to delete this payment method?')) {
-                              deleteMethodMutation.mutate(method.id);
-                            }
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4 mr-1" />
-                          Delete
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <Card>
-                <CardContent className="flex flex-col items-center justify-center py-8">
-                  <CreditCard className="h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No Payment Methods</h3>
-                  <p className="text-muted-foreground text-center mb-4">
-                    No payment methods have been configured yet. Add your first payment method to get started.
-                  </p>
-                  <Button onClick={handleAddClick}>
-                    <Plus className="h-4 w-4 mr-2" /> Add Payment Method
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-8">
+                <CreditCard className="h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">All Payment Methods Removed</h3>
+                <p className="text-muted-foreground text-center mb-4">
+                  Payment functionality has been completely disabled. All payment methods have been removed from the system.
+                </p>
+                <div className="bg-red-100 border border-red-300 rounded-lg p-4 mt-4 w-full max-w-md">
+                  <p className="text-red-800 font-semibold text-center">⚠️ Payment Services Disabled</p>
+                  <p className="text-red-600 text-sm text-center mt-1">Contact administrator for any payment-related inquiries</p>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

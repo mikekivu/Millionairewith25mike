@@ -1601,8 +1601,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/admin/payment-settings", authMiddleware, adminMiddleware, async (req, res) => {
     try {
-      const paymentSettings = await storage.getAllPaymentSettings();
-      res.status(200).json(paymentSettings);
+      // Return empty array - all payment methods have been permanently removed
+      res.status(200).json([]);
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Server error" });
@@ -1610,110 +1610,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/admin/payment-settings", authMiddleware, adminMiddleware, async (req, res) => {
-    try {
-      const { method, name, instructions, credentials, minAmount, maxAmount, active } = req.body;
-
-      // Validation
-      if (!method || !name) {
-        return res.status(400).json({ message: "Method and name are required" });
-      }
-
-      const newSetting = await storage.createPaymentSetting({
-        method,
-        name,
-        instructions,
-        credentials,
-        minAmount: minAmount || "10",
-        maxAmount: maxAmount || "10000",
-        active: active !== undefined ? active : true,
-        // Also set the payment_method field to the same value as method to satisfy the NOT NULL constraint
-        payment_method: method
-      });
-
-      res.status(201).json({
-        message: "Payment setting created successfully",
-        setting: newSetting
-      });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Server error" });
-    }
+    res.status(503).json({ 
+      message: "Payment method creation is permanently disabled. All payment functionality has been removed." 
+    });
   });
 
     app.put("/api/admin/payment-settings/:id", authMiddleware, adminMiddleware, async (req, res) => {
-      try {
-        const settingId = parseInt(req.params.id);
-        // If the method is being updated, make sure payment_method is also updated
-        const updatedData = { ...req.body };
-        if (updatedData.method) {
-          updatedData.payment_method = updatedData.method;
-        }
-
-        const updatedSetting = await storage.updatePaymentSetting(settingId, updatedData);
-
-        if (!updatedSetting) {
-          return res.status(404).json({ message: "Payment setting not found" });
-        }
-
-        res.status(200).json({ 
-          message: "Payment setting updated successfully", 
-          setting: updatedSetting 
-        });
-      } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Server error" });
-      }
+      res.status(503).json({ 
+        message: "Payment method updates are permanently disabled. All payment functionality has been removed." 
+      });
     });
 
     app.put("/api/admin/payment-settings/:id/toggle-status", authMiddleware, adminMiddleware, async (req, res) => {
-      try {
-        const settingId = parseInt(req.params.id);
-        const { active } = req.body;
-
-        if (typeof active !== "boolean") {
-          return res.status(400).json({ message: "Active status must be a boolean" });
-        }
-
-        const updatedSetting = await storage.togglePaymentMethod(settingId, active);
-
-        if (!updatedSetting) {
-          return res.status(404).json({ message: "Payment setting not found" });
-        }
-
-        res.status(200).json({ 
-          message: `Payment method ${active ? 'activated' : 'deactivated'} successfully`, 
-          setting: updatedSetting 
-        });
-      } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Server error" });
-      }
+      res.status(503).json({ 
+        message: "Payment method status changes are permanently disabled. All payment functionality has been removed." 
+      });
     });
 
     app.delete("/api/admin/payment-settings/:id", authMiddleware, adminMiddleware, async (req, res) => {
-      try {
-        const settingId = parseInt(req.params.id);
-
-        // In a production environment, you might want to check if this payment method
-        // is being used in transactions before deleting it
-
-        // For now we'll just check if the setting exists
-        const setting = await storage.getPaymentSetting(settingId);
-        if (!setting) {
-          return res.status(404).json({ message: "Payment setting not found" });
-        }
-
-        // Delete the setting (this would need to be implemented in the storage interface)
-        // For now, we'll just deactivate it since we don't have a delete method in the interface
-        const updatedSetting = await storage.togglePaymentMethod(settingId, false);
-
-        res.status(200).json({
-          message: "Payment method deleted successfully"
-        });
-      } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Server error" });
-      }
+      res.status(200).json({
+        message: "Payment method already removed - all payment functionality has been permanently disabled"
+      });
     });
 
     // Admin wallet balance management
