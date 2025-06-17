@@ -1952,56 +1952,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     
 
-    // Pesapal API Configuration
-    app.get("/api/admin/payment-settings/pesapal-config", authMiddleware, adminMiddleware, async (req, res) => {
-      try {
-        // Check if PESAPAL_CONSUMER_KEY and PESAPAL_CONSUMER_SECRET environment variables are set
-        const configured = !!(process.env.PESAPAL_CONSUMER_KEY && process.env.PESAPAL_CONSUMER_SECRET);
-
-        res.status(200).json({
-          configured,
-          consumerKey: process.env.PESAPAL_CONSUMER_KEY || '',
-          // Don't send back the actual secret, just indicate if it's set
-          consumerSecret: process.env.PESAPAL_CONSUMER_SECRET ? '••••••••••••••••' : '',
-          sandbox: process.env.NODE_ENV !== 'production',
-          status: configured ? 'success' : 'idle',
-          message: configured ? 'Pesapal API is configured' : 'Pesapal API is not configured'
-        });
-      } catch (error) {
-        console.error('Error getting Pesapal config:', error);
-        res.status(500).json({ message: "Server error" });
-      }
-    });
-
-    app.post("/api/admin/payment-settings/pesapal-config", authMiddleware, adminMiddleware, async (req, res) => {
-      try {
-        const { consumerKey, consumerSecret } = req.body;
-
-        if (!consumerKey) {
-          return res.status(400).json({ message: "Consumer Key is required" });
-        }
-
-        // If consumerSecret is not provided and we already have one in env, keep using the existing one
-        const newConsumerSecret = consumerSecret || process.env.PESAPAL_CONSUMER_SECRET;
-
-        if (!newConsumerSecret) {
-          return res.status(400).json({ message: "Consumer Secret is required" });
-        }
-
-        // Update environment variables in memory
-        process.env.PESAPAL_CONSUMER_KEY = consumerKey;
-        process.env.PESAPAL_CONSUMER_SECRET = newConsumerSecret;
-
-        res.status(200).json({ 
-          message: "Pesapal API configuration saved successfully",
-          configured: true,
-          status: 'success'
-        });
-      } catch (error) {
-        console.error('Error saving Pesapal config:', error);
-        res.status(500).json({ message: "Server error" });
-      }
-    });
+    
 
     // System settings endpoints
   app.get("/api/admin/system-settings", authMiddleware, adminMiddleware, async (req, res) => {

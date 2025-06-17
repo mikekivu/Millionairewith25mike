@@ -41,12 +41,7 @@ export default function AdminPaymentSettings() {
     active: true
   });
 
-  const [pesapalConfig, setPesapalConfig] = useState({
-    consumerKey: '',
-    consumerSecret: ''
-  });
-
-  const [isPesapalConfigOpen, setIsPesapalConfigOpen] = useState(false);
+  
 
   const { data: paymentMethods, isLoading } = useQuery({
     queryKey: ['admin', 'payment-methods'],
@@ -57,14 +52,7 @@ export default function AdminPaymentSettings() {
     },
   });
 
-  const { data: pesapalApiConfig } = useQuery({
-    queryKey: ['admin', 'pesapal-config'],
-    queryFn: async () => {
-      const response = await apiRequest('GET', '/api/admin/payment-settings/pesapal-config');
-      if (!response.ok) throw new Error('Failed to fetch Pesapal config');
-      return response.json();
-    },
-  });
+  
 
   const { data: systemSettings } = useQuery({
     queryKey: ['admin', 'system-settings'],
@@ -168,28 +156,7 @@ export default function AdminPaymentSettings() {
     },
   });
 
-  const updatePesapalConfigMutation = useMutation({
-    mutationFn: async (config: { consumerKey: string; consumerSecret: string }) => {
-      const response = await apiRequest('POST', '/api/admin/payment-settings/pesapal-config', config);
-      if (!response.ok) throw new Error('Failed to update Pesapal config');
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'pesapal-config'] });
-      setIsPesapalConfigOpen(false);
-      toast({
-        title: "Success",
-        description: "Pesapal configuration updated successfully",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update Pesapal config",
-        variant: "destructive",
-      });
-    },
-  });
+  
 
   const resetForm = () => {
     setFormData({
@@ -267,81 +234,7 @@ export default function AdminPaymentSettings() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Pesapal Configuration</CardTitle>
-                  <CardDescription>
-                    Manage Pesapal payment integration settings
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">Status</span>
-                      <Badge variant="default">Active</Badge>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">Environment</span>
-                      <Badge variant={(() => {
-                        const paymentMode = systemSettings?.find((s: any) => s.key === 'payment_mode');
-                        return paymentMode?.value === 'live' ? 'default' : 'secondary';
-                      })()}>
-                        {(() => {
-                          const paymentMode = systemSettings?.find((s: any) => s.key === 'payment_mode');
-                          return paymentMode?.value === 'live' ? 'Live' : 'Sandbox';
-                        })()}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">Transaction Fee</span>
-                      <span className="text-sm">3.5%</span>
-                    </div>
-                    <div className="pt-2 border-t">
-                      <div className="flex justify-between items-center mb-2">
-                        <h4 className="font-medium">API Credentials</h4>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setPesapalConfig({
-                              consumerKey: pesapalApiConfig?.consumerKey || '',
-                              consumerSecret: ''
-                            });
-                            setIsPesapalConfigOpen(true);
-                          }}
-                        >
-                          <Edit className="h-4 w-4 mr-1" />
-                          Edit
-                        </Button>
-                      </div>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Consumer Key:</span>
-                          <span className="font-mono text-xs">
-                            {pesapalApiConfig?.configured ? (pesapalApiConfig?.consumerKey ? `${pesapalApiConfig.consumerKey.substring(0, 8)}...` : 'Set') : 'Not Set'}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Consumer Secret:</span>
-                          <span className="font-mono text-xs">
-                            {pesapalApiConfig?.configured ? '••••••••••••••••' : 'Not Set'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="pt-2">
-                      <p className="text-sm text-muted-foreground">
-                        Pesapal integration is configured for African markets. 
-                        Supports mobile money and card payments.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            
 
             <Card className="mb-8">
               <CardHeader>
@@ -804,59 +697,7 @@ export default function AdminPaymentSettings() {
         </DialogContent>
       </Dialog>
 
-      {/* Pesapal Configuration Modal */}
-      <Dialog open={isPesapalConfigOpen} onOpenChange={setIsPesapalConfigOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Pesapal API Configuration</DialogTitle>
-            <DialogDescription>
-              Configure your Pesapal API credentials. You can get these from your Pesapal Dashboard.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={(e) => {
-            e.preventDefault();
-            updatePesapalConfigMutation.mutate(pesapalConfig);
-          }}>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="pesapal-consumer-key" className="text-right">Consumer Key</Label>
-                <Input
-                  id="pesapal-consumer-key"
-                  value={pesapalConfig.consumerKey}
-                  onChange={(e) => setPesapalConfig({ ...pesapalConfig, consumerKey: e.target.value })}
-                  className="col-span-3"
-                  placeholder="Your Pesapal Consumer Key"
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="pesapal-consumer-secret" className="text-right">Consumer Secret</Label>
-                <Input
-                  id="pesapal-consumer-secret"
-                  type="password"
-                  value={pesapalConfig.consumerSecret}
-                  onChange={(e) => setPesapalConfig({ ...pesapalConfig, consumerSecret: e.target.value })}
-                  className="col-span-3"
-                  placeholder="Your Pesapal Consumer Secret"
-                />
-              </div>
-              <div className="col-span-4 text-sm text-muted-foreground">
-                <p>• Get your Pesapal API credentials from <a href="https://www.pesapal.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Pesapal Dashboard</a></p>
-                <p>• Leave Consumer Secret empty to keep the existing secret</p>
-                <p>• Supports mobile money and card payments across Africa</p>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsPesapalConfigOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={updatePesapalConfigMutation.isPending}>
-                {updatePesapalConfigMutation.isPending ? "Saving..." : "Save Configuration"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      
     </>
   );
 }

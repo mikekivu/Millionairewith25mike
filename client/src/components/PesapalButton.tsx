@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
-import { CreditCard, Loader2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { AlertTriangle } from 'lucide-react';
 
 interface PesapalButtonProps {
   amount: string;
@@ -18,88 +17,14 @@ interface PesapalButtonProps {
   disabled?: boolean;
 }
 
-export default function PesapalButton({
-  amount,
-  currency,
-  description,
-  userEmail,
-  userId,
-  type = 'deposit',
-  onSuccess,
-  onError,
-  disabled
-}: PesapalButtonProps) {
-  const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
-
-  const handlePesapalClick = async () => {
-    try {
-      setLoading(true);
-
-      // Create Pesapal order
-      const response = await fetch('/api/pesapal/create-order', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          amount,
-          currency,
-          email: userEmail,
-          description: description || `${type === 'deposit' ? 'Wallet Deposit' : 'Wallet Withdrawal'}`,
-          userId,
-          type
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create Pesapal order');
-      }
-
-      if (data.redirect_url) {
-        // Show different messages for demo vs live mode
-        const isDemoMode = data.demo_mode || data.redirect_url.includes('/demo-payment');
-
-        toast({
-          title: "Redirecting to Pesapal",
-          description: "Redirecting to Pesapal secure payment page where you can choose from Visa, Mastercard, M-Pesa, or other payment methods.",
-          duration: 3000,
-        });
-
-        // Small delay to show the toast, then redirect
-        setTimeout(() => {
-          window.location.href = data.redirect_url;
-        }, 1000);
-      } else {
-        throw new Error('No redirect URL received from Pesapal');
-      }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Payment failed';
-      toast({
-        title: "Payment Failed",
-        description: errorMessage,
-        variant: "destructive",
-      });
-      onError?.(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+export default function PesapalButton(props: PesapalButtonProps) {
   return (
     <Button
-      onClick={handlePesapalClick}
-      disabled={disabled || loading}
-      className="w-full bg-green-600 hover:bg-green-700 text-white"
+      disabled
+      className="w-full bg-gray-400 cursor-not-allowed"
     >
-      {loading ? (
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-      ) : (
-        <CreditCard className="mr-2 h-4 w-4" />
-      )}
-      {loading ? 'Processing...' : `Pay with Pesapal - ${currency} ${amount}`}
+      <AlertTriangle className="mr-2 h-4 w-4" />
+      Payment Services Disabled
     </Button>
   );
 }
