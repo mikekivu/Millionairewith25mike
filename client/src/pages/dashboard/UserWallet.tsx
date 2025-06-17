@@ -7,7 +7,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
-import PesapalButton from '@/components/PesapalButton';
 import { formatCurrency } from '@/lib/utils';
 import { Wallet, TrendingUp, TrendingDown, History, CreditCard } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -276,6 +275,21 @@ export default function UserWallet() {
     setDepositAmount('');
   };
 
+  // Payment methods section - Disabled
+  const renderPaymentMethods = () => {
+    return (
+      <Card>
+        <CardContent className="text-center py-8">
+          <CreditCard className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Payment Methods Disabled</h3>
+          <p className="text-muted-foreground">
+            All payment methods have been disabled. Please contact an administrator for wallet adjustments.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  };
+
   return (
     <DashboardLayout>
       <div className="max-w-4xl mx-auto p-4 space-y-6">
@@ -394,42 +408,13 @@ export default function UserWallet() {
                   </div>
                 )}
 
-                {isValidDepositAmount && !isNaN(parseFloat(depositAmount)) && parseFloat(depositAmount) >= 5 && parseFloat(depositAmount) <= 10000 && (
-                  <div className="space-y-3">
-                    <div className="border-t pt-4">
-                      <h4 className="font-medium mb-3">Select Payment Method</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        
-
-                        <div className="border rounded-lg p-4 hover:border-green-300 transition-colors">
-                          <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                                <CreditCard className="h-4 w-4 text-green-600" />
-                              </div>
-                              <span className="font-medium">Pesapal</span>
-                            </div>
-                            <span className="text-sm text-green-600 font-medium">Instant</span>
-                          </div>
-                          <p className="text-sm text-muted-foreground mb-3">
-                            Popular in Africa. Supports mobile money and cards.
-                          </p>
-                          <PesapalButton
-                            amount={depositAmount}
-                            currency={selectedCurrency}
-                            userEmail={user?.email || ''}
-                            userFirstName={user?.firstName || ''}
-                            userLastName={user?.lastName || ''}
-                            userId={user?.id || 0}
-                            type="deposit"
-                            onSuccess={handlePaymentSuccess}
-                            onError={handlePaymentError}
-                          />
-                        </div>
-                      </div>
-                    </div>
+                {/* Payment methods section - Disabled */}
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="text-center text-muted-foreground">
+                    <p>Payment operations are currently disabled.</p>
+                    <p className="text-sm">Contact an administrator for balance adjustments.</p>
                   </div>
-                )}
+                </div>
 
                 {!depositAmount && (
                   <div className="text-center py-8 text-muted-foreground">
@@ -507,38 +492,13 @@ export default function UserWallet() {
                   </div>
                 )}
 
-                {isValidWithdrawAmount && parseFloat(withdrawAmount) >= 10 && (
-                  <div className="space-y-3">
-                    <div className="border-t pt-4">
-                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-                        <h4 className="font-semibold text-yellow-800 mb-2">Security Notice</h4>
-                        <p className="text-sm text-yellow-700">
-                          For security and compliance reasons, all withdrawals require manual verification by our admin team. 
-                          Click below to submit your withdrawal request.
-                        </p>
-                      </div>
-
-                      <Button 
-                        onClick={handleWithdrawalRequest}
-                        disabled={isWithdrawing || !isValidWithdrawAmount}
-                        className="w-full"
-                        size="lg"
-                      >
-                        {isWithdrawing ? (
-                          <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                            Submitting Request...
-                          </>
-                        ) : (
-                          <>
-                            <TrendingDown className="h-4 w-4 mr-2" />
-                            Submit Withdrawal Request ({formatCurrency(parseFloat(withdrawAmount), selectedCurrency)})
-                          </>
-                        )}
-                      </Button>
-                    </div>
+                {/* Payment methods section - Disabled */}
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="text-center text-muted-foreground">
+                    <p>Payment operations are currently disabled.</p>
+                    <p className="text-sm">Contact an administrator for balance adjustments.</p>
                   </div>
-                )}
+                </div>
 
                 {!withdrawAmount && (
                   <div className="text-center py-8 text-muted-foreground">

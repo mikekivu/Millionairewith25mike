@@ -261,9 +261,10 @@ export default function AdminPaymentSettings() {
           <div className="max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-2xl md:text-3xl font-bold">Payment Settings</h1>
-              <Button onClick={handleAddClick}>
-                <Plus className="h-4 w-4 mr-2" /> Add Payment Method
-              </Button>
+              <div className="bg-red-100 border border-red-300 rounded-lg p-3">
+                <p className="text-red-800 font-semibold">⚠️ All Payment Methods Disabled</p>
+                <p className="text-red-600 text-sm">Payment functionality has been temporarily disabled</p>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">

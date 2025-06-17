@@ -562,205 +562,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Wallet operations
   router.post('/user/deposits', authMiddleware, async (req, res) => {
-    try {
-      const userId = req.session.userId;
-
-      // All deposits start as pending - no automatic completion
-      const validatedData = insertTransactionSchema.parse({
-        ...req.body,
-        userId,
-        type: "deposit",
-        status: "pending", // Always start as pending
-        paymentMethod: req.body.paymentMethod || "bank_transfer"
-      });
-
-      const transaction = await storage.createTransaction(validatedData);
-
-      // DO NOT add money to wallet automatically - only when payment is actually received
-
-      // Create notifications for deposit
-      try {
-        // Get user info
-        const user = await storage.getUser(userId);
-
-        // Notify user about deposit initiation
-        await storage.createNotification({
-          userId,
-          title: "Deposit Initiated",
-          message: `Your deposit of ${validatedData.amount} ${validatedData.currency} has been initiated and is pending confirmation`,
-          type: "deposit_pending",
-          entityId: transaction.id,
-          entityType: "transaction",
-          link: "/dashboard/transactions"
-        });
-
-        // Notify admins about new deposit
-        const allUsers = await storage.getAllUsers();
-        const adminUsers = allUsers.filter(u => u.role === 'admin');
-
-        for (const admin of adminUsers) {
-          await storage.createNotification({
-            userId: admin.id,
-            title: "New Deposit Request",
-            message: `${user?.firstName} ${user?.lastName} has initiated a deposit of ${validatedData.amount} ${validatedData.currency}`,
-            type: "deposit_request",
-            entityId: transaction.id,
-            entityType: "transaction",
-            link: "/admin/transactions"
-          });
-        }
-      } catch (notifError) {
-        console.error("Failed to create deposit notifications:", notifError);
-      }
-
-      res.status(201).json({ 
-        message: "Deposit initiated", 
-        transaction 
-      });
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ 
-          message: "Validation error", 
-          errors: error.errors 
-        });
-      }
-      console.error(error);
-      res.status(500).json({ message: "Server error" });
-    }
+    res.status(503).json({ 
+      message: "Deposit functionality is temporarily disabled. Please contact an administrator for balance adjustments." 
+    });
   });
 
   router.post('/user/withdrawals', authMiddleware, async (req, res) => {
-    try {
-      const userId = req.session.userId;
-      const { amount, currency, paymentMethod, transactionDetails } = req.body;
-
-      // Validate minimum withdrawal amount
-      const withdrawAmount = parseFloat(amount);
-      if (withdrawAmount < 10) {
-        return res.status(400).json({ message: "Minimum withdrawal amount is $10.00" });
-      }
-
-      // Check if user has enough balance
-      const user = await storage.getUser(userId);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      const walletBalance = parseFloat(user.walletBalance);
-      if (walletBalance < withdrawAmount) {
-        return res.status(400).json({ message: "Insufficient wallet balance" });
-      }
-
-      // Check if this is a demo user
-      const isDemoUser = await storage.isDemoUser(userId);
-
-      // For demo users, auto-complete withdrawals instantly
-      const transactionStatus = isDemoUser ? "completed" : "pending";
-      const description = isDemoUser 
-        ? `Withdrawal processed successfully`
-        : `Withdrawal request - Pending admin approval`;
-
-      // Create withdrawal request
-      const transaction = await storage.createTransaction({
-        userId,
-        type: "withdrawal",
-        amount,
-        currency: currency || "USD",
-        status: transactionStatus,
-        paymentMethod: paymentMethod || "bank_transfer",
-        transactionDetails: transactionDetails || `Withdrawal request for ${amount} ${currency || "USD"}`,
-        description
-      });
-
-      // If demo user, add success notification (wallet already deducted in createTransaction)
-      if (isDemoUser) {
-        // Create success notification for demo user
-        await storage.createNotification({
-          userId,
-          title: "Withdrawal Successful",
-          message: `Your withdrawal of ${amount} ${currency || "USD"} has been processed successfully. Your funds have been transferred to your account.`,
-          type: "withdrawal_approved",
-          entityId: transaction.id,
-          entityType: "transaction",
-          link: "/dashboard/transactions"
-        });
-      }
-
-      // Create notification for admin about new withdrawal request
-      try {
-        // Get all admin users
-        const allUsers = await storage.getAllUsers();
-        const adminUsers = allUsers.filter(u => u.role === 'admin');
-
-        // Create notification for each admin
-        for (const admin of adminUsers) {
-          await storage.createNotification({
-            userId: admin.id,
-            title: "New Withdrawal Request",
-            message: `User ${user.firstName} ${user.lastName} has requested a withdrawal of ${amount} ${currency || "USD"}`,
-            type: "withdrawal_request",
-            entityId: transaction.id,
-            entityType: "transaction",
-            link: "/admin/withdrawals"
-          });
-        }
-      } catch (notifError) {
-        console.error("Failed to create admin notification:", notifError);
-        // Don't fail the whole request if notification fails
-      }
-
-      // Create notification for user about submission
-      try {
-        await storage.createNotification({
-          userId,
-          title: "Withdrawal Request Submitted",
-          message: `Your withdrawal request for ${amount} ${currency || "USD"} has been submitted for admin approval`,
-          type: "withdrawal_submitted",
-          entityId: transaction.id,
-          entityType: "transaction",
-          link: "/dashboard/transactions"
-        });
-      } catch (notifError) {
-        console.error("Failed to create user notification:", notifError);
-      }
-
-      res.status(201).json({ 
-        message: "Withdrawal request submitted successfully. You will be notified once it's reviewed by our admin team.", 
-        transaction 
-      });
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ 
-          message: "Validation error", 
-          errors: error.errors 
-        });
-      }
-      console.error(error);
-      res.status(500).json({ message: "Server error" });
-    }
+    res.status(503).json({ 
+      message: "Withdrawal functionality is temporarily disabled. Please contact an administrator for balance adjustments." 
+    });
   });
 
   
 
-  // Pesapal Routes
+  // Pesapal Routes - Disabled
   app.post("/api/pesapal/create-order", async (req, res) => {
-    const { createPesapalOrder } = await import('./pesapal');
-    await createPesapalOrder(req, res);
+    res.status(503).json({ error: "Payment services are temporarily disabled" });
   });
 
   app.get("/api/pesapal/callback", async (req, res) => {
-    const { handlePesapalCallback } = await import('./pesapal');
-    await handlePesapalCallback(req, res);
+    res.status(503).json({ error: "Payment services are temporarily disabled" });
   });
 
   app.post("/api/pesapal/ipn", async (req, res) => {
-    const { handlePesapalIPN } = await import('./pesapal');
-    await handlePesapalIPN(req, res);
+    res.status(503).json({ error: "Payment services are temporarily disabled" });
   });
 
   app.get("/api/pesapal/transaction-status/:orderTrackingId", async (req, res) => {
-    const { getPesapalTransactionStatus } = await import('./pesapal');
-    await getPesapalTransactionStatus(req, res);
+    res.status(503).json({ error: "Payment services are temporarily disabled" });
   });
 
   // Demo Pesapal payment page simulation
@@ -1264,26 +1093,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/payment-settings", async (req, res) => {
-    try {
-      const paymentSettings = await storage.getAllPaymentSettings();
-      const activePaymentMethods = paymentSettings
-        .filter(setting => setting.active)
-        .map(setting => ({
-          id: setting.id,
-          method: setting.method,
-          name: setting.name,
-          instructions: setting.instructions,
-          credentials: setting.credentials,
-          minAmount: setting.minAmount,
-          maxAmount: setting.maxAmount,
-          active: setting.active
-        }));
-
-      res.status(200).json(activePaymentMethods);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Server error" });
-    }
+    // Return empty array - no payment methods available
+    res.status(200).json([]);
   });
 
   // Admin Routes
