@@ -69,6 +69,9 @@ export default function PayPalButton({
     setIsLoading(true);
 
     try {
+      // Generate a unique reference for this transaction
+      const reference = `PP_${Date.now()}_${userId}_${Math.random().toString(36).substr(2, 9)}`;
+
       // Create PayPal order
       const response = await fetch('/api/paypal/create-order', {
         method: 'POST',
@@ -79,6 +82,7 @@ export default function PayPalButton({
         body: JSON.stringify({
           amount,
           currency,
+          reference,
           description: description || `${type} via PayPal`,
           userEmail,
           userPhone,

@@ -161,11 +161,29 @@ export async function getPayPalConfig(req: Request, res: Response) {
 
 export async function createPayPalOrder(req: Request, res: Response) {
   try {
-    const { amount, currency, reference } = req.body;
+    const { amount, currency, reference, description, userId, type } = req.body;
 
     if (!amount || !reference) {
       return res.status(400).json({ error: 'Amount and reference are required' });
     }
+
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    // Create a pending transaction record first
+    const { storage } = await import('./storage');
+    await storage.createTransaction({
+      userId,
+      type: type || 'deposit',
+      amount: amount.toString(),
+      currency: currency || 'USD',
+      status: 'pending',
+      paymentMethod: 'paypal',
+      transactionDetails: description || `PayPal ${type || 'deposit'}`,
+      description: description || `PayPal ${type || 'deposit'} of ${amount} ${currency || 'USD'}`,
+      reference
+    });
 
     const order = await paypalService.createOrder(amount, currency, reference);
     res.json(order);
