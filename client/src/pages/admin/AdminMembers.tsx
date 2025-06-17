@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import EditWalletDialog from '@/components/dashboard/EditWalletDialog';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useToast } from "@/hooks/use-toast";
 import { Search, UserPlus, Edit, Trash2, DollarSign, MessageSquare, Eye, Key } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
@@ -264,7 +265,8 @@ export default function AdminMembers() {
   };
 
   return (
-    <div className="space-y-6">
+    <DashboardLayout>
+      <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Member Management</h1>
@@ -664,6 +666,7 @@ export default function AdminMembers() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }
