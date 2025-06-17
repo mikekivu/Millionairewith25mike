@@ -742,15 +742,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // PayPal Routes
   app.get("/api/paypal/client-token", async (req, res) => {
-    try {
-      res.json({ 
-        clientId: process.env.PAYPAL_CLIENT_ID || '',
-        clientToken: process.env.PAYPAL_CLIENT_ID || '' 
-      });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Failed to get client token" });
-    }
+    const { loadPaypalDefault } = await import('./paypal');
+    await loadPaypalDefault(req, res);
   });
 
   app.post("/api/paypal/create-order", async (req, res) => {

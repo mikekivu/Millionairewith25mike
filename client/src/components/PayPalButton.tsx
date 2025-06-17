@@ -32,9 +32,10 @@ export function PayPalButton({
       .then(data => {
         console.log('PayPal config received:', data);
 
-        if (!data.configured) {
-          console.warn('PayPal not properly configured');
-          onError('PayPal not configured properly');
+        // Check if PayPal is properly configured
+        if (!data.configured || data.error) {
+          console.warn('PayPal not properly configured:', data.error || 'Unknown error');
+          onError(data.error || 'PayPal not configured properly');
           return;
         }
 
