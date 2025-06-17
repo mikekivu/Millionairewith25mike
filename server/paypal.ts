@@ -244,6 +244,25 @@ export async function capturePaypalOrder(req: Request, res: Response) {
 }
 
 export async function loadPaypalDefault(req: Request, res: Response) {
-  const clientToken = await getClientToken();
-  res.json({ clientToken });
+  try {
+    const clientToken = await getClientToken();
+    const paymentMode = await storage.getSystemSetting('payment_mode');
+    const environment = paymentMode?.value === 'live' ? 'live' : 'sandbox';
+    
+    // Return both client token and environment info
+    res.json({ 
+      clientToken,
+      clientId: PAYPAL_CLIENT_ID || 'demo',
+      environment,
+      configured: !!(PAYPAL_CLIENT_ID && PAYPAL_CLIENT_SECRET)
+    });
+  } catch (error) {
+    console.error('Error loading PayPal config:', error);
+    res.json({ 
+      clientToken: 'demo_client_token',
+      clientId: 'demo',
+      environment: 'sandbox',
+      configured: false
+    });
+  }
 }

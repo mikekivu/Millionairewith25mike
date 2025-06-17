@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 
 declare global {
@@ -20,36 +21,46 @@ export function PayPalButton({
   currency = 'USD'
 }: PayPalButtonProps) {
   const paypalRef = useRef<HTMLDivElement>(null);
-  const [clientId, setClientId] = useState<string>('');
+  const [paypalConfig, setPaypalConfig] = useState<{
+    clientId: string;
+    environment: string;
+  } | null>(null);
 
   useEffect(() => {
-    // Get PayPal client ID from backend
+    // Get PayPal configuration from backend (includes client ID and environment)
     fetch('/api/paypal/client-token')
       .then(res => res.json())
       .then(data => {
-        if (data.clientId) {
-          setClientId(data.clientId);
-        }
+        // The backend should return both clientToken and environment info
+        setPaypalConfig({
+          clientId: data.clientId || 'demo',
+          environment: data.environment || 'sandbox'
+        });
       })
       .catch(console.error);
   }, []);
 
   useEffect(() => {
-    if (!clientId) return;
+    if (!paypalConfig) return;
 
-    // Load PayPal SDK if not already loaded
-    if (!window.paypal) {
-      const script = document.createElement('script');
-      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}`;
-      script.async = true;
-      script.onload = () => initPayPalButton();
-      document.body.appendChild(script);
-    } else {
-      initPayPalButton();
+    // Remove any existing PayPal scripts to avoid conflicts
+    const existingScript = document.querySelector('script[src*="paypal.com/sdk/js"]');
+    if (existingScript) {
+      existingScript.remove();
     }
+
+    // Load PayPal SDK with the correct environment
+    const script = document.createElement('script');
+    script.src = `https://www.paypal.com/sdk/js?client-id=${paypalConfig.clientId}&currency=${currency}`;
+    script.async = true;
+    script.onload = () => initPayPalButton();
+    document.body.appendChild(script);
 
     function initPayPalButton() {
       if (window.paypal && paypalRef.current) {
+        // Clear any existing buttons
+        paypalRef.current.innerHTML = '';
+        
         window.paypal.Buttons({
           createOrder: (data: any, actions: any) => {
             return actions.order.create({
@@ -75,9 +86,17 @@ export function PayPalButton({
         }).render(paypalRef.current);
       }
     }
-  }, [amount, currency, onSuccess, onError, clientId]);
 
-  if (!clientId) {
+    // Cleanup function
+    return () => {
+      const scriptToRemove = document.querySelector('script[src*="paypal.com/sdk/js"]');
+      if (scriptToRemove) {
+        scriptToRemove.remove();
+      }
+    };
+  }, [amount, currency, onSuccess, onError, paypalConfig]);
+
+  if (!paypalConfig) {
     return <div>Loading PayPal...</div>;
   }
 
