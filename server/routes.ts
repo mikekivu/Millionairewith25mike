@@ -110,31 +110,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   };
 
-  // Coinbase Webhook
+  // Payment webhooks disabled
   app.post("/api/webhook/coinbase", async (req, res) => {
-    // In a production environment, verify webhook signature
-    const { event } = req.body;
+    res.status(503).json({ error: "Payment services are temporarily disabled" });
+  });
 
-    if (event && event.type === "charge:confirmed") {
-      const { data } = event;
-      if (data && data.metadata && data.metadata.userId) {
-        const userId = parseInt(data.metadata.userId);
-        const amount = data.pricing.local.amount;
-
-        // Create transaction
-        await storage.createTransaction({
-          userId,
-          type: "deposit",
-          amount,
-          currency: "USD",
-          status: "completed",
-          paymentMethod: "coinbase",
-          transactionDetails: `Coinbase deposit: ${data.code}`
-        });
-      }
-    }
-
-    res.status(200).end();
+  app.post("/api/webhook/paypal", async (req, res) => {
+    res.status(503).json({ error: "Payment services are temporarily disabled" });
   });
 
   // Authentication Routes
@@ -1095,6 +1077,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/payment-settings", async (req, res) => {
     // Return empty array - no payment methods available
     res.status(200).json([]);
+  });
+
+  app.get("/api/paypal/config", async (req, res) => {
+    res.status(503).json({ error: "PayPal services are permanently disabled" });
   });
 
   // Admin Routes
