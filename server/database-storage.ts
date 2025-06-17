@@ -8,7 +8,8 @@ import {
   contactMessages, ContactMessage, InsertContactMessage,
   userMessages, UserMessage, InsertUserMessage,
   notifications, Notification, InsertNotification,
-  systemSettings, SystemSetting
+  systemSettings, SystemSetting, InsertSystemSetting,
+  paymentConfigurations
 } from "@shared/schema";
 import { db } from "./db";
 import { nanoid } from "nanoid";
@@ -1022,6 +1023,25 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  async getAllPaymentConfigurations(): Promise<any[]> {
+    try {
+      return db.select().from(paymentConfigurations);
+    } catch (error) {
+      console.error('Error fetching all payment configurations:', error);
+      throw error;
+    }
+  }
+
+  async getPaymentConfiguration(id: number): Promise<any | undefined> {
+    try {
+      const [config] = await db.select().from(paymentConfigurations).where(eq(paymentConfigurations.id, id));
+      return config;
+    } catch (error) {
+      console.error('Error fetching payment configuration by ID:', error);
+      throw error;
+    }
+  }
+
   private async createSystemSettingsTable(): Promise<void> {
     try {
       await db.execute(`
@@ -1030,7 +1050,8 @@ export class DatabaseStorage implements IStorage {
           key TEXT NOT NULL UNIQUE,
           value TEXT NOT NULL,
           description TEXT,
-          updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+          updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+          created_at TIMESTAMP NOT NULL DEFAULT NOW()
         );
       `);
 
