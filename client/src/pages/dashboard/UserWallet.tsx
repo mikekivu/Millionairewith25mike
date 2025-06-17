@@ -173,7 +173,7 @@ export default function UserWallet() {
   };
 
   const walletBalance = parseFloat(user?.walletBalance || '0');
-  const isValidDepositAmount = depositAmount && parseFloat(depositAmount) > 0;
+  const isValidDepositAmount = depositAmount && !isNaN(parseFloat(depositAmount)) && parseFloat(depositAmount) > 0;
   const isValidWithdrawAmount = withdrawAmount && parseFloat(withdrawAmount) > 0 && parseFloat(withdrawAmount) <= walletBalance;
 
   // Debug log for wallet balance
@@ -319,7 +319,13 @@ export default function UserWallet() {
                       type="number"
                       placeholder="100.00"
                       value={depositAmount}
-                      onChange={(e) => setDepositAmount(e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        // Only allow valid number inputs
+                        if (value === '' || (!isNaN(parseFloat(value)) && isFinite(parseFloat(value)))) {
+                          setDepositAmount(value);
+                        }
+                      }}
                       min="5"
                       max="10000"
                       step="0.01"
@@ -343,19 +349,19 @@ export default function UserWallet() {
                   </div>
                 </div>
 
-                {depositAmount && parseFloat(depositAmount) < 5 && (
+                {depositAmount && !isNaN(parseFloat(depositAmount)) && parseFloat(depositAmount) < 5 && (
                   <div className="text-sm text-orange-600 bg-orange-50 border border-orange-200 rounded p-3">
                     Minimum deposit amount is $5.00
                   </div>
                 )}
 
-                {depositAmount && parseFloat(depositAmount) > 10000 && (
+                {depositAmount && !isNaN(parseFloat(depositAmount)) && parseFloat(depositAmount) > 10000 && (
                   <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded p-3">
                     Maximum deposit amount is $10,000.00 per transaction
                   </div>
                 )}
 
-                {isValidDepositAmount && parseFloat(depositAmount) >= 5 && parseFloat(depositAmount) <= 10000 && (
+                {isValidDepositAmount && !isNaN(parseFloat(depositAmount)) && parseFloat(depositAmount) >= 5 && parseFloat(depositAmount) <= 10000 && (
                   <div className="space-y-3">
                     <div className="border-t pt-4">
                       <h4 className="font-medium mb-3">Select Payment Method</h4>
