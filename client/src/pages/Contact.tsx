@@ -104,15 +104,7 @@ const Contact = () => {
                       <Mail className="h-5 w-5 text-primary" />
                       <div>
                         <p className="font-medium">Email</p>
-                        <p className="text-muted-foreground">support@millionarewith25.com</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <Phone className="h-5 w-5 text-primary" />
-                      <div>
-                        <p className="font-medium">Phone</p>
-                        <p className="text-muted-foreground">+1 (555) 123-4567</p>
+                        <p className="text-muted-foreground">info@prosperitygroups.io</p>
                       </div>
                     </div>
 

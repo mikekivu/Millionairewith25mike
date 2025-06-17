@@ -575,9 +575,11 @@ export default function AdminMembers() {
 
 **Code Analysis:**
 
+/*
 The code was modified to address the admin wallet balance editing functionality by:
 
-1.  Importing the `EditWalletDialog` component.
-2.  Removing the `updateWalletMutation` as it's handled by the `EditWalletDialog`.
-3.  Removing the unused wallet state variables like `walletAmount` and `walletOperation`.
-4.  Replacing the original wallet dialog implementation with the new `EditWalletDialog` component.
+1. Importing the `EditWalletDialog` component.
+2. Removing the `updateWalletMutation` as it's handled by the `EditWalletDialog`.
+3. Removing the unused wallet state variables like `walletAmount` and `walletOperation`.
+4. Replacing the original wallet dialog implementation with the new `EditWalletDialog` component.
+*/

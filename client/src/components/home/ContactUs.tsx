@@ -26,7 +26,7 @@ export default function ContactUs() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const contactInfo: ContactInfo = {
-    email: 'info@millionairewith25.com',
+    email: 'info@prosperitygroups.io',
     phone: '',
     chatAvailable: true
   };
