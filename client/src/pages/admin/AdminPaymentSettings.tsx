@@ -842,7 +842,8 @@ export default function AdminPaymentSettings() {
               <div className="col-span-4 text-sm text-muted-foreground">
                 <p>• Get your Pesapal API credentials from <a href="https://www.pesapal.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Pesapal Dashboard</a></p>
                 <p>• Leave Consumer Secret empty to keep the existing secret</p>
-                <p>• Supports mobile money and card payments across Africa              </div>
+                <p>• Supports mobile money and card payments across Africa</p>
+              </div>
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setIsPesapalConfigOpen(false)}>
