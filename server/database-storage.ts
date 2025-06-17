@@ -1032,12 +1032,75 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async getPaymentConfiguration(id: number): Promise<any | undefined> {
+  async getPaymentConfiguration(provider: string, environment: string): Promise<any | undefined> {
+    try {
+      const [config] = await db.select().from(paymentConfigurations).where(
+        and(
+          eq(paymentConfigurations.provider, provider),
+          eq(paymentConfigurations.environment, environment)
+        )
+      );
+      return config;
+    } catch (error) {
+      console.error('Error fetching payment configuration:', error);
+      throw error;
+    }
+  }
+
+  async getPaymentConfigurationById(id: number): Promise<any | undefined> {
     try {
       const [config] = await db.select().from(paymentConfigurations).where(eq(paymentConfigurations.id, id));
       return config;
     } catch (error) {
       console.error('Error fetching payment configuration by ID:', error);
+      throw error;
+    }
+  }
+
+  async createPaymentConfiguration(data: any): Promise<any> {
+    try {
+      const [config] = await db.insert(paymentConfigurations).values(data).returning();
+      return config;
+    } catch (error) {
+      console.error('Error creating payment configuration:', error);
+      throw error;
+    }
+  }
+
+  async updatePaymentConfiguration(id: number, data: any): Promise<any | undefined> {
+    try {
+      const [config] = await db
+        .update(paymentConfigurations)
+        .set(data)
+        .where(eq(paymentConfigurations.id, id))
+        .returning();
+      return config;
+    } catch (error) {
+      console.error('Error updating payment configuration:', error);
+      throw error;
+    }
+  }
+
+  async togglePaymentConfigurationStatus(id: number, active: boolean): Promise<any | undefined> {
+    try {
+      const [config] = await db
+        .update(paymentConfigurations)
+        .set({ active })
+        .where(eq(paymentConfigurations.id, id))
+        .returning();
+      return config;
+    } catch (error) {
+      console.error('Error toggling payment configuration status:', error);
+      throw error;
+    }
+  }
+
+  async deletePaymentConfiguration(id: number): Promise<boolean> {
+    try {
+      const result = await db.delete(paymentConfigurations).where(eq(paymentConfigurations.id, id));
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error('Error deleting payment configuration:', error);
       throw error;
     }
   }
@@ -1050,14 +1113,14 @@ export class DatabaseStorage implements IStorage {
           key TEXT NOT NULL UNIQUE,
           value TEXT NOT NULL,
           description TEXT,
-          updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-          created_at TIMESTAMP NOT NULL DEFAULT NOW()
+          created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+          updated_at TIMESTAMP NOT NULL DEFAULT NOW()
         );
       `);
 
       // Insert default payment_mode setting
       await db.execute(`
-                INSERT INTO system_settings (key, value, description)
+        INSERT INTO system_settings (key, value, description)
         VALUES ('payment_mode', 'sandbox', 'Payment gateway environment mode (live or sandbox)')
         ON CONFLICT (key) DO NOTHING;
       `);
