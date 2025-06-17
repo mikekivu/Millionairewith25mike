@@ -1,15 +1,24 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import EditWalletDialog from '@/components/dashboard/EditWalletDialog';
 import { useToast } from "@/hooks/use-toast";
 import { Search, UserPlus, Edit, Trash2, DollarSign, MessageSquare, Eye } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
@@ -46,7 +55,7 @@ export default function AdminMembers() {
   const [walletDialogOpen, setWalletDialogOpen] = useState(false);
   const [messageDialogOpen, setMessageDialogOpen] = useState(false);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
-  
+
   // Form states
   const [editForm, setEditForm] = useState<EditUserForm>({
     firstName: "",
@@ -56,8 +65,6 @@ export default function AdminMembers() {
     active: true,
     walletBalance: "0"
   });
-  const [walletAmount, setWalletAmount] = useState("");
-  const [walletOperation, setWalletOperation] = useState<'add' | 'subtract' | 'set'>('add');
   const [messageSubject, setMessageSubject] = useState("");
   const [messageContent, setMessageContent] = useState("");
 
@@ -97,32 +104,6 @@ export default function AdminMembers() {
       toast({ 
         title: "Error", 
         description: error.message || "Failed to update user",
-        variant: "destructive" 
-      });
-    },
-  });
-
-  // Update wallet mutation
-  const updateWalletMutation = useMutation({
-    mutationFn: async ({ userId, amount, operation }: { userId: number; amount: string; operation: 'add' | 'subtract' | 'set' }) => {
-      const response = await apiRequest('PUT', `/api/admin/users/${userId}/wallet`, { amount, operation });
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Failed to update wallet' }));
-        throw new Error(errorData.message || 'Failed to update wallet');
-      }
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({ title: "Success", description: "Wallet updated successfully" });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
-      setWalletDialogOpen(false);
-      setWalletAmount("");
-      setSelectedUser(null);
-    },
-    onError: (error: Error) => {
-      toast({ 
-        title: "Error", 
-        description: error.message || "Failed to update wallet",
         variant: "destructive" 
       });
     },
@@ -214,26 +195,16 @@ export default function AdminMembers() {
 
   const handleUpdateUser = () => {
     if (!selectedUser) return;
-    
+
     updateUserMutation.mutate({
       userId: selectedUser.id,
       userData: editForm
     });
   };
 
-  const handleUpdateWallet = () => {
-    if (!selectedUser || !walletAmount) return;
-    
-    updateWalletMutation.mutate({
-      userId: selectedUser.id,
-      amount: walletAmount,
-      operation: walletOperation
-    });
-  };
-
   const handleSendMessage = () => {
     if (!selectedUser || !messageSubject || !messageContent) return;
-    
+
     sendMessageMutation.mutate({
       recipientId: selectedUser.id,
       subject: messageSubject,
@@ -429,7 +400,7 @@ export default function AdminMembers() {
                   </p>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <Label className="font-medium">Email</Label>
@@ -548,64 +519,11 @@ export default function AdminMembers() {
       </Dialog>
 
       {/* Wallet Management Dialog */}
-      <Dialog open={walletDialogOpen} onOpenChange={setWalletDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Manage Wallet</DialogTitle>
-            <DialogDescription>
-              Update user wallet balance
-            </DialogDescription>
-          </DialogHeader>
-          {selectedUser && (
-            <div className="space-y-4">
-              <div>
-                <Label>Current Balance</Label>
-                <p className="text-2xl font-bold font-mono">
-                  ${parseFloat(selectedUser.walletBalance).toFixed(2)}
-                </p>
-              </div>
-              <div>
-                <Label htmlFor="operation">Operation</Label>
-                <Select
-                  value={walletOperation}
-                  onValueChange={(value: 'add' | 'subtract' | 'set') => setWalletOperation(value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="add">Add to Balance</SelectItem>
-                    <SelectItem value="subtract">Subtract from Balance</SelectItem>
-                    <SelectItem value="set">Set Balance</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="amount">Amount ($)</Label>
-                <Input
-                  id="amount"
-                  type="number"
-                  step="0.01"
-                  placeholder="0.00"
-                  value={walletAmount}
-                  onChange={(e) => setWalletAmount(e.target.value)}
-                />
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setWalletDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleUpdateWallet}
-              disabled={updateWalletMutation.isPending || !walletAmount}
-            >
-              {updateWalletMutation.isPending ? "Updating..." : "Update Wallet"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <EditWalletDialog 
+        user={selectedUser}
+        open={walletDialogOpen}
+        onOpenChange={setWalletDialogOpen}
+      />
 
       {/* Send Message Dialog */}
       <Dialog open={messageDialogOpen} onOpenChange={setMessageDialogOpen}>
@@ -653,3 +571,13 @@ export default function AdminMembers() {
     </div>
   );
 }
+```
+
+**Code Analysis:**
+
+The code was modified to address the admin wallet balance editing functionality by:
+
+1.  Importing the `EditWalletDialog` component.
+2.  Removing the `updateWalletMutation` as it's handled by the `EditWalletDialog`.
+3.  Removing the unused wallet state variables like `walletAmount` and `walletOperation`.
+4.  Replacing the original wallet dialog implementation with the new `EditWalletDialog` component.
