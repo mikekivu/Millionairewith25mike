@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 
 declare global {
@@ -32,13 +31,13 @@ export function PayPalButton({
       .then(res => res.json())
       .then(data => {
         console.log('PayPal config received:', data);
-        
+
         if (!data.configured) {
           console.warn('PayPal not properly configured');
           onError(new Error('PayPal not configured properly'));
           return;
         }
-        
+
         // The backend should return both clientToken and environment info
         setPaypalConfig({
           clientId: data.clientId || 'demo',
@@ -99,9 +98,9 @@ export function PayPalButton({
       try {
         // Clear any existing buttons
         paypalRef.current.innerHTML = '';
-        
+
         console.log('Initializing PayPal button with amount:', amount, 'currency:', currency);
-        
+
         window.paypal.Buttons({
           createOrder: (data: any, actions: any) => {
             console.log('Creating PayPal order...');
@@ -122,12 +121,14 @@ export function PayPalButton({
               onSuccess(details);
             } catch (error) {
               console.error('PayPal capture failed:', error);
-              onError(error);
+              const errorMessage = error?.message || error?.toString() || "PayPal payment failed";
+              onError(errorMessage);
             }
           },
           onError: (error: any) => {
             console.error('PayPal button error:', error);
-            onError(error);
+            const errorMessage = error?.message || error?.toString() || "PayPal payment failed";
+            onError(errorMessage);
           },
           onCancel: (data: any) => {
             console.log('PayPal payment cancelled:', data);

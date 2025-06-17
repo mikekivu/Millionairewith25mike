@@ -63,11 +63,23 @@ export default function UserWallet() {
     setWithdrawAmount('');
   };
 
-  const handlePaymentError = (error: string) => {
+  const handlePaymentError = (error: string | Error | any) => {
     console.error("Payment error:", error);
+    
+    // Convert error to string safely
+    let errorMessage = "An error occurred while processing your payment. Please try again.";
+    
+    if (typeof error === 'string' && error.trim()) {
+      errorMessage = error;
+    } else if (error instanceof Error && error.message) {
+      errorMessage = error.message;
+    } else if (error && typeof error === 'object' && error.message) {
+      errorMessage = error.message;
+    }
+    
     toast({
       title: "Payment Failed",
-      description: error || "An error occurred while processing your payment. Please try again.",
+      description: errorMessage,
       variant: "destructive",
     });
   };
