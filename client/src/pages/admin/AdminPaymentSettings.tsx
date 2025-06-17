@@ -41,17 +41,11 @@ export default function AdminPaymentSettings() {
     active: true
   });
 
-  const [paypalConfig, setPaypalConfig] = useState({
-    clientId: '',
-    clientSecret: ''
-  });
-
   const [pesapalConfig, setPesapalConfig] = useState({
     consumerKey: '',
     consumerSecret: ''
   });
 
-  const [isPaypalConfigOpen, setIsPaypalConfigOpen] = useState(false);
   const [isPesapalConfigOpen, setIsPesapalConfigOpen] = useState(false);
 
   const { data: paymentMethods, isLoading } = useQuery({
@@ -59,15 +53,6 @@ export default function AdminPaymentSettings() {
     queryFn: async () => {
       const response = await apiRequest('GET', '/api/admin/payment-settings');
       if (!response.ok) throw new Error('Failed to fetch payment methods');
-      return response.json();
-    },
-  });
-
-  const { data: paypalApiConfig } = useQuery({
-    queryKey: ['admin', 'paypal-config'],
-    queryFn: async () => {
-      const response = await apiRequest('GET', '/api/admin/payment-settings/paypal-config');
-      if (!response.ok) throw new Error('Failed to fetch PayPal config');
       return response.json();
     },
   });
@@ -183,29 +168,6 @@ export default function AdminPaymentSettings() {
     },
   });
 
-  const updatePaypalConfigMutation = useMutation({
-    mutationFn: async (config: { clientId: string; clientSecret: string }) => {
-      const response = await apiRequest('POST', '/api/admin/payment-settings/paypal-config', config);
-      if (!response.ok) throw new Error('Failed to update PayPal config');
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'paypal-config'] });
-      setIsPaypalConfigOpen(false);
-      toast({
-        title: "Success",
-        description: "PayPal configuration updated successfully",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update PayPal config",
-        variant: "destructive",
-      });
-    },
-  });
-
   const updatePesapalConfigMutation = useMutation({
     mutationFn: async (config: { consumerKey: string; consumerSecret: string }) => {
       const response = await apiRequest('POST', '/api/admin/payment-settings/pesapal-config', config);
@@ -305,77 +267,7 @@ export default function AdminPaymentSettings() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              <Card>
-                <CardHeader>
-                  <CardTitle>PayPal Configuration</CardTitle>
-                  <CardDescription>
-                    Manage PayPal payment integration settings
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">Status</span>
-                      <Badge variant="default">Active</Badge>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">Environment</span>
-                      <Badge variant={(() => {
-                        const paymentMode = systemSettings?.find((s: any) => s.key === 'payment_mode');
-                        return paymentMode?.value === 'live' ? 'default' : 'secondary';
-                      })()}>
-                        {(() => {
-                          const paymentMode = systemSettings?.find((s: any) => s.key === 'payment_mode');
-                          return paymentMode?.value === 'live' ? 'Live' : 'Sandbox';
-                        })()}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">Transaction Fee</span>
-                      <span className="text-sm">2.9% + $0.30</span>
-                    </div>
-                    <div className="pt-2 border-t">
-                      <div className="flex justify-between items-center mb-2">
-                        <h4 className="font-medium">API Credentials</h4>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setPaypalConfig({
-                              clientId: paypalApiConfig?.clientId || '',
-                              clientSecret: ''
-                            });
-                            setIsPaypalConfigOpen(true);
-                          }}
-                        >
-                          <Edit className="h-4 w-4 mr-1" />
-                          Edit
-                        </Button>
-                      </div>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Client ID:</span>
-                          <span className="font-mono text-xs">
-                            {paypalApiConfig?.configured ? (paypalApiConfig?.clientId ? `${paypalApiConfig.clientId.substring(0, 8)}...` : 'Set') : 'Not Set'}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Client Secret:</span>
-                          <span className="font-mono text-xs">
-                            {paypalApiConfig?.configured ? '••••••••••••••••' : 'Not Set'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="pt-2">
-                      <p className="text-sm text-muted-foreground">
-                        PayPal integration is configured and ready for transactions. 
-                        Supports deposits and withdrawals worldwide.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              
 
               <Card>
                 <CardHeader>
@@ -489,17 +381,17 @@ export default function AdminPaymentSettings() {
                         })()}
                         onCheckedChange={(checked) => {
                           const newMode = checked ? 'live' : 'sandbox';
-                          
+
                           if (checked) {
                             const confirmed = confirm(
                               '⚠️ WARNING: You are about to switch to LIVE mode!\n\n' +
                               'This means:\n' +
                               '• Real money will be processed\n' +
-                              '• PayPal and Pesapal will use live environments\n' +
+                              '• Pesapal will use live environments\n' +
                               '• All transactions will be real\n\n' +
                               'Are you sure you want to continue?'
                             );
-                            
+
                             if (!confirmed) return;
                           }
 
@@ -545,16 +437,14 @@ export default function AdminPaymentSettings() {
                         <ul className="text-sm text-green-700 mt-1 space-y-1">
                           <li>• Safe for testing and development</li>
                           <li>• No real money processed</li>
-                          <li>• PayPal uses sandbox environment</li>
                           <li>• Pesapal uses demo environment</li>
                         </ul>
                       </div>
-                      
+
                       <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
                         <h5 className="font-medium text-red-800">🔴 Live Mode</h5>
                         <ul className="text-sm text-red-700 mt-1 space-y-1">
                           <li>• ⚠️ Real money will be processed</li>
-                          <li>• PayPal uses live environment</li>
                           <li>• Pesapal uses live environment</li>
                           <li>• All transactions are real</li>
                         </ul>
@@ -913,59 +803,6 @@ export default function AdminPaymentSettings() {
         </DialogContent>
       </Dialog>
 
-      {/* PayPal Configuration Modal */}
-      <Dialog open={isPaypalConfigOpen} onOpenChange={setIsPaypalConfigOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>PayPal API Configuration</DialogTitle>
-            <DialogDescription>
-              Configure your PayPal API credentials. You can get these from your PayPal Developer Dashboard.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={(e) => {
-            e.preventDefault();
-            updatePaypalConfigMutation.mutate(paypalConfig);
-          }}>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="paypal-client-id" className="text-right">Client ID</Label>
-                <Input
-                  id="paypal-client-id"
-                  value={paypalConfig.clientId}
-                  onChange={(e) => setPaypalConfig({ ...paypalConfig, clientId: e.target.value })}
-                  className="col-span-3"
-                  placeholder="Your PayPal Client ID"
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="paypal-client-secret" className="text-right">Client Secret</Label>
-                <Input
-                  id="paypal-client-secret"
-                  type="password"
-                  value={paypalConfig.clientSecret}
-                  onChange={(e) => setPaypalConfig({ ...paypalConfig, clientSecret: e.target.value })}
-                  className="col-span-3"
-                  placeholder="Your PayPal Client Secret"
-                />
-              </div>
-              <div className="col-span-4 text-sm text-muted-foreground">
-                <p>• Get your PayPal API credentials from <a href="https://developer.paypal.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">PayPal Developer Dashboard</a></p>
-                <p>• Leave Client Secret empty to keep the existing secret</p>
-                <p>• Use Sandbox credentials for testing, Live credentials for production</p>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsPaypalConfigOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={updatePaypalConfigMutation.isPending}>
-                {updatePaypalConfigMutation.isPending ? "Saving..." : "Save Configuration"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
       {/* Pesapal Configuration Modal */}
       <Dialog open={isPesapalConfigOpen} onOpenChange={setIsPesapalConfigOpen}>
         <DialogContent className="sm:max-w-[500px]">
@@ -1005,8 +842,7 @@ export default function AdminPaymentSettings() {
               <div className="col-span-4 text-sm text-muted-foreground">
                 <p>• Get your Pesapal API credentials from <a href="https://www.pesapal.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Pesapal Dashboard</a></p>
                 <p>• Leave Consumer Secret empty to keep the existing secret</p>
-                <p>• Supports mobile money and card payments across Africa</p>
-              </div>
+                <p>• Supports mobile money and card payments across Africa              </div>
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setIsPesapalConfigOpen(false)}>

@@ -7,7 +7,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
-import PayPalButton from '@/components/PayPalButton';
 import PesapalButton from '@/components/PesapalButton';
 import { formatCurrency } from '@/lib/utils';
 import { Wallet, TrendingUp, TrendingDown, History, CreditCard } from 'lucide-react';
@@ -65,10 +64,10 @@ export default function UserWallet() {
 
   const handlePaymentError = (error: string | Error | any) => {
     console.error("Payment error:", error);
-    
+
     // Convert error to string safely
     let errorMessage = "An error occurred while processing your payment. Please try again.";
-    
+
     try {
       if (typeof error === 'string' && error.trim()) {
         errorMessage = error;
@@ -84,7 +83,7 @@ export default function UserWallet() {
       console.error("Error processing payment error:", e);
       errorMessage = "Payment processing failed. Please try again.";
     }
-    
+
     toast({
       title: "Payment Failed",
       description: errorMessage,
@@ -341,14 +340,14 @@ export default function UserWallet() {
                       value={depositAmount}
                       onChange={(e) => {
                         const value = e.target.value;
-                        
+
                         // Prevent invalid inputs that could crash the page
                         try {
                           if (value === '') {
                             setDepositAmount('');
                             return;
                           }
-                          
+
                           // Check if it's a valid number format
                           const numValue = parseFloat(value);
                           if (!isNaN(numValue) && isFinite(numValue) && numValue >= 0) {
@@ -400,31 +399,7 @@ export default function UserWallet() {
                     <div className="border-t pt-4">
                       <h4 className="font-medium mb-3">Select Payment Method</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="border rounded-lg p-4 hover:border-blue-300 transition-colors">
-                          <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                                <CreditCard className="h-4 w-4 text-blue-600" />
-                              </div>
-                              <span className="font-medium">PayPal</span>
-                            </div>
-                            <span className="text-sm text-green-600 font-medium">Instant</span>
-                          </div>
-                          <p className="text-sm text-muted-foreground mb-3">
-                            Secure payment through PayPal. Accepted worldwide.
-                          </p>
-                          <div className="payment-button-container">
-                            <PayPalButton
-                              amount={depositAmount}
-                              currency={selectedCurrency}
-                              intent="CAPTURE"
-                              userId={user?.id || 0}
-                              type="deposit"
-                              onSuccess={handlePaymentSuccess}
-                              onError={handlePaymentError}
-                            />
-                          </div>
-                        </div>
+                        
 
                         <div className="border rounded-lg p-4 hover:border-green-300 transition-colors">
                           <div className="flex items-center justify-between mb-3">
