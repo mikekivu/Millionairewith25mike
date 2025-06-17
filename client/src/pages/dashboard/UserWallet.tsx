@@ -341,14 +341,28 @@ export default function UserWallet() {
                       value={depositAmount}
                       onChange={(e) => {
                         const value = e.target.value;
-                        // Only allow valid number inputs
-                        if (value === '' || (!isNaN(parseFloat(value)) && isFinite(parseFloat(value)))) {
-                          setDepositAmount(value);
+                        
+                        // Prevent invalid inputs that could crash the page
+                        try {
+                          if (value === '') {
+                            setDepositAmount('');
+                            return;
+                          }
+                          
+                          // Check if it's a valid number format
+                          const numValue = parseFloat(value);
+                          if (!isNaN(numValue) && isFinite(numValue) && numValue >= 0) {
+                            setDepositAmount(value);
+                          }
+                        } catch (error) {
+                          console.error("Error handling deposit amount input:", error);
+                          // Don't update state if there's an error
                         }
                       }}
                       min="5"
                       max="10000"
                       step="0.01"
+                      onFocus={(e) => e.target.select()}
                     />
                     <p className="text-sm text-muted-foreground mt-1">
                       Min: $5.00 | Max: $10,000.00
@@ -399,15 +413,17 @@ export default function UserWallet() {
                           <p className="text-sm text-muted-foreground mb-3">
                             Secure payment through PayPal. Accepted worldwide.
                           </p>
-                          <PayPalButton
-                            amount={depositAmount}
-                            currency={selectedCurrency}
-                            intent="CAPTURE"
-                            userId={user?.id || 0}
-                            type="deposit"
-                            onSuccess={handlePaymentSuccess}
-                            onError={handlePaymentError}
-                          />
+                          <div className="payment-button-container">
+                            <PayPalButton
+                              amount={depositAmount}
+                              currency={selectedCurrency}
+                              intent="CAPTURE"
+                              userId={user?.id || 0}
+                              type="deposit"
+                              onSuccess={handlePaymentSuccess}
+                              onError={handlePaymentError}
+                            />
+                          </div>
                         </div>
 
                         <div className="border rounded-lg p-4 hover:border-green-300 transition-colors">
