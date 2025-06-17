@@ -2096,6 +2096,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     });
 
+    // Admin reset user password
+    app.put("/api/admin/users/:id/reset-password", authMiddleware, adminMiddleware, async (req, res) => {
+      try {
+        const userId = parseInt(req.params.id);
+        const { newPassword } = req.body;
+
+        // Validate input
+        if (!newPassword || newPassword.length < 6) {
+          return res.status(400).json({ message: "New password must be at least 6 characters long" });
+        }
+
+        // Get the user
+        const user = await storage.getUser(userId);
+        if (!user) {
+          return res.status(404).json({ message: "User not found" });
+        }
+
+        // Hash new password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        // Update password
+        const updatedUser = await storage.updateUser(userId, { password: hashedPassword });
+
+        if (!updatedUser) {
+          return res.status(404).json({ message: "Failed to reset password" });
+        }
+
+        // Create audit trail transaction
+        const adminId = req.session.userId;
+        const admin = await storage.getUser(adminId);
+        await storage.createTransaction({
+          userId: adminId,
+          type: "admin_action",
+          amount: "0",
+          currency: "USD",
+          status: "completed",
+          paymentMethod: "admin",
+          transactionDetails: `Password reset for user ${user.username} (${user.email})`,
+          description: `Admin ${admin?.email} reset password for user ${user.username}`
+        });
+
+        // Create notification for user about password reset
+        await storage.createNotification({
+          userId,
+          title: "Password Reset",
+          message: "Your password has been reset by an administrator. Please log in with your new password.",
+          type: "password_reset",
+          entityId: userId,
+          entityType: "user",
+          link: "/login"
+        });
+
+        res.status(200).json({
+          message: "Password reset successfully",
+          userId: userId,
+          username: user.username
+        });
+      } catch (error) {
+        console.error("Error resetting user password:", error);
+        res.status(500).json({ message: "Server error" });
+      }
+    });
+
     // PayPal API Configuration
     app.get("/api/admin/payment-settings/paypal-config", authMiddleware, adminMiddleware, async (req, res) => {
       try {

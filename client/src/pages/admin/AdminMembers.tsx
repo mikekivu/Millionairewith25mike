@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import EditWalletDialog from '@/components/dashboard/EditWalletDialog';
 import { useToast } from "@/hooks/use-toast";
-import { Search, UserPlus, Edit, Trash2, DollarSign, MessageSquare, Eye } from "lucide-react";
+import { Search, UserPlus, Edit, Trash2, DollarSign, MessageSquare, Eye, Key } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -59,6 +59,7 @@ export default function AdminMembers() {
   const [walletDialogOpen, setWalletDialogOpen] = useState(false);
   const [messageDialogOpen, setMessageDialogOpen] = useState(false);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [passwordResetDialogOpen, setPasswordResetDialogOpen] = useState(false);
 
   // Form states
   const [editForm, setEditForm] = useState<EditUserForm>({
@@ -71,6 +72,7 @@ export default function AdminMembers() {
   });
   const [messageSubject, setMessageSubject] = useState("");
   const [messageContent, setMessageContent] = useState("");
+  const [newPassword, setNewPassword] = useState("");
 
   // Fetch users
   const {
@@ -162,6 +164,31 @@ export default function AdminMembers() {
     },
   });
 
+  // Reset password mutation
+  const resetPasswordMutation = useMutation({
+    mutationFn: async ({ userId, newPassword }: { userId: number; newPassword: string }) => {
+      const response = await apiRequest('PUT', `/api/admin/users/${userId}/reset-password`, { newPassword });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Failed to reset password' }));
+        throw new Error(errorData.message || 'Failed to reset password');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Success", description: "Password reset successfully" });
+      setPasswordResetDialogOpen(false);
+      setNewPassword("");
+      setSelectedUser(null);
+    },
+    onError: (error: Error) => {
+      toast({ 
+        title: "Error", 
+        description: error.message || "Failed to reset password",
+        variant: "destructive" 
+      });
+    },
+  });
+
   // Filter users based on search term
   const filteredUsers = users.filter(user =>
     user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -197,12 +224,26 @@ export default function AdminMembers() {
     setViewDialogOpen(true);
   };
 
+  const openPasswordResetDialog = (user: User) => {
+    setSelectedUser(user);
+    setPasswordResetDialogOpen(true);
+  };
+
   const handleUpdateUser = () => {
     if (!selectedUser) return;
 
     updateUserMutation.mutate({
       userId: selectedUser.id,
       userData: editForm
+    });
+  };
+
+  const handleResetPassword = () => {
+    if (!selectedUser || !newPassword) return;
+
+    resetPasswordMutation.mutate({
+      userId: selectedUser.id,
+      newPassword: newPassword
     });
   };
 
@@ -349,6 +390,14 @@ export default function AdminMembers() {
                             onClick={() => openWalletDialog(user)}
                           >
                             <DollarSign className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => openPasswordResetDialog(user)}
+                            title="Reset Password"
+                          >
+                            <Key className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="ghost"
@@ -568,6 +617,49 @@ export default function AdminMembers() {
               disabled={sendMessageMutation.isPending || !messageSubject || !messageContent}
             >
               {sendMessageMutation.isPending ? "Sending..." : "Send Message"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Password Reset Dialog */}
+      <Dialog open={passwordResetDialogOpen} onOpenChange={setPasswordResetDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reset Password</DialogTitle>
+            <DialogDescription>
+              Reset password for {selectedUser?.firstName} {selectedUser?.lastName}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="newPassword">New Password</Label>
+              <Input
+                id="newPassword"
+                type="password"
+                placeholder="Enter new password (minimum 6 characters)"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                minLength={6}
+              />
+              <p className="text-sm text-muted-foreground mt-1">
+                Password must be at least 6 characters long.
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setPasswordResetDialogOpen(false);
+              setNewPassword("");
+            }}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleResetPassword}
+              disabled={resetPasswordMutation.isPending || !newPassword || newPassword.length < 6}
+              variant="destructive"
+            >
+              {resetPasswordMutation.isPending ? "Resetting..." : "Reset Password"}
             </Button>
           </DialogFooter>
         </DialogContent>
