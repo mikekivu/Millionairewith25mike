@@ -69,12 +69,20 @@ export default function UserWallet() {
     // Convert error to string safely
     let errorMessage = "An error occurred while processing your payment. Please try again.";
     
-    if (typeof error === 'string' && error.trim()) {
-      errorMessage = error;
-    } else if (error instanceof Error && error.message) {
-      errorMessage = error.message;
-    } else if (error && typeof error === 'object' && error.message) {
-      errorMessage = error.message;
+    try {
+      if (typeof error === 'string' && error.trim()) {
+        errorMessage = error;
+      } else if (error instanceof Error && error.message) {
+        errorMessage = error.message;
+      } else if (error && typeof error === 'object' && error.message) {
+        errorMessage = String(error.message);
+      } else if (error && typeof error === 'object') {
+        // Handle empty objects or other object types
+        errorMessage = "Payment processing failed. Please try again.";
+      }
+    } catch (e) {
+      console.error("Error processing payment error:", e);
+      errorMessage = "Payment processing failed. Please try again.";
     }
     
     toast({

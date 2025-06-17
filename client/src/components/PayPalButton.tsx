@@ -34,19 +34,26 @@ export function PayPalButton({
 
         if (!data.configured) {
           console.warn('PayPal not properly configured');
-          onError(new Error('PayPal not configured properly'));
+          onError('PayPal not configured properly');
+          return;
+        }
+
+        // Validate client ID exists and is not demo
+        if (!data.clientId || data.clientId === 'demo') {
+          console.warn('Invalid PayPal client ID');
+          onError('PayPal not configured properly');
           return;
         }
 
         // The backend should return both clientToken and environment info
         setPaypalConfig({
-          clientId: data.clientId || 'demo',
+          clientId: data.clientId,
           environment: data.environment || 'sandbox'
         });
       })
       .catch(error => {
         console.error('Failed to load PayPal config:', error);
-        onError(error);
+        onError('Failed to load PayPal configuration');
       });
   }, [onError]);
 
@@ -65,7 +72,7 @@ export function PayPalButton({
     // Validate client ID
     if (!paypalConfig.clientId || paypalConfig.clientId === 'demo') {
       console.error('Invalid PayPal client ID');
-      onError(new Error('PayPal client ID not configured'));
+      onError('PayPal client ID not configured');
       return;
     }
 
@@ -79,14 +86,14 @@ export function PayPalButton({
     };
     script.onerror = (error) => {
       console.error('Failed to load PayPal SDK:', error);
-      onError(new Error('Failed to load PayPal SDK'));
+      onError('Failed to load PayPal SDK');
     };
     document.body.appendChild(script);
 
     function initPayPalButton() {
       if (!window.paypal) {
         console.error('PayPal SDK not available');
-        onError(new Error('PayPal SDK not loaded'));
+        onError('PayPal SDK not loaded');
         return;
       }
 
@@ -132,12 +139,13 @@ export function PayPalButton({
           },
           onCancel: (data: any) => {
             console.log('PayPal payment cancelled:', data);
-            onError(new Error('Payment cancelled by user'));
+            onError('Payment cancelled by user');
           }
         }).render(paypalRef.current);
       } catch (error) {
         console.error('Failed to initialize PayPal button:', error);
-        onError(error);
+        const errorMessage = error instanceof Error ? error.message : 'Failed to initialize PayPal button';
+        onError(errorMessage);
       }
     }
 
