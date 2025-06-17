@@ -33,21 +33,28 @@ export async function getClientToken() {
     const auth = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`).toString('base64');
     const baseUrl = await getPaypalBaseUrl();
 
+    console.log(`Requesting PayPal access token from: ${baseUrl}/v1/oauth2/token`);
+
     const response = await fetch(`${baseUrl}/v1/oauth2/token`, {
       method: 'POST',
       headers: {
         'Authorization': `Basic ${auth}`,
         'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/json'
       },
       body: 'grant_type=client_credentials'
     });
 
+    const responseText = await response.text();
+    console.log(`PayPal API response status: ${response.status}`);
+    
     if (!response.ok) {
-      console.log("PayPal API call failed, falling back to demo mode");
+      console.error("PayPal API call failed:", response.status, responseText);
       return "demo_client_token";
     }
 
-    const data = await response.json();
+    const data = JSON.parse(responseText);
+    console.log("PayPal access token obtained successfully");
     return data.access_token || "demo_client_token";
   } catch (error) {
     console.error("Failed to get PayPal access token:", error);
@@ -245,16 +252,63 @@ export async function capturePaypalOrder(req: Request, res: Response) {
 
 export async function loadPaypalDefault(req: Request, res: Response) {
   try {
-    const clientToken = await getClientToken();
     const paymentMode = await storage.getSystemSetting('payment_mode');
     const environment = paymentMode?.value === 'live' ? 'live' : 'sandbox';
+    const isConfigured = !!(PAYPAL_CLIENT_ID && PAYPAL_CLIENT_SECRET);
+    
+    console.log('PayPal config request - Mode:', environment, 'Configured:', isConfigured);
+    
+    if (!isConfigured) {
+      console.warn('PayPal credentials not configured');
+      return res.json({ 
+        clientToken: 'demo_client_token',
+        clientId: 'demo',
+        environment: 'sandbox',
+        configured: false,
+        error: 'PayPal credentials not configured'
+      });
+    }
+
+    // For live mode, validate that we have proper credentials
+    if (environment === 'live') {
+      console.log('Live mode detected, validating credentials...');
+      if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
+        console.error('Live mode requires PayPal credentials');
+        return res.json({
+          clientToken: 'demo_client_token',
+          clientId: 'demo',
+          environment: 'sandbox',
+          configured: false,
+          error: 'Live PayPal credentials not configured'
+        });
+      }
+      
+      // Test the credentials by getting an access token
+      try {
+        const clientToken = await getClientToken();
+        if (clientToken === 'demo_client_token') {
+          throw new Error('Failed to get valid access token');
+        }
+      } catch (error) {
+        console.error('Failed to validate live PayPal credentials:', error);
+        return res.json({
+          clientToken: 'demo_client_token',
+          clientId: 'demo',
+          environment: 'sandbox',
+          configured: false,
+          error: 'Invalid PayPal credentials for live mode'
+        });
+      }
+    }
+
+    const clientToken = await getClientToken();
     
     // Return both client token and environment info
     res.json({ 
       clientToken,
-      clientId: PAYPAL_CLIENT_ID || 'demo',
+      clientId: PAYPAL_CLIENT_ID,
       environment,
-      configured: !!(PAYPAL_CLIENT_ID && PAYPAL_CLIENT_SECRET)
+      configured: true
     });
   } catch (error) {
     console.error('Error loading PayPal config:', error);
@@ -262,7 +316,8 @@ export async function loadPaypalDefault(req: Request, res: Response) {
       clientToken: 'demo_client_token',
       clientId: 'demo',
       environment: 'sandbox',
-      configured: false
+      configured: false,
+      error: error.message
     });
   }
 }
