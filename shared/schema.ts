@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, numeric, foreignKey } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, numeric, foreignKey, varchar } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -97,10 +97,25 @@ export const paymentSettings = pgTable("payment_settings", {
 // System Settings
 export const systemSettings = pgTable("system_settings", {
   id: serial("id").primaryKey(),
-  key: text("key").notNull().unique(),
+  key: varchar("key", { length: 255 }).notNull().unique(),
   value: text("value").notNull(),
   description: text("description"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const paymentConfigurations = pgTable("payment_configurations", {
+  id: serial("id").primaryKey(),
+  provider: varchar("provider", { length: 50 }).notNull(), // 'paypal' or 'pesapal'
+  environment: varchar("environment", { length: 20 }).notNull().default('sandbox'), // 'sandbox' or 'live'
+  clientId: text("client_id"),
+  clientSecret: text("client_secret"),
+  consumerKey: text("consumer_key"), // For Pesapal
+  consumerSecret: text("consumer_secret"), // For Pesapal
+  ipnId: text("ipn_id"), // For Pesapal
+  active: boolean("active").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 // Contact Messages

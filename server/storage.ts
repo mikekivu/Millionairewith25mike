@@ -8,7 +8,8 @@ import {
   contactMessages, ContactMessage, InsertContactMessage,
   userMessages, UserMessage, InsertUserMessage,
   notifications, Notification, InsertNotification,
-  systemSettings, SystemSetting, InsertSystemSetting
+  systemSettings, SystemSetting, InsertSystemSetting,
+  paymentConfigurations
 } from "@shared/schema";
 import { nanoid } from "nanoid";
 import { addDays } from "date-fns";
@@ -1095,6 +1096,46 @@ export class MemStorage implements IStorage {
   async getAllSystemSettings(): Promise<SystemSetting[]> {
     return Array.from(this.systemSettings.values());
   }
+    // Payment Configuration Methods
+    async getPaymentConfiguration(provider: string, environment: string = 'sandbox'): Promise<any | undefined> {
+      const paymentSettings = Array.from(this.paymentSettings.values());
+      return paymentSettings.find(setting => setting.method === provider && setting.environment === environment);
+    }
+  
+    async getAllPaymentConfigurations(): Promise<PaymentSetting[]> {
+      return Array.from(this.paymentSettings.values());
+    }
+  
+    async createPaymentConfiguration(setting: InsertPaymentSetting): Promise<PaymentSetting> {
+      const id = this.paymentSettingId++;
+      const newSetting: PaymentSetting = {
+        ...setting,
+        id,
+        minAmount: setting.minAmount || "10",
+        maxAmount: setting.maxAmount || "10000"
+      };
+      this.paymentSettings.set(id, newSetting);
+      return newSetting;
+    }
+  
+    async updatePaymentConfiguration(id: number, setting: Partial<PaymentSetting>): Promise<PaymentSetting | undefined> {
+      const existingSetting = await this.getPaymentSetting(id);
+      if (!existingSetting) {
+        return undefined;
+      }
+  
+      const updatedSetting = { ...existingSetting, ...setting };
+      this.paymentSettings.set(id, updatedSetting);
+      return updatedSetting;
+    }
+  
+    async deletePaymentConfiguration(id: number): Promise<boolean> {
+      return this.paymentSettings.delete(id);
+    }
+  
+    async togglePaymentConfigurationStatus(id: number, active: boolean): Promise<PaymentSetting | undefined> {
+      return this.updatePaymentSetting(id, { active });
+    }
 }
 
 // Use the database storage implementation if database is available

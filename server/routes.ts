@@ -110,13 +110,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   };
 
-  // Payment webhooks disabled
+  // Payment webhooks
   app.post("/api/webhook/coinbase", async (req, res) => {
-    res.status(503).json({ error: "Payment services are temporarily disabled" });
+    res.status(503).json({ error: "Coinbase integration not implemented" });
   });
 
   app.post("/api/webhook/paypal", async (req, res) => {
-    res.status(503).json({ error: "Payment services are temporarily disabled" });
+    res.status(503).json({ error: "PayPal webhook not implemented" });
   });
 
   // Authentication Routes
@@ -544,35 +544,125 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Wallet operations
   router.post('/user/deposits', authMiddleware, async (req, res) => {
-    res.status(503).json({ 
-      message: "Deposit functionality is temporarily disabled. Please contact an administrator for balance adjustments." 
-    });
+    try {
+      const userId = req.session.userId;
+      const { amount, paymentMethod, currency = 'USD' } = req.body;
+
+      // Validate input
+      if (!amount || !paymentMethod) {
+        return res.status(400).json({ message: "Amount and payment method are required" });
+      }
+
+      const depositAmount = parseFloat(amount);
+      if (depositAmount < 5 || depositAmount > 10000) {
+        return res.status(400).json({ 
+          message: "Deposit amount must be between $5 and $10,000" 
+        });
+      }
+
+      // Get user
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Generate unique reference
+      const reference = `DEP_${nanoid(10)}_${Date.now()}`;
+
+      // Create pending transaction
+      const transaction = await storage.createTransaction({
+        userId,
+        type: 'deposit',
+        amount: amount.toString(),
+        currency,
+        status: 'pending',
+        paymentMethod,
+        transactionDetails: `Deposit via ${paymentMethod}`,
+        description: `Deposit ${amount} ${currency} via ${paymentMethod}`,
+        reference
+      });
+
+      res.status(201).json({ 
+        message: "Deposit transaction created", 
+        transaction,
+        reference 
+      });
+    } catch (error) {
+      console.error('Deposit creation error:', error);
+      res.status(500).json({ message: "Server error" });
+    }
   });
 
   router.post('/user/withdrawals', authMiddleware, async (req, res) => {
-    res.status(503).json({ 
-      message: "Withdrawal functionality is temporarily disabled. Please contact an administrator for balance adjustments." 
-    });
+    try {
+      const userId = req.session.userId;
+      const { amount, paymentMethod, destination, currency = 'USD' } = req.body;
+
+      // Validate input
+      if (!amount || !paymentMethod || !destination) {
+        return res.status(400).json({ 
+          message: "Amount, payment method, and destination are required" 
+        });
+      }
+
+      const withdrawAmount = parseFloat(amount);
+      if (withdrawAmount < 10 || withdrawAmount > 5000) {
+        return res.status(400).json({ 
+          message: "Withdrawal amount must be between $10 and $5,000" 
+        });
+      }
+
+      // Get user and check balance
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const walletBalance = parseFloat(user.walletBalance);
+      if (walletBalance < withdrawAmount) {
+        return res.status(400).json({ message: "Insufficient wallet balance" });
+      }
+
+      // Create pending withdrawal transaction
+      const transaction = await storage.createTransaction({
+        userId,
+        type: 'withdrawal',
+        amount: amount.toString(),
+        currency,
+        status: 'pending',
+        paymentMethod,
+        transactionDetails: `Withdrawal to ${paymentMethod}: ${destination}`,
+        description: `Withdrawal ${amount} ${currency} to ${destination}`
+      });
+
+      res.status(201).json({ 
+        message: "Withdrawal request submitted for approval", 
+        transaction 
+      });
+    } catch (error) {
+      console.error('Withdrawal creation error:', error);
+      res.status(500).json({ message: "Server error" });
+    }
   });
 
   
 
-  // Pesapal Routes - Disabled
-  app.post("/api/pesapal/create-order", async (req, res) => {
-    res.status(503).json({ error: "Payment services are temporarily disabled" });
-  });
+  // PayPal Routes
+  const { getPayPalConfig, createPayPalOrder, capturePayPalOrder, handlePayPalSuccess, handlePayPalCancel } = await import('./paypal');
+  
+  app.get("/api/paypal/config", getPayPalConfig);
+  app.post("/api/paypal/create-order", createPayPalOrder);
+  app.post("/api/paypal/capture-order", capturePayPalOrder);
+  app.get("/api/paypal/success", handlePayPalSuccess);
+  app.get("/api/paypal/cancel", handlePayPalCancel);
 
-  app.get("/api/pesapal/callback", async (req, res) => {
-    res.status(503).json({ error: "Payment services are temporarily disabled" });
-  });
-
-  app.post("/api/pesapal/ipn", async (req, res) => {
-    res.status(503).json({ error: "Payment services are temporarily disabled" });
-  });
-
-  app.get("/api/pesapal/transaction-status/:orderTrackingId", async (req, res) => {
-    res.status(503).json({ error: "Payment services are temporarily disabled" });
-  });
+  // Pesapal Routes
+  const { createPesapalOrder, handlePesapalCallback, handlePesapalIPN, getPesapalTransactionStatus } = await import('./pesapal');
+  
+  app.post("/api/pesapal/create-order", createPesapalOrder);
+  app.get("/api/pesapal/callback", handlePesapalCallback);
+  app.post("/api/pesapal/ipn", handlePesapalIPN);
+  app.get("/api/pesapal/transaction-status/:orderTrackingId", getPesapalTransactionStatus);
 
   // Demo Pesapal payment page simulation
   app.get("/api/pesapal/demo-payment", async (req, res) => {
@@ -1079,9 +1169,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(200).json([]);
   });
 
-  app.get("/api/paypal/config", async (req, res) => {
-    res.status(503).json({ error: "PayPal services are permanently disabled" });
-  });
+  app.get("/api/paypal/config", getPayPalConfig);
 
   // Admin Routes
   app.get("/api/admin/dashboard", authMiddleware, adminMiddleware, async (req, res) => {
@@ -1599,39 +1687,119 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/payment-settings", authMiddleware, adminMiddleware, async (req, res) => {
+  // Admin Payment Configuration Routes
+  app.get("/api/admin/payment-configurations", authMiddleware, adminMiddleware, async (req, res) => {
     try {
-      // Return empty array - all payment methods have been permanently removed
-      res.status(200).json([]);
+      const configurations = await storage.getAllPaymentConfigurations();
+      res.status(200).json(configurations);
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Server error" });
     }
   });
 
-  app.post("/api/admin/payment-settings", authMiddleware, adminMiddleware, async (req, res) => {
-    res.status(503).json({ 
-      message: "Payment method creation is permanently disabled. All payment functionality has been removed." 
-    });
+  app.post("/api/admin/payment-configurations", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const { provider, environment, clientId, clientSecret, consumerKey, consumerSecret, ipnId } = req.body;
+
+      if (!provider || !environment) {
+        return res.status(400).json({ message: "Provider and environment are required" });
+      }
+
+      // Check if configuration already exists
+      const existing = await storage.getPaymentConfiguration(provider, environment);
+      if (existing) {
+        return res.status(400).json({ message: "Configuration already exists for this provider and environment" });
+      }
+
+      const config = await storage.createPaymentConfiguration({
+        provider,
+        environment,
+        clientId: clientId || null,
+        clientSecret: clientSecret || null,
+        consumerKey: consumerKey || null,
+        consumerSecret: consumerSecret || null,
+        ipnId: ipnId || null,
+        active: false
+      });
+
+      res.status(201).json({ 
+        message: "Payment configuration created successfully", 
+        config 
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Server error" });
+    }
   });
 
-    app.put("/api/admin/payment-settings/:id", authMiddleware, adminMiddleware, async (req, res) => {
-      res.status(503).json({ 
-        message: "Payment method updates are permanently disabled. All payment functionality has been removed." 
-      });
-    });
+  app.put("/api/admin/payment-configurations/:id", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const configId = parseInt(req.params.id);
+      const { clientId, clientSecret, consumerKey, consumerSecret, ipnId } = req.body;
 
-    app.put("/api/admin/payment-settings/:id/toggle-status", authMiddleware, adminMiddleware, async (req, res) => {
-      res.status(503).json({ 
-        message: "Payment method status changes are permanently disabled. All payment functionality has been removed." 
+      const updatedConfig = await storage.updatePaymentConfiguration(configId, {
+        clientId: clientId || null,
+        clientSecret: clientSecret || null,
+        consumerKey: consumerKey || null,
+        consumerSecret: consumerSecret || null,
+        ipnId: ipnId || null
       });
-    });
 
-    app.delete("/api/admin/payment-settings/:id", authMiddleware, adminMiddleware, async (req, res) => {
-      res.status(200).json({
-        message: "Payment method already removed - all payment functionality has been permanently disabled"
+      if (!updatedConfig) {
+        return res.status(404).json({ message: "Configuration not found" });
+      }
+
+      res.status(200).json({ 
+        message: "Payment configuration updated successfully", 
+        config: updatedConfig 
       });
-    });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  app.put("/api/admin/payment-configurations/:id/toggle-status", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const configId = parseInt(req.params.id);
+      const { active } = req.body;
+
+      if (typeof active !== "boolean") {
+        return res.status(400).json({ message: "Active status must be a boolean" });
+      }
+
+      const updatedConfig = await storage.togglePaymentConfigurationStatus(configId, active);
+
+      if (!updatedConfig) {
+        return res.status(404).json({ message: "Configuration not found" });
+      }
+
+      res.status(200).json({ 
+        message: `Payment configuration ${active ? 'activated' : 'deactivated'} successfully`, 
+        config: updatedConfig 
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  app.delete("/api/admin/payment-configurations/:id", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const configId = parseInt(req.params.id);
+      const deleted = await storage.deletePaymentConfiguration(configId);
+
+      if (!deleted) {
+        return res.status(404).json({ message: "Configuration not found" });
+      }
+
+      res.status(200).json({ message: "Payment configuration deleted successfully" });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
 
     // Admin wallet balance management
     app.put("/api/admin/users/:id/wallet", authMiddleware, adminMiddleware, async (req, res) => {
