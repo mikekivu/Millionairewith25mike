@@ -22,6 +22,10 @@ import EditWalletDialog from '@/components/dashboard/EditWalletDialog';
 import { useToast } from "@/hooks/use-toast";
 import { Search, UserPlus, Edit, Trash2, DollarSign, MessageSquare, Eye } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 interface User {
   id: number;
@@ -571,15 +575,3 @@ export default function AdminMembers() {
     </div>
   );
 }
-```
-
-**Code Analysis:**
-
-/*
-The code was modified to address the admin wallet balance editing functionality by:
-
-1. Importing the `EditWalletDialog` component.
-2. Removing the `updateWalletMutation` as it's handled by the `EditWalletDialog`.
-3. Removing the unused wallet state variables like `walletAmount` and `walletOperation`.
-4. Replacing the original wallet dialog implementation with the new `EditWalletDialog` component.
-*/
